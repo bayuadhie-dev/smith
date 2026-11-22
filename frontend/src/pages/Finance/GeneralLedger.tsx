@@ -188,7 +188,8 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
       {/* Header */}
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
-          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">General Ledger</h1>
+          <div className="fn-label mb-1.5">FINANCE · BUKU BESAR</div>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Buku Besar</h1>
           <p className="text-gray-600 dark:text-gray-300 mt-1">Pengecekan saldo: semua jurnal terposting per akun (hanya baca). Input dan koreksi dilakukan lewat Journal Entry atau transaksi sumbernya.</p>
         </div>
       </div>
@@ -201,7 +202,7 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
               <BookOpenIcon className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Debits</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total debit</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatRupiah(getTotalDebits())}</p>
             </div>
           </div>
@@ -213,7 +214,7 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
               <BookOpenIcon className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Credits</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total kredit</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatRupiah(getTotalCredits())}</p>
             </div>
           </div>
@@ -227,7 +228,7 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
               <BookOpenIcon className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Balance Check</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Keseimbangan</p>
               <p className={`text-2xl font-bold ${
                 getTotalDebits() === getTotalCredits() ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
               }`}>
@@ -245,7 +246,7 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
             <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
             <input
               type="text"
-              placeholder="Search entries..."
+              placeholder="Cari jurnal..."
               className="input pl-10 w-full"
               value={filters.search}
               onChange={(e) => handleFilterChange('search', e.target.value)}
@@ -257,7 +258,7 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
             value={filters.account_id}
             onChange={(e) => handleFilterChange('account_id', e.target.value)}
           >
-            <option value="">All Accounts</option>
+            <option value="">Semua akun</option>
             {accounts.map(a => (
               <option key={a.id} value={a.id}>{a.is_header ? '▸ ' : ''}{a.code} - {a.name}{a.is_header ? ' (induk: semua akun di bawahnya)' : ''}</option>
             ))}
@@ -290,13 +291,13 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
               onClick={() => {
                 const data = entries.map(entry => ({
                   [t('common.date')]: formatDate(entry.entry_date),
-                  'Account Code': entry.account_code,
-                  'Account Name': entry.account_name,
+                  'Kode akun': entry.account_code,
+                  'Nama akun': entry.account_name,
                   [t('common.description')]: entry.description,
-                  'Reference': entry.reference_number || '',
+                  'Referensi': entry.reference_number || '',
                   'Debit': entry.debit_amount,
-                  'Credit': entry.credit_amount,
-                  'Created By': entry.created_by
+                  'Kredit': entry.credit_amount,
+                  'Dibuat oleh': entry.created_by
                 }))
                 console.log('Exporting GL data:', data)
                 showInfo('Export functionality will be implemented soon!')
@@ -315,16 +316,16 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
             <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
                 <ServerSortTh col="entry_date" sortKey={sortBy} sortDir={sortDir} onSort={toggleSort} className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.date')}</ServerSortTh>
-                <ServerSortTh col="account_code" sortKey={sortBy} sortDir={sortDir} onSort={toggleSort} className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Account</ServerSortTh>
+                <ServerSortTh col="account_code" sortKey={sortBy} sortDir={sortDir} onSort={toggleSort} className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Akun</ServerSortTh>
                 <ServerSortTh col="description" sortKey={sortBy} sortDir={sortDir} onSort={toggleSort} className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.description')}</ServerSortTh>
-                <ServerSortTh col="reference_number" sortKey={sortBy} sortDir={sortDir} onSort={toggleSort} className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Reference</ServerSortTh>
+                <ServerSortTh col="reference_number" sortKey={sortBy} sortDir={sortDir} onSort={toggleSort} className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Referensi</ServerSortTh>
                 <ServerSortTh col="debit_amount" sortKey={sortBy} sortDir={sortDir} onSort={toggleSort} align="right" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Debit</ServerSortTh>
-                <ServerSortTh col="credit_amount" sortKey={sortBy} sortDir={sortDir} onSort={toggleSort} align="right" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Credit</ServerSortTh>
+                <ServerSortTh col="credit_amount" sortKey={sortBy} sortDir={sortDir} onSort={toggleSort} align="right" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Kredit</ServerSortTh>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider" title={sortBy === 'entry_date' ? undefined : 'Saldo berjalan hanya berlaku saat diurutkan menurut tanggal'}>
-                  Running Balance
+                  Saldo berjalan
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Created By
+                  Dibuat oleh
                 </th>
               </tr>
             </thead>
@@ -411,8 +412,8 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
         {entries.length === 0 && !loading && (
           <div className="text-center py-12">
             <BookOpenIcon className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No entries found</h3>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Try adjusting your search criteria</p>
+            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">Tidak ada jurnal</h3>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Coba ubah pencarian atau rentang tanggalnya</p>
           </div>
         )}
       </div>

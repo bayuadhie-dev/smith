@@ -108,6 +108,7 @@ const PurchaseInvoiceDetail: React.FC = () => {
         &larr; Kembali
       </button>
 
+      <div className="fn-label mb-1.5">FINANCE · FAKTUR PEMBELIAN</div>
       <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white mb-1 tracking-tight leading-tight">{data.invoice_number}</h1>
       <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">{data.supplier_name || '-'}</p>
 <div className="mb-4 flex flex-wrap items-center gap-2"><DocumentGenerateButton transactionType="purchase_invoice" transactionId={data.id} transactionNumber={data.invoice_number} label="Cetak Faktur" /><DocActions docType="purchase_invoice" docId={data.id} number={data.invoice_number} listPath="/app/purchasing/invoices" /></div>

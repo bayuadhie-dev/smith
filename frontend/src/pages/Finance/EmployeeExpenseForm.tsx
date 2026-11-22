@@ -252,8 +252,9 @@ const EmployeeExpenseForm: React.FC = () => {
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div>
+          <div className="fn-label mb-1.5">FINANCE · KLAIM KARYAWAN</div>
           <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">
-            {isEdit ? 'Edit Expense' : 'New Expense'}
+            {isEdit ? 'Ubah Klaim' : 'Klaim Baru'}
           </h1>
           <p className="text-gray-600 dark:text-gray-300">
             {isEdit ? 'Update expense claim' : 'Submit expense claim for reimbursement'}

@@ -110,8 +110,12 @@ export async function printPdf(path: string, params: Record<string, any>) {
 }
 
 // ---------------------------------------------------------------- layout pieces
-export function ReportShell({ title, subtitle, icon, backTo, backLabel, actions, children }: {
-  title: string; subtitle?: string; icon?: React.ReactNode; backTo?: string; backLabel?: string; actions?: React.ReactNode; children: React.ReactNode
+export function ReportShell({ title, subtitle, icon, backTo, backLabel, actions, eyebrow, children }: {
+  title: string; subtitle?: string; icon?: React.ReactNode; backTo?: string; backLabel?: string
+  actions?: React.ReactNode
+  /** Baris kecil di atas judul; bawaannya menandai halaman ini laporan keuangan. */
+  eyebrow?: string
+  children: React.ReactNode
 }) {
   const navigate = useNavigate()
   return (
@@ -130,7 +134,8 @@ export function ReportShell({ title, subtitle, icon, backTo, backLabel, actions,
               <ArrowLeftIcon className="h-4 w-4" /> {backLabel || 'Pusat Laporan'}
             </button>
           )}
-          <h1 className="flex items-center gap-2 text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">{icon}{title}</h1>
+          <div className="fn-label mb-1.5">{eyebrow || 'FINANCE · LAPORAN'}</div>
+          <h1 className="flex items-center gap-2 text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">{icon}{title}</h1>
           {subtitle && <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{subtitle}</p>}
         </div>
         <div className="print-hide flex flex-wrap items-center gap-2">{actions}</div>

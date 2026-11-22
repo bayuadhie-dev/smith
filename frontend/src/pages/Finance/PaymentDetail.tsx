@@ -137,6 +137,7 @@ export default function PaymentDetail() {
     <div className="space-y-6">
       <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
+          <div className="fn-label mb-1.5">FINANCE · PEMBAYARAN</div>
           <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">{payment.payment_number}</h1>
 <div className="my-2"><DocActions docType="payment" docId={payment.id} number={payment.payment_number} listPath="/app/finance/pembayaran" /></div>
           <p className="text-gray-600 dark:text-gray-300">

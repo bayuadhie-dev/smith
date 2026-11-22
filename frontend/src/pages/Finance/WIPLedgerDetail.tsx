@@ -184,6 +184,7 @@ export default function WIPLedgerDetail() {
             Kembali
           </button>
           <div>
+            <div className="fn-label mb-1.5">FINANCE · BUKU WIP</div>
             <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">
               {ledger.work_order_number}
             </h1>

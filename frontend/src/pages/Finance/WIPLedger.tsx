@@ -111,7 +111,8 @@ export default function WIPLedger() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">WIP Ledger</h1>
+        <div className="fn-label mb-1.5">FINANCE · BUKU WIP</div>
+        <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Buku WIP</h1>
         <p className="text-gray-600 dark:text-gray-300">Work in Progress cost tracking and variance analysis</p>
       </div>
 

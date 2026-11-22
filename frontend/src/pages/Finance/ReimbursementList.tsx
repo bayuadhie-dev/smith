@@ -155,6 +155,7 @@ const ReimbursementList: React.FC = () => {
       {/* Header */}
       <div className="flex flex-wrap justify-between items-center mb-6 gap-3">
         <div>
+          <div className="fn-label mb-1.5">FINANCE · PEMBAYARAN KLAIM</div>
           <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Pembayaran Klaim</h1>
           <p className="text-gray-600 dark:text-gray-300">Persetujuan dan pembayaran klaim karyawan</p>
         </div>

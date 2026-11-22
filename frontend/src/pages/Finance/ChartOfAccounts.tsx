@@ -326,7 +326,8 @@ const [accounts, setAccounts] = useState<Account[]>([])
       {/* Header */}
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
-          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Chart of Accounts</h1>
+          <div className="fn-label mb-1.5">FINANCE · BAGAN AKUN</div>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Bagan Akun</h1>
           <p className="text-gray-600 dark:text-gray-300 mt-1">Manage your accounting structure and account balances</p>
         </div>
         <div className="flex gap-3">
@@ -410,7 +411,7 @@ const [accounts, setAccounts] = useState<Account[]>([])
             <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
             <input
               type="text"
-              placeholder="Search accounts..."
+              placeholder="Cari akun..."
               className="input pl-10 w-full"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}

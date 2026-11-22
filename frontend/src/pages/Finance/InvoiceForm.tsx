@@ -256,8 +256,9 @@ const navigate = useNavigate()
       <div className="space-y-6">
         <div className="flex items-center flex-wrap justify-between gap-3">
           <div>
+            <div className="fn-label mb-1.5">FINANCE · FAKTUR</div>
             <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">
-              {isProductionCost ? '🏭 Production Cost' : 'Invoice Detail'}
+              {isProductionCost ? 'Biaya Produksi' : 'Rincian Faktur'}
             </h1>
             <p className="text-gray-600 dark:text-gray-300">
               {invoiceData.invoice_number} - {invoiceData.status?.toUpperCase()}
@@ -446,7 +447,7 @@ const navigate = useNavigate()
                     options={(customers?.customers || []).map((x: any) => ({ id: x.id, name: `${x.code} - ${x.company_name}` }))}
                     value={watch('customer_id') ? Number(watch('customer_id')) : null}
                     onChange={(v) => setValue('customer_id', (v ?? '') as any, { shouldValidate: true, shouldDirty: true })}
-                    placeholder="Select customer"
+                    placeholder="Pilih pelanggan"
                     disabled={Boolean(prefillSalesOrderId)}
                     className="w-full"
                   />
@@ -458,7 +459,7 @@ const navigate = useNavigate()
                     options={(suppliers?.suppliers || []).map((x: any) => ({ id: x.id, name: `${x.code} - ${x.company_name}` }))}
                     value={watch('supplier_id') ? Number(watch('supplier_id')) : null}
                     onChange={(v) => setValue('supplier_id', (v ?? '') as any, { shouldValidate: true, shouldDirty: true })}
-                    placeholder="Select supplier"
+                    placeholder="Pilih pemasok"
                     className="w-full"
                   />
                 </>

@@ -97,6 +97,7 @@ export default function BankTransferList() {
     <div className="space-y-6 p-4 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
+          <div className="fn-label mb-1.5">FINANCE · TRANSFER KAS/BANK</div>
           <h1 className="flex items-center gap-2 text-xl font-semibold text-gray-900 dark:text-white sm:text-[28px] tracking-tight leading-tight">
             <ArrowsRightLeftIcon className="h-6 w-6" aria-hidden="true" />
             Transfer Kas/Bank

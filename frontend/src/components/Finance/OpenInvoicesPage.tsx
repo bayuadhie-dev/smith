@@ -92,6 +92,7 @@ const OpenInvoicesPage = ({ cfg }: { cfg: OpenInvoicesConfig }) => {
   return (
     <div className="space-y-4 p-6">
       <PageHeader
+        eyebrow={cfg.kind === 'payable' ? 'FINANCE · UTANG USAHA' : 'FINANCE · PIUTANG USAHA'}
         title={cfg.title}
         subtitle={cfg.subtitle}
         actions={

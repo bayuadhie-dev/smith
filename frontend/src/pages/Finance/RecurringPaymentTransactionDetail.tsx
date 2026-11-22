@@ -90,6 +90,7 @@ const RecurringPaymentTransactionDetail: React.FC = () => {
         &larr; Kembali
       </button>
 
+      <div className="fn-label mb-1.5">FINANCE · TAGIHAN RUTIN</div>
       <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white mb-1 tracking-tight leading-tight">
         {transaction.transaction_number}
       </h1>

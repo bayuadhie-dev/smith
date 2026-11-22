@@ -146,6 +146,7 @@ const RecurringPayment: React.FC = () => {
 
   return (
     <div className="p-6">
+      <div className="fn-label mb-1.5">FINANCE · TAGIHAN RUTIN</div>
       <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white mb-2 tracking-tight leading-tight">Tagihan Rutin</h1>
       <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
         WiFi, listrik, air, dan tagihan bulanan lainnya. Setiap pembayaran yang dicatat otomatis membuat

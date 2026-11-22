@@ -101,6 +101,7 @@ const ReimbursementDetail: React.FC = () => {
         &larr; Kembali
       </button>
 
+      <div className="fn-label mb-1.5">FINANCE · PEMBAYARAN KLAIM</div>
       <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white mb-1 tracking-tight leading-tight">{data.reimbursement_number}</h1>
       <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">{data.employee_name}</p>
       <div className="mb-6">

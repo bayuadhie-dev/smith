@@ -126,6 +126,7 @@ const CreditMemoList: React.FC = () => {
     <div className="p-6 space-y-6">
       <div className="flex items-center gap-2">
         <ReceiptRefundIcon className="w-6 h-6 text-primary-700 dark:text-primary-300" />
+        <div className="fn-label mb-1.5">FINANCE · NOTA KREDIT</div>
         <h1 className="text-[28px] font-semibold tracking-tight leading-tight">Nota Kredit Customer</h1>
       </div>
       <p className="text-gray-500 text-sm dark:text-gray-400">

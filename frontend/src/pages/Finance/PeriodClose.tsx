@@ -279,6 +279,7 @@ const PeriodClose: React.FC = () => {
 
   return (
     <div className="p-6 max-w-3xl">
+      <div className="fn-label mb-1.5">FINANCE · TUTUP PERIODE</div>
       <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white mb-2 tracking-tight leading-tight">Proses Akhir Bulan</h1>
       <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
         Menutup periode akuntansi: menghitung dan mencatat penyusutan aset tetap bulan berjalan, lalu

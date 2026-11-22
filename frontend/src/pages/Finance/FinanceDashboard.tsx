@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { formatRupiah } from '../../utils/currencyUtils';
-import { PageHeader, KpiStrip, QuickLinks } from '../../components/ui/PageKit';
+import { AlertStrip, CategoryBars, HeroStat, KpiStrip, PageHeader, Panel, QuickLinks } from '../../components/ui/PageKit';
+import RunChart from '../../components/charts/RunChart';
+import { AlertTriangle } from 'lucide-react';
 import {
   BanknotesIcon,
   BookOpenIcon,
@@ -16,10 +18,6 @@ import {
   DocumentTextIcon
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
-import {
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-  BarChart, Bar, PieChart, Pie, Cell, AreaChart, Area
-} from 'recharts';
 interface FinanceKPIs {
   total_revenue: number;
   total_expenses: number;
@@ -115,19 +113,6 @@ const FinanceDashboard: React.FC = () => {
     return `${num.toFixed(1)}%`;
   };
 
-  const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'];
-
-  // Adaptive axis-tick scale (was hardcoded to divide by 1 billion, which
-  // rendered every gridline as "0B" for this company's real revenue
-  // figures - hundreds of millions, not billions).
-  const formatAxisValue = (value: number) => {
-    const abs = Math.abs(value);
-    if (abs >= 1_000_000_000) return `${(value / 1_000_000_000).toFixed(1)}B`;
-    if (abs >= 1_000_000) return `${(value / 1_000_000).toFixed(0)}Jt`;
-    if (abs >= 1_000) return `${(value / 1_000).toFixed(0)}Rb`;
-    return `${value}`;
-  };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -137,94 +122,124 @@ const FinanceDashboard: React.FC = () => {
     );
   }
 
-  // 2026-10-07: Axion bento-grid restyle (tier-1 module landing page,
-  // #7 of 17). Sub-pages (Accounting, Budget, Cash Flow, Reports) are
-  // intentionally left as-is - only this landing dashboard is in scope.
+  const bulan = (arr: { month: string }[]) => {
+    if (arr.length === 0) return []
+    const idx = [0, Math.floor(arr.length / 2), arr.length - 1]
+    return Array.from(new Set(idx)).map((i) => arr[i].month)
+  }
+
   return (
-    <div className="space-y-4 bg-gray-50 dark:bg-gray-900 min-h-screen p-6">
-      <PageHeader title="Dashboard Keuangan" subtitle="Ringkasan keuangan dan indikator utama" />
-
-      <KpiStrip
-        items={[
-          { label: 'Total pendapatan', value: formatRupiah(kpis.total_revenue) },
-          { label: 'Laba bersih', value: formatRupiah(kpis.net_profit), tone: kpis.net_profit < 0 ? 'bad' : null },
-          { label: 'Saldo kas dan bank', value: formatRupiah(kpis.cash_balance), tone: kpis.cash_balance < 0 ? 'bad' : null, hint: kpis.cash_balance > 0 ? 'positif' : 'negatif' },
-          { label: 'Margin laba', value: formatPercent(kpis.profit_margin) },
-        ]}
+    <div className="mx-auto max-w-6xl space-y-5 pb-10">
+      <PageHeader
+        eyebrow="FINANCE · RINGKASAN"
+        title="Dashboard Keuangan"
+        subtitle="Ringkasan keuangan dan indikator utama"
+        actions={
+          <>
+            <Link to="/app/finance/reports" className="btn-secondary">Pusat laporan</Link>
+            <Link to="/app/finance/invoices" className="btn-primary">Faktur</Link>
+          </>
+        }
       />
 
-      {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Cash Flow Chart */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">Tren arus kas</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <AreaChart data={cashFlowData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis tickFormatter={formatAxisValue} />
-              <Tooltip formatter={(value, name) => [
-                formatRupiah(value as number),
-                name === 'cash_in' ? 'Cash In' :
-                name === 'cash_out' ? 'Cash Out' : 'Net Cash Flow'
-              ]} />
-              <Area type="monotone" dataKey="cash_in" stackId="1" stroke="#10B981" fill="#10B981" fillOpacity={0.6} />
-              <Area type="monotone" dataKey="cash_out" stackId="2" stroke="#EF4444" fill="#EF4444" fillOpacity={0.6} />
-              <Area type="monotone" dataKey="net_cash_flow" stroke="#3B82F6" fill="#3B82F6" fillOpacity={0.3} />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Rincian beban */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">Rincian beban</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={expenseBreakdown}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={({ category, percentage }) => `${category}: ${percentage}%`}
-                outerRadius={80}
-                fill="#8884d8"
-                dataKey="amount"
-              >
-                {expenseBreakdown.map((_, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip formatter={(value) => [formatRupiah(value as number), 'Amount']} />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-
-      {/* Revenue & Profit Chart */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-        <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">Tren pendapatan dan laba</h3>
-        <ResponsiveContainer width="100%" height={400}>
-          <BarChart data={revenueData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="month" />
-            <YAxis tickFormatter={formatAxisValue} />
-            <Tooltip formatter={(value, name) => [formatRupiah(value as number), name]} />
-            <Legend />
-            <Bar dataKey="revenue" fill="#3B82F6" name="Pendapatan" />
-            <Bar dataKey="profit" fill="#10B981" name="Laba" />
-            <Bar dataKey="expenses" fill="#EF4444" name="Beban" />
-          </BarChart>
-        </ResponsiveContainer>
+      <div className="fn-card overflow-hidden">
+        <HeroStat
+          label="Laba bersih"
+          value={kpis.net_profit}
+          format={formatRupiah}
+          loading={loading}
+          delta={kpis.total_revenue > 0 ? {
+            dir: kpis.net_profit >= 0 ? 'up' : 'down',
+            text: formatPercent(kpis.profit_margin),
+            vs: 'margin dari pendapatan',
+          } : undefined}
+          note="Pendapatan dikurangi seluruh beban pada periode berjalan."
+          stats={[
+            { label: 'Pendapatan', value: formatRupiah(kpis.total_revenue) },
+            { label: 'Beban', value: formatRupiah(kpis.total_expenses) },
+            { label: 'Kas dan bank', value: <span className={kpis.cash_balance < 0 ? 'text-red-600 dark:text-red-400' : ''}>{formatRupiah(kpis.cash_balance)}</span> },
+          ]}
+          right={
+            revenueData.length > 0 ? (
+              <div className="pt-1">
+                <p className="fn-label mb-2">Pendapatan per bulan</p>
+                <RunChart
+                  values={revenueData.map((r) => r.revenue)}
+                  axis={bulan(revenueData)}
+                  rows={[
+                    { label: 'Pendapatan', values: revenueData.map((r) => r.revenue) },
+                    { label: 'Beban', values: revenueData.map((r) => r.expenses) },
+                    { label: 'Laba', values: revenueData.map((r) => r.profit) },
+                  ]}
+                  height={200}
+                  unit="rupiah"
+                />
+              </div>
+            ) : undefined
+          }
+        />
+        {kpis.cash_balance < 0 && (
+          <AlertStrip
+            tone="bad"
+            icon={<AlertTriangle className="h-4 w-4" />}
+            actions={<Link to="/app/finance/cash-bank" className="btn-primary !py-1.5 !text-xs">Lihat kas &amp; bank</Link>}
+          >
+            <b className="font-semibold">Saldo kas dan bank negatif.</b>{' '}
+            <span className="text-gray-500 dark:text-gray-400">Periksa mutasi dan pembayaran yang tercatat.</span>
+          </AlertStrip>
+        )}
       </div>
 
       <KpiStrip
         items={[
-          { label: 'Piutang usaha', value: formatRupiah(kpis.accounts_receivable) },
-          { label: 'Utang usaha', value: formatRupiah(kpis.accounts_payable) },
-          { label: 'Modal kerja', value: formatRupiah(kpis.working_capital), tone: kpis.working_capital < 0 ? 'bad' : null },
-          { label: 'Total beban', value: formatRupiah(kpis.total_expenses), hint: kpis.total_revenue > 0 ? `${Math.round((kpis.total_expenses / kpis.total_revenue) * 100)}% dari pendapatan` : undefined },
+          { label: 'Piutang usaha', value: formatRupiah(kpis.accounts_receivable), hint: 'belum tertagih', to: '/app/finance/receivable' },
+          { label: 'Utang usaha', value: formatRupiah(kpis.accounts_payable), hint: 'belum dibayar', to: '/app/finance/payable' },
+          { label: 'Modal kerja', value: formatRupiah(kpis.working_capital), tone: kpis.working_capital < 0 ? 'bad' : null, hint: 'aset lancar dikurangi utang lancar' },
+          {
+            label: 'Beban terhadap pendapatan',
+            value: kpis.total_revenue > 0 ? `${Math.round((kpis.total_expenses / kpis.total_revenue) * 100)}%` : 'belum ada data',
+            hint: 'semakin kecil semakin baik',
+          },
         ]}
       />
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Panel title="Arus kas per bulan" loading={loading}>
+          <div className="px-4 pb-3 pt-1">
+            {cashFlowData.length === 0 ? (
+              <p className="py-10 text-center text-sm text-gray-500 dark:text-gray-400">Belum ada data arus kas.</p>
+            ) : (
+              <RunChart
+                values={cashFlowData.map((c) => c.cash_in)}
+                axis={bulan(cashFlowData)}
+                rows={[
+                  { label: 'Kas masuk', values: cashFlowData.map((c) => c.cash_in) },
+                  { label: 'Kas keluar', values: cashFlowData.map((c) => c.cash_out) },
+                ]}
+                height={200}
+                unit="rupiah"
+              />
+            )}
+          </div>
+        </Panel>
+
+        <Panel title="Rincian beban" loading={loading}>
+          <div className="p-4">
+            {expenseBreakdown.length === 0 ? (
+              <p className="py-10 text-center text-sm text-gray-500 dark:text-gray-400">Belum ada beban tercatat.</p>
+            ) : (
+              <CategoryBars
+                items={expenseBreakdown.map((e) => ({
+                  label: e.category,
+                  value: e.amount,
+                  hint: `${e.percentage}% dari total beban`,
+                }))}
+                format={formatRupiah}
+              />
+            )}
+          </div>
+        </Panel>
+      </div>
 
       <QuickLinks
         title="Pintasan"
@@ -232,7 +247,9 @@ const FinanceDashboard: React.FC = () => {
           { to: '/app/finance/accounting', label: 'Akuntansi' },
           { to: '/app/finance/budget', label: 'Perencanaan anggaran' },
           { to: '/app/finance/cash-flow', label: 'Arus kas' },
-          { to: '/app/finance/reports', label: 'Laporan' },
+          { to: '/app/finance/reports', label: 'Pusat laporan' },
+          { to: '/app/finance/aging', label: 'Umur piutang & utang' },
+          { to: '/app/finance/bank-transfers', label: 'Transfer kas/bank' },
         ]}
       />
     </div>

@@ -122,7 +122,8 @@ const ReimbursementForm: React.FC = () => {
     <div className="p-6 space-y-6">
       <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
-          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">New Reimbursement</h1>
+          <div className="fn-label mb-1.5">FINANCE · PEMBAYARAN KLAIM</div>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Pembayaran Klaim Baru</h1>
           <p className="text-gray-600 dark:text-gray-300">
             Buat batch reimbursement dari expense yang telah disetujui
           </p>

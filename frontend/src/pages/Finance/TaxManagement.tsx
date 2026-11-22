@@ -272,6 +272,7 @@ const [taxSummary, setTaxSummary] = useState<TaxSummary | null>(null)
       {/* Header */}
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
+          <div className="fn-label mb-1.5">FINANCE · PAJAK</div>
           <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Manajemen Pajak</h1>
           <p className="text-gray-600 dark:text-gray-300 mt-1">Monitor VAT, income tax, and withholding tax obligations</p>
         </div>
