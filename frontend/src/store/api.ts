@@ -14,6 +14,11 @@ const getApiBaseUrl = () => {
   if (hostname === 'erp.graterp.my.id' || hostname.endsWith('.graterp.my.id')) {
     return 'https://api.graterp.my.id/api';
   }
+
+  // Fengsheng - lihat catatan yang sama di utils/axiosConfig.ts.
+  if (hostname === 'erp.fsnindonesia.com' || hostname.endsWith('.fsnindonesia.com')) {
+    return 'https://api.fsnindonesia.com/api';
+  }
   
   // Local/LAN - use same hostname with port 5000
   return `http://${hostname}:5000/api`;

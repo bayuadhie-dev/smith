@@ -20,6 +20,15 @@ const getBaseURL = () => {
     return 'https://api.graterp.my.id';
   }
 
+  // Fengsheng. Dulu alamat ini hanya ada di VITE_API_URL milik
+  // .env.development, jadi begitu server dijalankan dari hasil build
+  // (.env.production) seluruh panggilan jatuh ke fallback localhost:5000 dan
+  // aplikasi mati. Ditaruh di kode supaya tidak bisa terlupa saat menyiapkan
+  // server baru.
+  if (hostname === 'erp.fsnindonesia.com' || hostname.endsWith('.fsnindonesia.com')) {
+    return 'https://api.fsnindonesia.com';
+  }
+
   // Local development - use same hostname with port 5000
   return `http://${hostname}:5000`;
 };

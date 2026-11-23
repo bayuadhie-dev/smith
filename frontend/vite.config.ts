@@ -18,6 +18,10 @@ export default defineConfig({
     },
   },
   build: {
+    // Jejak error di produksi tidak terbaca tanpa ini - yang muncul cuma
+    // index-XXXX.js:1:4821. Berkas .map hanya diambil peramban kalau devtools
+    // dibuka, jadi tidak membebani pemakai.
+    sourcemap: true,
     // Skip type checking during build (use tsc separately for type checking)
     rollupOptions: {
       onwarn(warning, warn) {
