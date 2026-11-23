@@ -1,9 +1,16 @@
 """Impor & ekspor MASTER KARYAWAN.
 
-Satu baris = satu karyawan. Idempoten seperti jenis master lain: nomor karyawan
-yang sudah ada dilewati (galat ringan di baris itu), tidak pernah menimpa data
-yang sudah tersimpan - gaji dan tunjangan terlalu mahal untuk ditimpa diam-diam
-oleh sebuah berkas Excel.
+Satu baris = satu karyawan. Dua perilaku, keduanya tidak pernah menghilangkan
+data yang sudah tersimpan:
+
+- Nomor karyawan BELUM ada  -> karyawan baru dibuat.
+- Nomor karyawan SUDAH ada  -> hanya isian yang masih KOSONG di sistem yang
+  dilengkapi dari berkas. Isian yang sudah terisi tidak pernah ditimpa - gaji dan
+  tunjangan terlalu mahal untuk ditimpa diam-diam oleh sebuah berkas Excel.
+
+"Kosong" berarti benar-benar belum pernah diisi (NULL atau teks kosong). Angka 0
+dan nilai bawaan seperti TK/0 atau "Bulanan" dihitung SUDAH terisi, jadi tidak
+ikut tergeser. Mengubah nilai yang sudah ada tetap lewat form, bukan lewat Excel.
 
 Judul kolomnya bahasa Indonesia (bukan judul ekspor Accurate seperti jenis master
 lain), karena karyawan tidak pernah ada di Accurate - masternya memang lahir di
@@ -96,18 +103,51 @@ def _vendor():
     return _cache('vendor', bangun)
 
 
-def _nomor_terpakai():
-    return _cache('nomor', lambda: {n.strip().lower() for (n,) in Employee.query.with_entities(Employee.employee_number).all() if n})
+def _karyawan_terpakai():
+    """{nomor huruf kecil: Employee} - dimuat sekali supaya impor 500 baris tidak
+    jadi 500 query."""
+    return _cache('karyawan', lambda: {e.employee_number.strip().lower(): e
+                                       for e in Employee.query.all() if e.employee_number})
 
 
 def _fingerprint_terpakai():
-    return _cache('fp', lambda: {str(f).strip() for (f,) in Employee.query.with_entities(Employee.fingerprint_id).all() if f})
+    """{id mesin: nomor karyawan pemakainya}"""
+    return _cache('fp', lambda: {str(e.fingerprint_id).strip(): e.employee_number
+                                 for e in Employee.query.all() if e.fingerprint_id})
+
+
+# Nama isian di model -> nama kolom di berkas, untuk yang namanya berbeda.
+KOLOM_REKAMAN = {'department_id': 'department', 'outsourcing_vendor_id': 'outsourcing_vendor'}
+
+
+def _ada_di_excel(rec, field):
+    """Apakah selnya benar-benar diisi orang. Dibaca dari rekaman mentah, bukan dari
+    hasil olahan - tunjangan yang dikosongkan diolah jadi 0, dan 0 itu bukan isian."""
+    return not _kosong(rec.get(KOLOM_REKAMAN.get(field, field)))
+
+
+def _kosong(nilai):
+    """Benar-benar belum pernah diisi. Angka 0 dan False TIDAK dihitung kosong -
+    menggesernya itu menimpa, bukan melengkapi."""
+    return nilai is None or (isinstance(nilai, str) and not nilai.strip())
 
 
 def _sudah_di_berkas(bucket):
     store = request.environ.setdefault('employee_import_seen', {})
     return store.setdefault(bucket, set())
 
+
+# Isian yang boleh dilengkapi kalau karyawannya sudah ada. Sengaja TIDAK memuat
+# employee_number & first_name (tidak pernah kosong), status/is_active/pay_type/
+# ptkp_status/dependents (punya nilai bawaan, jadi tidak pernah terbaca kosong -
+# mengubahnya itu menimpa, bukan melengkapi).
+BOLEH_DILENGKAPI = [
+    'nik', 'fingerprint_id', 'last_name', 'email', 'phone', 'mobile', 'date_of_birth',
+    'gender', 'marital_status', 'address', 'city', 'postal_code', 'department_id',
+    'position', 'employment_type', 'hire_date', 'pay_rate', 'salary',
+    'outsourcing_vendor_id', 'npwp', 'position_allowance_amount',
+    'transport_allowance_amount', 'emergency_contact_name', 'emergency_contact_phone',
+]
 
 KOLOM = [
     ('employee_number', 'Nomor Karyawan', True),
@@ -145,10 +185,12 @@ KOLOM = [
 
 class EmployeeKind(ImportKind):
     key, label, group = 'employee', 'Karyawan', 'Master'
-    description = 'Master karyawan. Nomor karyawan yang sudah ada dilewati, data tersimpan tidak pernah ditimpa.'
+    description = ('Master karyawan. Nomor baru dibuat; nomor yang sudah ada hanya DILENGKAPI pada isian yang '
+                   'masih kosong di sistem - isian yang sudah terisi tidak pernah ditimpa.')
     view_permission = 'employees.view'
     create_permission = 'employees.create'
-    summary_columns = [('number', 'Nomor', 'text'), ('name', 'Nama', 'text'), ('department', 'Departemen', 'text')]
+    summary_columns = [('number', 'Nomor', 'text'), ('name', 'Nama', 'text'),
+                       ('department', 'Departemen', 'text'), ('action', 'Tindakan', 'text')]
     columns = [Col(field, label, required=req) for field, label, req in KOLOM]
     sample_rows = [[
         'FSN-001', '3216010101900001', '101', 'Budi', 'Santoso', 'budi@contoh.com', '', '081200000000',
@@ -157,8 +199,14 @@ class EmployeeKind(ImportKind):
         'Bulanan', '', 5000000, '', '', 'K/1', 1, 500000, 300000, 'Siti Santoso', '081300000000',
     ]]
     guide = [
-        'Nomor Karyawan wajib dan harus unik. Nomor yang sudah ada di sistem dilewati - '
-        'impor ini hanya MENAMBAH karyawan baru, tidak pernah mengubah yang sudah tersimpan.',
+        'Nomor Karyawan wajib dan harus unik.',
+        'Nomor yang BELUM ada di sistem dibuat sebagai karyawan baru.',
+        'Nomor yang SUDAH ada hanya dilengkapi: isian yang masih kosong di sistem diisi dari berkas ini, '
+        'isian yang sudah terisi dibiarkan apa adanya. Tidak ada yang ditimpa.',
+        'Yang dihitung kosong hanya yang benar-benar belum pernah diisi. Angka 0 dan nilai bawaan '
+        '(Status, Kategori Penggajian, Status PTKP, Jumlah Tanggungan) dihitung sudah terisi, jadi tidak ikut '
+        'bergeser - mengubahnya lewat form Karyawan, bukan lewat berkas ini.',
+        'Kolom "Tindakan" di hasil Periksa menyebut apa yang akan dilakukan tiap baris sebelum disimpan.',
         'Nama lengkap dibentuk dari Nama Depan + Nama Belakang, sama seperti form Tambah Karyawan.',
         'Departemen boleh ditulis kodenya ("PRD") atau nama lengkapnya ("Produksi"). Harus sudah ada di menu Departemen.',
         'Jenis Kelamin: ' + ', '.join(JENIS_KELAMIN.values()) + '.',
@@ -183,16 +231,16 @@ class EmployeeKind(ImportKind):
         if nomor.lower() in _sudah_di_berkas('nomor'):
             raise ValueError(f'Nomor Karyawan {nomor} ganda di dalam berkas')
         _sudah_di_berkas('nomor').add(nomor.lower())
-        if nomor.lower() in _nomor_terpakai():
-            raise ValueError(f'Karyawan {nomor} sudah ada, dilewati')
+        lama = _karyawan_terpakai().get(nomor.lower())
 
         fp = text(rec.get('fingerprint_id'), 50)
         if fp:
             if fp in _sudah_di_berkas('fp'):
                 raise ValueError(f'ID Mesin Absensi {fp} ganda di dalam berkas')
             _sudah_di_berkas('fp').add(fp)
-            if fp in _fingerprint_terpakai():
-                raise ValueError(f'ID Mesin Absensi {fp} sudah dipakai karyawan lain')
+            pemakai = _fingerprint_terpakai().get(fp)
+            if pemakai and (lama is None or pemakai != lama.employee_number):
+                raise ValueError(f'ID Mesin Absensi {fp} sudah dipakai karyawan {pemakai}')
 
         dep_id, dep_nama = None, None
         dep_tulis = text(rec.get('department'))
@@ -274,15 +322,44 @@ class EmployeeKind(ImportKind):
             'emergency_contact_name': text(rec.get('emergency_contact_name'), 200),
             'emergency_contact_phone': text(rec.get('emergency_contact_phone'), 50),
         }
-        return data, {'number': nomor, 'name': data['full_name'], 'department': dep_nama or '-'}
+        ringkas = {'number': nomor, 'name': data['full_name'], 'department': dep_nama or '-'}
+        if lama is None:
+            return {'mode': 'baru', 'isi': data}, dict(ringkas, action='Karyawan baru')
+
+        # Sudah ada: hanya tambal lubangnya, jangan sentuh yang sudah terisi.
+        lengkapi = {f: data[f] for f in BOLEH_DILENGKAPI
+                    if _ada_di_excel(rec, f) and _kosong(getattr(lama, f))}
+        if not lengkapi:
+            raise ValueError(f'Karyawan {nomor} sudah ada dan tidak ada isian kosong yang bisa dilengkapi')
+        label = {f: l for f, l, _r in KOLOM}   # berkunci nama kolom berkas, bukan nama isian model
+        ringkas['department'] = dep_nama or (lama.department.code if lama.department else '-')
+        return ({'mode': 'lengkapi', 'id': lama.id, 'isi': lengkapi},
+                dict(ringkas, name=lama.full_name,
+                     action='Lengkapi: ' + ', '.join(label.get(KOLOM_REKAMAN.get(f, f), f) for f in lengkapi)))
 
     def save(self, data, user_id):
-        db.session.add(Employee(**data))
+        if data['mode'] == 'lengkapi':
+            return self._lengkapi(data)
+        db.session.add(Employee(**data['isi']))
         db.session.flush()
         # Daftar karyawan di-cache Redis 5 menit; tanpa ini karyawan baru tidak
         # kelihatan sampai cache kedaluwarsa dan orang menyangka impornya gagal.
         _bersihkan_cache_karyawan()
-        return {'number': data['employee_number']}
+        return {'number': data['isi']['employee_number']}
+
+    def _lengkapi(self, data):
+        e = db.session.get(Employee, data['id'])
+        if e is None:                                       # dihapus orang lain di sela impor
+            raise ValueError('Karyawan sudah tidak ada lagi di sistem')
+        for field, nilai in data['isi'].items():
+            setattr(e, field, nilai)
+        if 'last_name' in data['isi']:
+            e.full_name = f'{e.first_name} {e.last_name}'.strip()[:200]
+        if 'position_allowance_amount' in data['isi']:
+            e.has_allowance = float(data['isi']['position_allowance_amount'] or 0) > 0
+        db.session.flush()
+        _bersihkan_cache_karyawan()
+        return {'number': e.employee_number}
 
 
 def _bersihkan_cache_karyawan():

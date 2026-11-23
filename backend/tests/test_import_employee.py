@@ -250,3 +250,99 @@ class TestDaftarJenis:
         assert k['export_by_date'] is False
         wajib = [c['label'] for c in k['columns'] if c['required']]
         assert wajib == ['Nomor Karyawan', 'Nama Depan']
+
+
+class TestLengkapiYangKosong:
+    """Karyawan yang sudah ada tapi datanya bolong: berkas boleh MENGISI lubangnya,
+    tidak boleh menggeser yang sudah terisi."""
+
+    def test_isian_kosong_terisi_dari_berkas(self, client, auth_headers, app, departemen):
+        _kirim(client, auth_headers, [_baris(department='', position='')], commit=True)
+        with app.app_context():
+            e = Employee.query.one()
+            assert e.department_id is None and e.position is None and e.npwp is None
+
+        r = _kirim(client, auth_headers, [_baris(department='PRD', position='Operator', npwp='09.254.294.3-407.000')], commit=True)
+        assert r.get_json()['summary']['ok'] == 1
+        assert 'Lengkapi' in r.get_json()['transactions'][0]['summary']['action']
+
+        with app.app_context():
+            e = Employee.query.one()
+            assert e.department.code == 'PRD'
+            assert e.position == 'Operator'
+            assert e.npwp == '09.254.294.3-407.000'
+
+    def test_isian_yang_sudah_terisi_tidak_tergeser(self, client, auth_headers, app, departemen):
+        _kirim(client, auth_headers, [_baris(position='Operator', salary=5000000)], commit=True)
+        _kirim(client, auth_headers, [_baris(position='Direktur', salary=99000000, npwp='09.254.294.3-407.000')], commit=True)
+
+        with app.app_context():
+            e = Employee.query.one()
+            assert e.position == 'Operator'            # tidak tergeser
+            assert float(e.salary) == 5000000          # tidak tergeser
+            assert e.npwp == '09.254.294.3-407.000'    # yang kosong terisi
+
+    def test_nilai_bawaan_dihitung_sudah_terisi(self, client, auth_headers, app, departemen):
+        """Status PTKP, Kategori Penggajian, Status dan Jumlah Tanggungan punya nilai
+        bawaan. Menggesernya itu menimpa, bukan melengkapi - harus lewat form."""
+        _kirim(client, auth_headers, [_baris(ptkp_status='TK/0', dependents=0)], commit=True)
+        r = _kirim(client, auth_headers, [_baris(ptkp_status='K/3', dependents=3, pay_type='Harian', status='Non-aktif')], commit=True)
+
+        assert 'tidak ada isian kosong' in r.get_json()['transactions'][0]['errors'][0]
+        with app.app_context():
+            e = Employee.query.one()
+            assert e.ptkp_status == 'TK/0' and e.dependents == 0
+            assert e.pay_type == 'monthly' and e.status == 'active'
+
+    def test_tunjangan_yang_dikosongkan_tidak_dianggap_isian(self, client, auth_headers, app, departemen):
+        """Sel tunjangan yang dibiarkan kosong diolah jadi 0. Nol itu bukan isian -
+        kalau dianggap isian, tiap unggahan melaporkan "Lengkapi: Tunjangan ..." palsu."""
+        _kirim(client, auth_headers, [_baris(position='Operator')], commit=True)
+        r = _kirim(client, auth_headers, [_baris(position='Operator')], commit=True)
+        assert 'tidak ada isian kosong' in r.get_json()['transactions'][0]['errors'][0]
+
+    def test_pratinjau_menyebut_isian_mana_yang_akan_diisi(self, client, auth_headers, app, departemen):
+        _kirim(client, auth_headers, [_baris(department='', email='')], commit=True)
+        r = _kirim(client, auth_headers, [_baris(department='PRD', email='budi@contoh.com')], commit=False)
+
+        tindakan = r.get_json()['transactions'][0]['summary']['action']
+        assert tindakan == 'Lengkapi: Email, Departemen'
+        with app.app_context():                        # pratinjau tidak menulis
+            assert Employee.query.one().department_id is None
+
+    def test_id_mesin_absensi_milik_sendiri_bukan_bentrok(self, client, auth_headers, app, departemen):
+        """Mengunggah ulang berkas ekspor: ID mesin di baris itu memang miliknya sendiri."""
+        _kirim(client, auth_headers, [_baris(fingerprint_id='55', position='')], commit=True)
+        r = _kirim(client, auth_headers, [_baris(fingerprint_id='55', position='Operator')], commit=True)
+        assert r.get_json()['summary']['ok'] == 1
+        with app.app_context():
+            assert Employee.query.one().position == 'Operator'
+
+    def test_id_mesin_milik_orang_lain_tetap_ditolak(self, client, auth_headers, app, departemen):
+        _kirim(client, auth_headers, [_baris('FSN-001', fingerprint_id='55'),
+                                      _baris('FSN-002', nama='Agus', position='')], commit=True)
+        r = _kirim(client, auth_headers, [_baris('FSN-002', nama='Agus', fingerprint_id='55', position='Operator')], commit=True)
+        pesan = r.get_json()['transactions'][0]['errors'][0]
+        assert 'sudah dipakai karyawan FSN-001' in pesan
+
+    def test_nama_lengkap_ikut_terbentuk_ulang_saat_nama_belakang_terisi(self, client, auth_headers, app, departemen):
+        _kirim(client, auth_headers, [_baris(last_name='')], commit=True)
+        with app.app_context():
+            assert Employee.query.one().full_name == 'Budi'
+        _kirim(client, auth_headers, [_baris(last_name='Santoso')], commit=True)
+        with app.app_context():
+            e = Employee.query.one()
+            assert e.last_name == 'Santoso' and e.full_name == 'Budi Santoso'
+
+    def test_satu_berkas_bisa_menambah_dan_melengkapi_sekaligus(self, client, auth_headers, app, departemen):
+        _kirim(client, auth_headers, [_baris('FSN-001', department='')], commit=True)
+        r = _kirim(client, auth_headers, [_baris('FSN-001', department='PRD'),
+                                          _baris('FSN-002', nama='Agus')], commit=True)
+
+        hasil = r.get_json()
+        assert hasil['summary']['ok'] == 2
+        tindakan = sorted(t['summary']['action'] for t in hasil['transactions'])
+        assert tindakan == ['Karyawan baru', 'Lengkapi: Departemen']
+        with app.app_context():
+            assert Employee.query.count() == 2
+            assert Employee.query.filter_by(employee_number='FSN-001').one().department.code == 'PRD'
