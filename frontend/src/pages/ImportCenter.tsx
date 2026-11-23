@@ -242,7 +242,7 @@ const ImportCenter: React.FC = () => {
                     className="inline-flex items-center gap-1.5 rounded bg-emerald-600 px-4 py-2 text-sm text-white hover:bg-emerald-700 disabled:opacity-50">
                     <ArrowDownTrayIcon className="h-4 w-4" /> {exporting ? 'Menyiapkan...' : 'Unduh Excel (.xlsx)'}
                   </button>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Kolom file sama dengan template impor, jadi bisa diedit lalu diimpor kembali. Dokumen yang dibatalkan tidak ikut.</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Kolom file sama dengan template impor, jadi bisa diedit lalu diimpor kembali. {kind.group === 'Master' ? 'Baris yang sudah ada akan dilewati saat diimpor kembali, bukan ditimpa.' : 'Dokumen yang dibatalkan tidak ikut.'}</p>
                 </div>
               )}
 

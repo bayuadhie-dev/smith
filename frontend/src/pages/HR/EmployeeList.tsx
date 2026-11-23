@@ -11,6 +11,8 @@ import {
   EyeIcon,
   UserGroupIcon,
   ArrowLeftIcon,
+  ArrowUpTrayIcon,
+  ArrowDownTrayIcon,
   XMarkIcon,
   TrashIcon
 } from '@heroicons/react/24/outline';
@@ -128,6 +130,14 @@ export default function EmployeeList() {
         <div className="flex items-center gap-2 flex-wrap">
           <Link to="/app/hr/fingerprint-mapping" className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
             Hubungkan ID mesin
+          </Link>
+          <Link to="/app/imports?kind=employee" className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
+            <ArrowUpTrayIcon className="h-4 w-4" />
+            Impor Excel
+          </Link>
+          <Link to="/app/imports?kind=employee&mode=export" className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
+            <ArrowDownTrayIcon className="h-4 w-4" />
+            Ekspor Excel
           </Link>
           <Link to="/app/hr/employees/new" className="btn-primary inline-flex items-center gap-2">
             <PlusIcon className="h-5 w-5" />

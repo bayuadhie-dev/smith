@@ -363,6 +363,35 @@ def items(_a, _b):
     return rows
 
 
+@exporter('employee', by_date=False)
+def employees(_a, _b):
+    """Urutan kolom sama dengan template impor `employee`, jadi berkas ini bisa
+    diedit lalu diunggah kembali. Semua karyawan ikut, termasuk yang non-aktif -
+    kolom Status yang membedakannya."""
+    from sqlalchemy.orm import joinedload
+
+    from imports.employees import JENIS_KELAMIN, JENIS_KONTRAK, KATEGORI_UPAH, STATUS_KAWIN, STATUS_KERJA
+    from models.hr import Employee
+
+    q = (Employee.query
+         .options(joinedload(Employee.department), joinedload(Employee.outsourcing_vendor))
+         .order_by(Employee.employee_number))
+    return [[
+        e.employee_number, e.nik or '', e.fingerprint_id or '', e.first_name or '', e.last_name or '',
+        e.email or '', e.phone or '', e.mobile or '', _d(e.date_of_birth),
+        JENIS_KELAMIN.get(e.gender, e.gender or ''), STATUS_KAWIN.get(e.marital_status, e.marital_status or ''),
+        e.address or '', e.city or '', e.postal_code or '',
+        e.department.code if e.department else '', e.position or '',
+        JENIS_KONTRAK.get(e.employment_type, e.employment_type or ''), _d(e.hire_date),
+        STATUS_KERJA.get(e.status, e.status or ''),
+        KATEGORI_UPAH.get(e.pay_type, e.pay_type or ''), _f(e.pay_rate), _f(e.salary),
+        e.outsourcing_vendor.name if e.outsourcing_vendor else '',
+        e.npwp or '', e.ptkp_status or '', e.dependents if e.dependents is not None else '',
+        _f(e.position_allowance_amount), _f(e.transport_allowance_amount),
+        e.emergency_contact_name or '', e.emergency_contact_phone or '',
+    ] for e in q]
+
+
 def run_export(kind, date_from, date_to):
     fn, _by_date = EXPORTERS[kind.key]
     rows = fn(date_from, date_to)
