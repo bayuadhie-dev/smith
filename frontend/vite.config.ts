@@ -4,6 +4,15 @@ import path from 'path'
 
 export default defineConfig({
   plugins: [react()],
+  // date-fns hanya dipakai 5 fungsi dari barel 1,2 MB, jadi dikeluarkan dari
+  // prabundel dev supaya yang terkirim cuma yang diimpor.
+  // Ikon TIDAK diurus lewat sini melainkan diimpor per berkas
+  // ('lucide-react/dist/esm/icons/...' dan '@heroicons/react/24/solid/esm/...'),
+  // karena mengecualikan paket ikon dari prabundel justru memecah barel
+  // outline yang memang dipakai luas - sempat dicoba: 138 request, 2,1 MB.
+  optimizeDeps: {
+    exclude: ['date-fns'],
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

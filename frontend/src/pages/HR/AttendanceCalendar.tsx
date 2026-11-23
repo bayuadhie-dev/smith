@@ -1,8 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  ChevronLeft, ChevronRight, Calendar, Clock, User, 
-  CheckCircle, XCircle, AlertTriangle, Loader2, FileText
-} from 'lucide-react';
+import ChevronLeft from 'lucide-react/dist/esm/icons/chevron-left'
+import ChevronRight from 'lucide-react/dist/esm/icons/chevron-right'
+import Calendar from 'lucide-react/dist/esm/icons/calendar'
+import Clock from 'lucide-react/dist/esm/icons/clock'
+import User from 'lucide-react/dist/esm/icons/user'
+import CheckCircle from 'lucide-react/dist/esm/icons/check-circle'
+import XCircle from 'lucide-react/dist/esm/icons/x-circle'
+import AlertTriangle from 'lucide-react/dist/esm/icons/alert-triangle'
+import Loader2 from 'lucide-react/dist/esm/icons/loader-2'
+import FileText from 'lucide-react/dist/esm/icons/file-text'
 import axiosInstance from '../../lib/axios';
 
 interface AttendanceRecord {

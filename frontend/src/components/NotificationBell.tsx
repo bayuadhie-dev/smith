@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BellIcon } from '@heroicons/react/24/outline';
-import { CheckIcon } from '@heroicons/react/24/solid';
+import CheckIcon from '@heroicons/react/24/solid/esm/CheckIcon'
 import axiosInstance from '../utils/axiosConfig';
 import { useNavigate } from 'react-router-dom';
 import { Skeleton } from '../components/ui/Skeleton'

@@ -1,9 +1,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
-import {
-  RefreshCw, CheckCircle2, Printer, Pencil, X, AlertTriangle, Eye, Download, Filter,
-} from 'lucide-react';
+import RefreshCw from 'lucide-react/dist/esm/icons/refresh-cw'
+import CheckCircle2 from 'lucide-react/dist/esm/icons/check-circle-2'
+import Printer from 'lucide-react/dist/esm/icons/printer'
+import Pencil from 'lucide-react/dist/esm/icons/pencil'
+import X from 'lucide-react/dist/esm/icons/x'
+import AlertTriangle from 'lucide-react/dist/esm/icons/alert-triangle'
+import Eye from 'lucide-react/dist/esm/icons/eye'
+import Download from 'lucide-react/dist/esm/icons/download'
+import Filter from 'lucide-react/dist/esm/icons/filter'
 import { Skeleton } from '../../components/ui/Skeleton'
 
 interface Batch {

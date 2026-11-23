@@ -17,7 +17,8 @@ import {
   ExclamationTriangleIcon,
   ChatBubbleLeftEllipsisIcon
 } from '@heroicons/react/24/outline'
-import { CheckCircleIcon as CheckCircleSolid, XCircleIcon as XCircleSolid } from '@heroicons/react/24/solid'
+import CheckCircleSolid from '@heroicons/react/24/solid/esm/CheckCircleIcon'
+import XCircleSolid from '@heroicons/react/24/solid/esm/XCircleIcon'
 import { useGetPreShiftChecklistSubmissionQuery, useAddSupervisorNoteMutation } from '../../services/api'
 import { showError } from '../../components/ui'
 

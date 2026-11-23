@@ -1,8 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Calendar, User, FileText, Clock, CheckCircle, XCircle, 
-  AlertTriangle, Loader2, ArrowLeft, Send, History
-} from 'lucide-react';
+import Calendar from 'lucide-react/dist/esm/icons/calendar'
+import User from 'lucide-react/dist/esm/icons/user'
+import FileText from 'lucide-react/dist/esm/icons/file-text'
+import Clock from 'lucide-react/dist/esm/icons/clock'
+import CheckCircle from 'lucide-react/dist/esm/icons/check-circle'
+import XCircle from 'lucide-react/dist/esm/icons/x-circle'
+import AlertTriangle from 'lucide-react/dist/esm/icons/alert-triangle'
+import Loader2 from 'lucide-react/dist/esm/icons/loader-2'
+import ArrowLeft from 'lucide-react/dist/esm/icons/arrow-left'
+import Send from 'lucide-react/dist/esm/icons/send'
+import History from 'lucide-react/dist/esm/icons/history'
 import { useNavigate } from 'react-router-dom';
 import { confirmDialog } from '../../components/ui';
 

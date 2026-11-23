@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import {
-  FlaskConical, FolderKanban, CheckCircle2,
-  ArrowRight, Beaker, FileCheck, TrendingUp, Users
-} from 'lucide-react';
+import FlaskConical from 'lucide-react/dist/esm/icons/flask-conical'
+import FolderKanban from 'lucide-react/dist/esm/icons/folder-kanban'
+import CheckCircle2 from 'lucide-react/dist/esm/icons/check-circle-2'
+import ArrowRight from 'lucide-react/dist/esm/icons/arrow-right'
+import Beaker from 'lucide-react/dist/esm/icons/beaker'
+import FileCheck from 'lucide-react/dist/esm/icons/file-check'
+import TrendingUp from 'lucide-react/dist/esm/icons/trending-up'
+import Users from 'lucide-react/dist/esm/icons/users'
 import axiosInstance from '../../utils/axiosConfig';
 import { PageHeader, KpiStrip } from '../../components/ui/PageKit';
 

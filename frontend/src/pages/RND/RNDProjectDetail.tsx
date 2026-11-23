@@ -1,10 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import {
-  FlaskConical, ArrowLeft, Edit, Trash2, Plus, CheckCircle2, XCircle,
-  Beaker, FileCheck, AlertTriangle, Clock, ChevronRight, Lock,
-  Play, Send, CheckSquare
-} from 'lucide-react';
+import FlaskConical from 'lucide-react/dist/esm/icons/flask-conical'
+import ArrowLeft from 'lucide-react/dist/esm/icons/arrow-left'
+import Edit from 'lucide-react/dist/esm/icons/edit'
+import Trash2 from 'lucide-react/dist/esm/icons/trash-2'
+import Plus from 'lucide-react/dist/esm/icons/plus'
+import CheckCircle2 from 'lucide-react/dist/esm/icons/check-circle-2'
+import XCircle from 'lucide-react/dist/esm/icons/x-circle'
+import Beaker from 'lucide-react/dist/esm/icons/beaker'
+import FileCheck from 'lucide-react/dist/esm/icons/file-check'
+import AlertTriangle from 'lucide-react/dist/esm/icons/alert-triangle'
+import Clock from 'lucide-react/dist/esm/icons/clock'
+import ChevronRight from 'lucide-react/dist/esm/icons/chevron-right'
+import Lock from 'lucide-react/dist/esm/icons/lock'
+import Play from 'lucide-react/dist/esm/icons/play'
+import Send from 'lucide-react/dist/esm/icons/send'
+import CheckSquare from 'lucide-react/dist/esm/icons/check-square'
 import axiosInstance from '../../utils/axiosConfig';
 import { confirmDialog, showError, showSuccess } from '../../components/ui';
 import { useUrlState } from '../../hooks/useUrlState';

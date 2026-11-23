@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { CalendarDays, CalendarRange, RefreshCw } from 'lucide-react';
+import CalendarDays from 'lucide-react/dist/esm/icons/calendar-days'
+import CalendarRange from 'lucide-react/dist/esm/icons/calendar-range'
+import RefreshCw from 'lucide-react/dist/esm/icons/refresh-cw'
 import { currentPeriod, periodLabelFull } from './forecastPeriod';
 
 interface Props {

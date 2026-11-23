@@ -1,8 +1,6 @@
 import React from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
-import {
-  AlertTriangle
-} from 'lucide-react';
+import AlertTriangle from 'lucide-react/dist/esm/icons/alert-triangle'
 interface FormFieldProps {
   label: string;
   children: React.ReactNode;

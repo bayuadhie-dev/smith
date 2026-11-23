@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Search } from 'lucide-react'
+import Search from 'lucide-react/dist/esm/icons/search'
 import axiosInstance from '../../utils/axiosConfig'
 import { formatRupiah } from '../../utils/currencyUtils'
 import { PageHeader, KpiStrip } from '../../components/ui/PageKit'

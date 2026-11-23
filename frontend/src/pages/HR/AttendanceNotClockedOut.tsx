@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Clock, Users, AlertTriangle, RefreshCw, ArrowLeft } from 'lucide-react';
+import Clock from 'lucide-react/dist/esm/icons/clock'
+import Users from 'lucide-react/dist/esm/icons/users'
+import AlertTriangle from 'lucide-react/dist/esm/icons/alert-triangle'
+import RefreshCw from 'lucide-react/dist/esm/icons/refresh-cw'
+import ArrowLeft from 'lucide-react/dist/esm/icons/arrow-left'
 import axiosInstance from '../../lib/axios';
 import { useListTools, type ListColumn } from '../../hooks/useListTools';
 import { ListToolbar, SortTh } from '../../components/ui/ListTools';

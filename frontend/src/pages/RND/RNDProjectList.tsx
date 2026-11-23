@@ -1,9 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import {
-  FlaskConical, Search, Filter, Plus, Eye, Edit, Trash2,
-  ChevronLeft, ChevronRight, AlertCircle
-} from 'lucide-react';
+import FlaskConical from 'lucide-react/dist/esm/icons/flask-conical'
+import Search from 'lucide-react/dist/esm/icons/search'
+import Filter from 'lucide-react/dist/esm/icons/filter'
+import Plus from 'lucide-react/dist/esm/icons/plus'
+import Eye from 'lucide-react/dist/esm/icons/eye'
+import Edit from 'lucide-react/dist/esm/icons/edit'
+import Trash2 from 'lucide-react/dist/esm/icons/trash-2'
+import ChevronLeft from 'lucide-react/dist/esm/icons/chevron-left'
+import ChevronRight from 'lucide-react/dist/esm/icons/chevron-right'
+import AlertCircle from 'lucide-react/dist/esm/icons/alert-circle'
 import axiosInstance from '../../utils/axiosConfig';
 import { confirmDialog, showError } from '../../components/ui';
 import { useUrlFilter, useUrlPage } from '../../hooks/useUrlState'

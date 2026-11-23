@@ -1,7 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
-import { Calendar, Package, TrendingUp, AlertCircle, CheckCircle, Clock, Play, FileText } from 'lucide-react';
+import Calendar from 'lucide-react/dist/esm/icons/calendar'
+import Package from 'lucide-react/dist/esm/icons/package'
+import TrendingUp from 'lucide-react/dist/esm/icons/trending-up'
+import AlertCircle from 'lucide-react/dist/esm/icons/alert-circle'
+import CheckCircle from 'lucide-react/dist/esm/icons/check-circle'
+import Clock from 'lucide-react/dist/esm/icons/clock'
+import Play from 'lucide-react/dist/esm/icons/play'
+import FileText from 'lucide-react/dist/esm/icons/file-text'
 import { confirmDialog, showError, showSuccess } from '../../components/ui';
 import NumberInput from '../../components/ui/NumberInput'
 import { useListTools, type ListColumn } from '../../hooks/useListTools';

@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, Plus, Pencil, Trash2, Users, Loader2, X } from 'lucide-react';
+import Clock from 'lucide-react/dist/esm/icons/clock'
+import Plus from 'lucide-react/dist/esm/icons/plus'
+import Pencil from 'lucide-react/dist/esm/icons/pencil'
+import Trash2 from 'lucide-react/dist/esm/icons/trash-2'
+import Users from 'lucide-react/dist/esm/icons/users'
+import Loader2 from 'lucide-react/dist/esm/icons/loader-2'
+import X from 'lucide-react/dist/esm/icons/x'
 import axiosInstance from '../../utils/axiosConfig';
 import { confirmDialog, showError } from '../../components/ui';
 import NumberInput from '../../components/ui/NumberInput'

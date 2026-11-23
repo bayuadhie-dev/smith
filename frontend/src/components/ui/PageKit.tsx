@@ -1,7 +1,7 @@
 import AnimatedValue from './AnimatedValue'
 import CountUp from '../motion/CountUp'
 import { Link } from 'react-router-dom'
-import { ChevronRight } from 'lucide-react'
+import ChevronRight from 'lucide-react/dist/esm/icons/chevron-right'
 import type { ReactNode } from 'react'
 
 export type KpiTone = 'warn' | 'bad' | 'good' | null

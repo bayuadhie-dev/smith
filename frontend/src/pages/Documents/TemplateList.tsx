@@ -8,7 +8,7 @@ import {
   CheckCircleIcon, DocumentTextIcon, StarIcon, ClockIcon, XMarkIcon, EyeIcon,
   ArrowDownTrayIcon, LockClosedIcon, GlobeAltIcon,
 } from '@heroicons/react/24/outline';
-import { StarIcon as StarSolidIcon } from '@heroicons/react/24/solid';
+import StarSolidIcon from '@heroicons/react/24/solid/esm/StarIcon'
 import { useUrlFilter } from '../../hooks/useUrlState'
 import { PageHeader } from '../../components/ui/PageKit'
 

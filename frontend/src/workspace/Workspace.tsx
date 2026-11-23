@@ -1,6 +1,6 @@
 import React, { Suspense, useContext, useEffect, useRef, useState } from 'react'
 import { ReactReduxContext } from 'react-redux'
-import { RefreshCw } from 'lucide-react'
+import RefreshCw from 'lucide-react/dist/esm/icons/refresh-cw'
 import { api } from '../store/api'
 import { useLocation, useNavigate, useNavigationType } from 'react-router-dom'
 import ErrorBoundary from '../components/ui/ErrorBoundary'

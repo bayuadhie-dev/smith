@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Search } from 'lucide-react'
+import Search from 'lucide-react/dist/esm/icons/search'
 import axiosInstance from '../../utils/axiosConfig'
 import { PageHeader, KpiStrip } from '../../components/ui/PageKit'
 import NumberInput from '../../components/ui/NumberInput'

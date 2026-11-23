@@ -3,7 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
 import { showSuccess, showError } from '../../components/ui/Toast';
 import { confirmDialog } from '../../components/ui';
-import { Plus, ChartBar, Trash2, Calendar, Package, ArrowRight } from 'lucide-react';
+import Plus from 'lucide-react/dist/esm/icons/plus'
+import ChartBar from 'lucide-react/dist/esm/icons/chart-bar'
+import Trash2 from 'lucide-react/dist/esm/icons/trash-2'
+import Calendar from 'lucide-react/dist/esm/icons/calendar'
+import Package from 'lucide-react/dist/esm/icons/package'
+import ArrowRight from 'lucide-react/dist/esm/icons/arrow-right'
 import PeriodSelectModal from './PeriodSelectModal';
 import { fmtMonth } from './forecastPeriod';
 

@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
-import {
-  ChevronDown,
-  ChevronRight,
-  Edit,
-  Eye,
-  Trash2
-} from 'lucide-react';
+import ChevronDown from 'lucide-react/dist/esm/icons/chevron-down'
+import ChevronRight from 'lucide-react/dist/esm/icons/chevron-right'
+import Edit from 'lucide-react/dist/esm/icons/edit'
+import Eye from 'lucide-react/dist/esm/icons/eye'
+import Trash2 from 'lucide-react/dist/esm/icons/trash-2'
 interface Column {
   key: string;
   label: string;

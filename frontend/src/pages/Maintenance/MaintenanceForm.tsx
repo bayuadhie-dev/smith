@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import api from '../../utils/axiosConfig';
 import toast from 'react-hot-toast';
-import { Plus, Trash2 } from 'lucide-react';
+import Plus from 'lucide-react/dist/esm/icons/plus'
+import Trash2 from 'lucide-react/dist/esm/icons/trash-2'
 import { PageHeader, Panel } from '../../components/ui/PageKit';
 import NumberInput from '../../components/ui/NumberInput'
 import SearchableSelect from '../../components/SearchableSelect'

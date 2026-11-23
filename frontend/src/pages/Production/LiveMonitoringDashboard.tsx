@@ -8,7 +8,7 @@ import {
   TableCellsIcon
 } from '@heroicons/react/24/outline';
 import { useNavigate } from 'react-router-dom';
-import { CheckCircleIcon as CheckCircleSolid } from '@heroicons/react/24/solid';
+import CheckCircleSolid from '@heroicons/react/24/solid/esm/CheckCircleIcon'
 import axiosInstance from '../../utils/axiosConfig';
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
 import { showError, showWarning } from '../../components/ui';

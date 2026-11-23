@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Plus,
-  Eye,
-  Edit,
-  Trash2,
-  Send,
-  CheckCircle,
-  XCircle,
-} from 'lucide-react';
+import Plus from 'lucide-react/dist/esm/icons/plus'
+import Eye from 'lucide-react/dist/esm/icons/eye'
+import Edit from 'lucide-react/dist/esm/icons/edit'
+import Trash2 from 'lucide-react/dist/esm/icons/trash-2'
+import Send from 'lucide-react/dist/esm/icons/send'
+import CheckCircle from 'lucide-react/dist/esm/icons/check-circle'
+import XCircle from 'lucide-react/dist/esm/icons/x-circle'
 import toast from 'react-hot-toast';
 import axiosInstance from '../../utils/axiosConfig';
 import { usePermissions } from '../../contexts/PermissionContext';

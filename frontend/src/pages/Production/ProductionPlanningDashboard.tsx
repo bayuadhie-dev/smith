@@ -2,7 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
 import { CategoryBars, KpiStrip, PageHeader, Panel } from '../../components/ui/PageKit';
-import { Calendar, Package, TrendingUp, AlertCircle, CheckCircle, Clock } from 'lucide-react';
+import Calendar from 'lucide-react/dist/esm/icons/calendar'
+import Package from 'lucide-react/dist/esm/icons/package'
+import TrendingUp from 'lucide-react/dist/esm/icons/trending-up'
+import AlertCircle from 'lucide-react/dist/esm/icons/alert-circle'
+import CheckCircle from 'lucide-react/dist/esm/icons/check-circle'
+import Clock from 'lucide-react/dist/esm/icons/clock'
 
 interface DashboardData {
   summary: {

@@ -18,7 +18,7 @@ import {
   ListBulletIcon,
   ArrowTrendingUpIcon
 } from '@heroicons/react/24/outline';
-import { StarIcon as StarSolidIcon } from '@heroicons/react/24/solid';
+import StarSolidIcon from '@heroicons/react/24/solid/esm/StarIcon'
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
 import axiosInstance from '../../utils/axiosConfig';
 import toast from 'react-hot-toast';

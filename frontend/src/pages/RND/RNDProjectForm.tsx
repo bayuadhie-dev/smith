@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, Loader2 } from 'lucide-react';
+import ArrowLeft from 'lucide-react/dist/esm/icons/arrow-left'
+import Save from 'lucide-react/dist/esm/icons/save'
+import Loader2 from 'lucide-react/dist/esm/icons/loader-2'
 import axiosInstance from '../../utils/axiosConfig';
 import { showError, showWarning } from '../../components/ui';
 import NumberInput from '../../components/ui/NumberInput'

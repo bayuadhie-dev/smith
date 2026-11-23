@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import { Grid2X2, Waves, BarChart3 } from 'lucide-react'
+import Grid2X2 from 'lucide-react/dist/esm/icons/grid-2-x-2'
+import Waves from 'lucide-react/dist/esm/icons/waves'
+import BarChart3 from 'lucide-react/dist/esm/icons/bar-chart-3'
 
 /**
  * Diagram aktivitas harian dengan tiga cara baca.

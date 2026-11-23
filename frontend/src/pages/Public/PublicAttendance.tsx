@@ -1,8 +1,13 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { 
-  Camera, Clock, CheckCircle, XCircle, AlertTriangle, 
-  Calendar, User, Loader2, RefreshCw
-} from 'lucide-react';
+import Camera from 'lucide-react/dist/esm/icons/camera'
+import Clock from 'lucide-react/dist/esm/icons/clock'
+import CheckCircle from 'lucide-react/dist/esm/icons/check-circle'
+import XCircle from 'lucide-react/dist/esm/icons/x-circle'
+import AlertTriangle from 'lucide-react/dist/esm/icons/alert-triangle'
+import Calendar from 'lucide-react/dist/esm/icons/calendar'
+import User from 'lucide-react/dist/esm/icons/user'
+import Loader2 from 'lucide-react/dist/esm/icons/loader-2'
+import RefreshCw from 'lucide-react/dist/esm/icons/refresh-cw'
 import * as faceapi from 'face-api.js';
 import { useNavigate } from 'react-router-dom';
 

@@ -1,7 +1,9 @@
 import { Link } from 'react-router-dom'
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useGetInventoryQuery, useGetWarehouseDashboardQuery } from '../../services/api';
-import { Package, Layers, Box } from 'lucide-react';
+import Package from 'lucide-react/dist/esm/icons/package'
+import Layers from 'lucide-react/dist/esm/icons/layers'
+import Box from 'lucide-react/dist/esm/icons/box'
 
 import { TableSkeleton } from '../../components/ui/Skeleton';
 export default function InventoryList() {

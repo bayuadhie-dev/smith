@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
-import { Search, Trash2, RefreshCw, AlertCircle, CheckCircle } from 'lucide-react';
+import Search from 'lucide-react/dist/esm/icons/search'
+import Trash2 from 'lucide-react/dist/esm/icons/trash-2'
+import RefreshCw from 'lucide-react/dist/esm/icons/refresh-cw'
+import AlertCircle from 'lucide-react/dist/esm/icons/alert-circle'
+import CheckCircle from 'lucide-react/dist/esm/icons/check-circle'
 import api from '../../utils/axiosConfig';
 import { confirmDialog } from '../../components/ui';
 import { useUrlFilter } from '../../hooks/useUrlState'

@@ -4,7 +4,23 @@ import axiosInstance from '../../utils/axiosConfig';
 import SearchableSelect from '../../components/SearchableSelect';
 import { showSuccess, showError, showWarning } from '../../components/ui/Toast';
 import { confirmDialog } from '../../components/ui';
-import { Save, Plus, Trash2, ChevronDown, ChevronRight, ChevronLeft, Layers, CalendarRange, Factory, PackageCheck, AlertTriangle, Search, ArrowUpDown, ClipboardPaste, Pencil, Lock, TrendingUp } from 'lucide-react';
+import Save from 'lucide-react/dist/esm/icons/save'
+import Plus from 'lucide-react/dist/esm/icons/plus'
+import Trash2 from 'lucide-react/dist/esm/icons/trash-2'
+import ChevronDown from 'lucide-react/dist/esm/icons/chevron-down'
+import ChevronRight from 'lucide-react/dist/esm/icons/chevron-right'
+import ChevronLeft from 'lucide-react/dist/esm/icons/chevron-left'
+import Layers from 'lucide-react/dist/esm/icons/layers'
+import CalendarRange from 'lucide-react/dist/esm/icons/calendar-range'
+import Factory from 'lucide-react/dist/esm/icons/factory'
+import PackageCheck from 'lucide-react/dist/esm/icons/package-check'
+import AlertTriangle from 'lucide-react/dist/esm/icons/alert-triangle'
+import Search from 'lucide-react/dist/esm/icons/search'
+import ArrowUpDown from 'lucide-react/dist/esm/icons/arrow-up-down'
+import ClipboardPaste from 'lucide-react/dist/esm/icons/clipboard-paste'
+import Pencil from 'lucide-react/dist/esm/icons/pencil'
+import Lock from 'lucide-react/dist/esm/icons/lock'
+import TrendingUp from 'lucide-react/dist/esm/icons/trending-up'
 import PeriodSelectModal from './PeriodSelectModal';
 import { periodLabel, shiftPeriod } from './forecastPeriod';
 import NumberInput from '../../components/ui/NumberInput'

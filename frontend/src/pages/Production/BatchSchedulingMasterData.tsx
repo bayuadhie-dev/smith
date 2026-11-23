@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
-import { Save, Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
+import Save from 'lucide-react/dist/esm/icons/save'
+import CalendarIcon from 'lucide-react/dist/esm/icons/calendar'
+import ChevronLeft from 'lucide-react/dist/esm/icons/chevron-left'
+import ChevronRight from 'lucide-react/dist/esm/icons/chevron-right'
 import { showSuccess, showError } from '../../components/ui/Toast';
 import NumberInput from '../../components/ui/NumberInput'
 import { TableSkeleton } from '../../components/ui/Skeleton'

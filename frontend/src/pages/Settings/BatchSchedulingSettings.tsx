@@ -2,7 +2,11 @@ import React, { useState, useEffect, useCallback } from 'react';
 import axiosInstance from '../../utils/axiosConfig';
 import SearchableSelect from '../../components/SearchableSelect';
 import { confirmDialog } from '../../components/ui';
-import { Plus, Trash2, Save, Settings2, Pencil } from 'lucide-react';
+import Plus from 'lucide-react/dist/esm/icons/plus'
+import Trash2 from 'lucide-react/dist/esm/icons/trash-2'
+import Save from 'lucide-react/dist/esm/icons/save'
+import Settings2 from 'lucide-react/dist/esm/icons/settings-2'
+import Pencil from 'lucide-react/dist/esm/icons/pencil'
 import NumberInput from '../../components/ui/NumberInput'
 import { useUrlState } from '../../hooks/useUrlState';
 import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail';

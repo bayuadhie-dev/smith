@@ -1,8 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import {
-  FileText, CheckCircle, XCircle, Clock, User, Calendar,
-  Loader2, Filter, Search, ChevronDown, MapPin, Settings, Plus
-} from 'lucide-react';
+import FileText from 'lucide-react/dist/esm/icons/file-text'
+import CheckCircle from 'lucide-react/dist/esm/icons/check-circle'
+import XCircle from 'lucide-react/dist/esm/icons/x-circle'
+import Clock from 'lucide-react/dist/esm/icons/clock'
+import User from 'lucide-react/dist/esm/icons/user'
+import Calendar from 'lucide-react/dist/esm/icons/calendar'
+import Loader2 from 'lucide-react/dist/esm/icons/loader-2'
+import Filter from 'lucide-react/dist/esm/icons/filter'
+import Search from 'lucide-react/dist/esm/icons/search'
+import ChevronDown from 'lucide-react/dist/esm/icons/chevron-down'
+import MapPin from 'lucide-react/dist/esm/icons/map-pin'
+import Settings from 'lucide-react/dist/esm/icons/settings'
+import Plus from 'lucide-react/dist/esm/icons/plus'
 import axiosInstance from '../../lib/axios';
 import { confirmDialog, showSuccess, showError, showWarning } from '../../components/ui';
 import NumberInput from '../../components/ui/NumberInput'

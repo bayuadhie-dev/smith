@@ -5,7 +5,7 @@ import {
   CalendarIcon, CheckCircleIcon, XCircleIcon,
   ArrowLeftIcon, PrinterIcon
 } from '@heroicons/react/24/outline';
-import { CheckCircleIcon as CheckCircleSolid } from '@heroicons/react/24/solid';
+import CheckCircleSolid from '@heroicons/react/24/solid/esm/CheckCircleIcon'
 import axiosInstance from '../../utils/axiosConfig';
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
 import { useUrlFilter } from '../../hooks/useUrlState'

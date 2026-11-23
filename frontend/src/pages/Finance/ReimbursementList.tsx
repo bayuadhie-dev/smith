@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Plus,
-  Eye,
-  CheckCircle,
-  DollarSign,
-} from 'lucide-react';
+import Plus from 'lucide-react/dist/esm/icons/plus'
+import Eye from 'lucide-react/dist/esm/icons/eye'
+import CheckCircle from 'lucide-react/dist/esm/icons/check-circle'
+import DollarSign from 'lucide-react/dist/esm/icons/dollar-sign'
 import toast from 'react-hot-toast';
 import axiosInstance from '../../utils/axiosConfig';
 import { usePermissions } from '../../contexts/PermissionContext';

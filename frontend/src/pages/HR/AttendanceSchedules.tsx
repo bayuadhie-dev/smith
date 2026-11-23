@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useUrlFilter, useUrlState, useUrlPage } from '../../hooks/useUrlState'
 import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail'
-import { Search } from 'lucide-react'
+import Search from 'lucide-react/dist/esm/icons/search'
 import axiosInstance from '../../utils/axiosConfig'
 import { PageHeader, Panel } from '../../components/ui/PageKit'
 import NumberInput from '../../components/ui/NumberInput'

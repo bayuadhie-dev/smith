@@ -15,7 +15,7 @@ import {
   PencilSquareIcon,
   TableCellsIcon
 } from '@heroicons/react/24/outline'
-import { CheckCircleIcon as CheckCircleSolid } from '@heroicons/react/24/solid'
+import CheckCircleSolid from '@heroicons/react/24/solid/esm/CheckCircleIcon'
 import { useGetPreShiftChecklistStatusQuery } from '../../services/api'
 
 interface ShiftStatus {

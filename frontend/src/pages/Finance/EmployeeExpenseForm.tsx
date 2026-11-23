@@ -2,16 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
 import { showWarning, showSuccess, showError } from '../../components/ui';
-import {
-  ArrowLeft,
-  Save,
-  Upload,
-  X,
-  Eye,
-  FileText,
-  Image as ImageIcon,
-  File,
-} from 'lucide-react';
+import ArrowLeft from 'lucide-react/dist/esm/icons/arrow-left'
+import Save from 'lucide-react/dist/esm/icons/save'
+import Upload from 'lucide-react/dist/esm/icons/upload'
+import X from 'lucide-react/dist/esm/icons/x'
+import Eye from 'lucide-react/dist/esm/icons/eye'
+import FileText from 'lucide-react/dist/esm/icons/file-text'
+import ImageIcon from 'lucide-react/dist/esm/icons/image'
+import File from 'lucide-react/dist/esm/icons/file'
 import NumberInput from '../../components/ui/NumberInput'
 
 interface Employee {

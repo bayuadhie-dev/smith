@@ -3,10 +3,24 @@ import { useNavigate, useParams } from 'react-router-dom';
 import * as fabric from 'fabric';
 import toast from 'react-hot-toast';
 import axiosInstance from '../../utils/axiosConfig';
-import {
-  Save, UploadCloud, Eye, Undo2, Redo2, Trash2, Type, Tag, Image as ImageIcon,
-  QrCode, Barcode, Minus, Square, Table2, ArrowLeft, History, ZoomIn, ZoomOut,
-} from 'lucide-react';
+import Save from 'lucide-react/dist/esm/icons/save'
+import UploadCloud from 'lucide-react/dist/esm/icons/upload-cloud'
+import Eye from 'lucide-react/dist/esm/icons/eye'
+import Undo2 from 'lucide-react/dist/esm/icons/undo-2'
+import Redo2 from 'lucide-react/dist/esm/icons/redo-2'
+import Trash2 from 'lucide-react/dist/esm/icons/trash-2'
+import Type from 'lucide-react/dist/esm/icons/type'
+import Tag from 'lucide-react/dist/esm/icons/tag'
+import ImageIcon from 'lucide-react/dist/esm/icons/image'
+import QrCode from 'lucide-react/dist/esm/icons/qr-code'
+import Barcode from 'lucide-react/dist/esm/icons/barcode'
+import Minus from 'lucide-react/dist/esm/icons/minus'
+import Square from 'lucide-react/dist/esm/icons/square'
+import Table2 from 'lucide-react/dist/esm/icons/table-2'
+import ArrowLeft from 'lucide-react/dist/esm/icons/arrow-left'
+import History from 'lucide-react/dist/esm/icons/history'
+import ZoomIn from 'lucide-react/dist/esm/icons/zoom-in'
+import ZoomOut from 'lucide-react/dist/esm/icons/zoom-out'
 import NumberInput from '../../components/ui/NumberInput'
 
 // 1 Fabric unit = 1mm, always (design decision - see Print Template Designer

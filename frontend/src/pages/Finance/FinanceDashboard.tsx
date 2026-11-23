@@ -4,7 +4,7 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { formatRupiah } from '../../utils/currencyUtils';
 import { AlertStrip, CategoryBars, HeroStat, KpiStrip, PageHeader, Panel, QuickLinks } from '../../components/ui/PageKit';
 import RunChart from '../../components/charts/RunChart';
-import { AlertTriangle } from 'lucide-react';
+import AlertTriangle from 'lucide-react/dist/esm/icons/alert-triangle'
 import {
   BanknotesIcon,
   BookOpenIcon,

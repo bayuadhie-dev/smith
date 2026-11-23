@@ -6,7 +6,11 @@ import {
   BoltIcon, BeakerIcon, ChevronLeftIcon, ChevronRightIcon, CheckCircleIcon,
   DocumentTextIcon, ArrowDownTrayIcon, ArchiveBoxIcon, MagnifyingGlassIcon
 } from '@heroicons/react/24/outline';
-import { Package, CheckCircle2, Factory, AlertTriangle, TrendingDown } from 'lucide-react';
+import Package from 'lucide-react/dist/esm/icons/package'
+import CheckCircle2 from 'lucide-react/dist/esm/icons/check-circle-2'
+import Factory from 'lucide-react/dist/esm/icons/factory'
+import AlertTriangle from 'lucide-react/dist/esm/icons/alert-triangle'
+import TrendingDown from 'lucide-react/dist/esm/icons/trending-down'
 import * as XLSX from 'xlsx';
 import { useUrlFilter, useUrlState } from '../../hooks/useUrlState';
 import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail';

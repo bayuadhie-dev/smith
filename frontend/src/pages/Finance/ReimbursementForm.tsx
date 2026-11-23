@@ -1,7 +1,9 @@
 import { PendingAttachments, uploadAttachments } from '../../components/AttachmentsPanel'
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Save, X, AlertCircle } from 'lucide-react';
+import Save from 'lucide-react/dist/esm/icons/save'
+import X from 'lucide-react/dist/esm/icons/x'
+import AlertCircle from 'lucide-react/dist/esm/icons/alert-circle'
 import toast from 'react-hot-toast';
 import axiosInstance from '../../utils/axiosConfig';
 

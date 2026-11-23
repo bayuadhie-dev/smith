@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useUrlState } from '../../hooks/useUrlState';
 import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail';
-import {
-  ClipboardCheck, CheckCircle, XCircle, Loader2, AlertTriangle, RefreshCw
-} from 'lucide-react';
+import ClipboardCheck from 'lucide-react/dist/esm/icons/clipboard-check'
+import CheckCircle from 'lucide-react/dist/esm/icons/check-circle'
+import XCircle from 'lucide-react/dist/esm/icons/x-circle'
+import Loader2 from 'lucide-react/dist/esm/icons/loader-2'
+import AlertTriangle from 'lucide-react/dist/esm/icons/alert-triangle'
+import RefreshCw from 'lucide-react/dist/esm/icons/refresh-cw'
 import axiosInstance from '../../utils/axiosConfig';
 import { confirmDialog, showError, showSuccess } from '../../components/ui';
 import { useListTools, type ListColumn } from '../../hooks/useListTools';

@@ -2,12 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import axiosInstance from '../utils/axiosConfig';
-import {
-  Plus,
-  Save,
-  Trash2,
-  X
-} from 'lucide-react';
+import Plus from 'lucide-react/dist/esm/icons/plus'
+import Save from 'lucide-react/dist/esm/icons/save'
+import Trash2 from 'lucide-react/dist/esm/icons/trash-2'
+import X from 'lucide-react/dist/esm/icons/x'
 import AccountSlotSelector from './Finance/AccountSlotSelector';
 import NumberInput from './ui/NumberInput'
 import SearchableSelect from './SearchableSelect'

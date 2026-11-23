@@ -1,5 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Camera, UserPlus, CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
+import Camera from 'lucide-react/dist/esm/icons/camera'
+import UserPlus from 'lucide-react/dist/esm/icons/user-plus'
+import CheckCircle from 'lucide-react/dist/esm/icons/check-circle'
+import AlertCircle from 'lucide-react/dist/esm/icons/alert-circle'
+import RefreshCw from 'lucide-react/dist/esm/icons/refresh-cw'
 
 const FaceRegistration: React.FC = () => {
   const [name, setName] = useState('');

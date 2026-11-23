@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import {
-  CheckCircle2, XCircle, Clock, AlertCircle, Eye,
-  ChevronRight, User, Calendar
-} from 'lucide-react';
+import CheckCircle2 from 'lucide-react/dist/esm/icons/check-circle-2'
+import XCircle from 'lucide-react/dist/esm/icons/x-circle'
+import Clock from 'lucide-react/dist/esm/icons/clock'
+import AlertCircle from 'lucide-react/dist/esm/icons/alert-circle'
+import Eye from 'lucide-react/dist/esm/icons/eye'
+import ChevronRight from 'lucide-react/dist/esm/icons/chevron-right'
+import User from 'lucide-react/dist/esm/icons/user'
+import Calendar from 'lucide-react/dist/esm/icons/calendar'
 import axiosInstance from '../../utils/axiosConfig';
 import { confirmDialog, showError } from '../../components/ui';
 

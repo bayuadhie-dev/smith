@@ -3,7 +3,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import api from '../../utils/axiosConfig';
 import toast from 'react-hot-toast';
 import { confirmDialog } from '../../components/ui';
-import { Search, Eye, Pencil, Trash2, Play, CheckCircle2 } from 'lucide-react';
+import Search from 'lucide-react/dist/esm/icons/search'
+import Eye from 'lucide-react/dist/esm/icons/eye'
+import Pencil from 'lucide-react/dist/esm/icons/pencil'
+import Trash2 from 'lucide-react/dist/esm/icons/trash-2'
+import Play from 'lucide-react/dist/esm/icons/play'
+import CheckCircle2 from 'lucide-react/dist/esm/icons/check-circle-2'
 import { PageHeader, KpiStrip, Panel } from '../../components/ui/PageKit';
 import { useListTools, type ListColumn } from '../../hooks/useListTools';
 import { ListToolbar, SortTh } from '../../components/ui/ListTools';

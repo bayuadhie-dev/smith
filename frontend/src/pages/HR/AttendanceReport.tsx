@@ -1,11 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useUrlFilter, useUrlState, useUrlPage } from '../../hooks/useUrlState';
 import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail';
-import { 
-  Calendar, Clock, Users, AlertTriangle, CheckCircle, 
-  Search, Filter, ChevronLeft, ChevronRight, TrendingUp,
-  UserCheck, UserX, Timer
-} from 'lucide-react';
+import Calendar from 'lucide-react/dist/esm/icons/calendar'
+import Clock from 'lucide-react/dist/esm/icons/clock'
+import Users from 'lucide-react/dist/esm/icons/users'
+import AlertTriangle from 'lucide-react/dist/esm/icons/alert-triangle'
+import CheckCircle from 'lucide-react/dist/esm/icons/check-circle'
+import Search from 'lucide-react/dist/esm/icons/search'
+import Filter from 'lucide-react/dist/esm/icons/filter'
+import ChevronLeft from 'lucide-react/dist/esm/icons/chevron-left'
+import ChevronRight from 'lucide-react/dist/esm/icons/chevron-right'
+import TrendingUp from 'lucide-react/dist/esm/icons/trending-up'
+import UserCheck from 'lucide-react/dist/esm/icons/user-check'
+import UserX from 'lucide-react/dist/esm/icons/user-x'
+import Timer from 'lucide-react/dist/esm/icons/timer'
 import api from '../../utils/axiosConfig';
 
 interface AttendanceRecord {

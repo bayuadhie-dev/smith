@@ -1,5 +1,8 @@
 import { Link } from 'react-router-dom'
-import { AlertTriangle, ArrowRight, Check, Eye } from 'lucide-react'
+import AlertTriangle from 'lucide-react/dist/esm/icons/alert-triangle'
+import ArrowRight from 'lucide-react/dist/esm/icons/arrow-right'
+import Check from 'lucide-react/dist/esm/icons/check'
+import Eye from 'lucide-react/dist/esm/icons/eye'
 import {
   AlertStrip,
   CategoryBars,
