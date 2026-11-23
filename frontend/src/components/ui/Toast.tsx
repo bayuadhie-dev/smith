@@ -1,5 +1,6 @@
+import { useEffect } from 'react';
 import { notifySaved } from '../../utils/feedback';
-import toast, { Toaster } from 'react-hot-toast';
+import toast, { Toaster, useToasterStore } from 'react-hot-toast';
 import {
   CheckCircleIcon,
   XCircleIcon,
@@ -8,27 +9,74 @@ import {
   XMarkIcon
 } from '@heroicons/react/24/outline';
 
+const MAKS_TOAST = 3;
+
+/** Teks pesan sebuah toast, untuk mengenali yang kembar. */
+const pesanToast = (t: { message?: unknown }): string => {
+  const m = t.message;
+  if (typeof m === 'string') return m;
+  // toast.custom() memberi fungsi render, bukan teks - dibedakan per toast saja.
+  return '';
+};
+
+/**
+ * Satu kegagalan yang terjadi berkali-kali (klik berulang, beberapa baris
+ * gagal sekaligus, backend sedang restart) dulu menumpuk jadi tumpukan toast
+ * dengan tulisan yang sama persis. Di sini yang kembar dibuang dan sisanya
+ * dibatasi, jadi semua pemanggil toast di 138 berkas ikut rapi tanpa diubah.
+ */
+const useToastRapi = () => {
+  const { toasts } = useToasterStore();
+
+  useEffect(() => {
+    const terlihat = toasts.filter((t) => t.visible);
+
+    // 1. Buang yang tulisannya sama - sisakan yang paling baru.
+    const sudahAda = new Set<string>();
+    const kembar: string[] = [];
+    for (const t of terlihat) {
+      const teks = pesanToast(t);
+      if (!teks) continue;
+      if (sudahAda.has(teks)) kembar.push(t.id);
+      else sudahAda.add(teks);
+    }
+
+    // 2. Sisakan paling banyak MAKS_TOAST di layar.
+    const sisa = terlihat.filter((t) => !kembar.includes(t.id));
+    const kelebihan = sisa.slice(MAKS_TOAST).map((t) => t.id);
+
+    // Yang kembar dibuang langsung (tidak perlu animasi keluar untuk pesan
+    // yang sudah terwakili); yang kelebihan cukup di-dismiss supaya mulus.
+    kembar.forEach((id) => toast.remove(id));
+    kelebihan.forEach((id) => toast.dismiss(id));
+  }, [toasts]);
+};
+
 // Custom toast styles
-export const ToastProvider = () => (
-  <Toaster
-    position="top-right"
-    gutter={12}
-    containerStyle={{
-      top: 80,
-    }}
-    toastOptions={{
-      duration: 4000,
-      style: {
-        background: 'var(--toast-bg)',
-        color: 'var(--toast-fg)',
-        padding: '16px',
-        borderRadius: '12px',
-        boxShadow: '0 10px 40px rgba(0, 0, 0, 0.1)',
-        maxWidth: '400px',
-      },
-    }}
-  />
-);
+export const ToastProvider = () => {
+  useToastRapi();
+
+  return (
+    <Toaster
+      position="top-right"
+      gutter={12}
+      containerStyle={{
+        top: 80,
+      }}
+      toastOptions={{
+        duration: 4000,
+        style: {
+          background: 'var(--toast-bg)',
+          color: 'var(--toast-fg)',
+          padding: '16px',
+          borderRadius: '12px',
+          boxShadow: '0 10px 40px rgba(0, 0, 0, 0.1)',
+          maxWidth: '400px',
+        },
+      }}
+    />
+  );
+};
 
 export const FUNNY_SUCCESS_TITLES = [
   "Mantul! Data wis kesimpen",
