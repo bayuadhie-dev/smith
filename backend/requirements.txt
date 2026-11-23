@@ -123,7 +123,10 @@ opencv-python-headless==4.14.0.94  # utils/face_detector.py
 pikepdf==10.17.0  # utils/dcc_pdf.py (lock DCC PDFs)
 pypdf>=4.0  # utils/customer_po_import.py (baca PO pelanggan PDF bila pdftotext tidak ada)
 pywebpush==2.5.0  # utils/send_notification.py (web push)
-resend==2.50.0  # utils/email_service.py (EMAIL_PROVIDER=resend)
+# OPSIONAL - sengaja TIDAK dipasang di server mana pun. Kedua server pakai
+# EMAIL_PROVIDER=smtp (Zoho), dan impornya malas di dalam email_service.py,
+# jadi tidak pernah dijalankan. Pasang hanya kalau provider diganti ke resend.
+# resend==2.50.0  # utils/email_service.py (EMAIL_PROVIDER=resend)
 google-api-python-client==2.201.0  # backup_database.py (Google Drive upload)
 
 pyzk>=0.9
