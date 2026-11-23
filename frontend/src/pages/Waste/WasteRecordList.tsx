@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom';
-import { format } from 'date-fns'
+import { format } from 'date-fns/format'
 import { PlusIcon } from '@heroicons/react/24/outline';
 import { useGetWasteRecordsQuery } from '../../services/api'
 import { useListTools, type ListColumn } from '../../hooks/useListTools'

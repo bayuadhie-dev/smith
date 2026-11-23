@@ -27,7 +27,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ComposedChart, Area, PieChart, Pie, Cell, RadialBarChart, RadialBar, PolarAngleAxis } from 'recharts';
 import axios from 'axios';
-import { format } from 'date-fns';
+import { format } from 'date-fns/format'
 import { usePermissions } from '../../contexts/PermissionContext';
 import NumberInput from '../../components/ui/NumberInput'
 

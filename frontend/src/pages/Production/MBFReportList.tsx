@@ -10,7 +10,7 @@ import {
   XCircleIcon
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
-import { format } from 'date-fns';
+import { format } from 'date-fns/format'
 import axios from 'axios';
 import { confirmDialog } from '../../components/ui';
 import { useListTools, type ListColumn } from '../../hooks/useListTools';

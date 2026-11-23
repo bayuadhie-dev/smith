@@ -1,7 +1,9 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom';
 import { useGetRosterQuery } from '../../services/api'
-import { format, startOfWeek, addDays } from 'date-fns'
+import { format } from 'date-fns/format'
+import { startOfWeek } from 'date-fns/startOfWeek'
+import { addDays } from 'date-fns/addDays'
 import {
   CursorArrowRaysIcon,
   LinkIcon

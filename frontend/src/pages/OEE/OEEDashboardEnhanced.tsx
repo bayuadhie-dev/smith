@@ -2,7 +2,8 @@ import React, { useState, useMemo } from 'react'
 import { PageHeader, KpiStrip } from '../../components/ui/PageKit'
 import { Link } from 'react-router-dom';
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis, Area, AreaChart, CartesianGrid } from 'recharts';
-import { format, parseISO } from 'date-fns'
+import { format } from 'date-fns/format'
+import { parseISO } from 'date-fns/parseISO'
 import { id as idLocale } from 'date-fns/locale';
 import toast from 'react-hot-toast'
 import {

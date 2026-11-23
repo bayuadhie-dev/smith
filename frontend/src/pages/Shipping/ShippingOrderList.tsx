@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { PlusIcon } from '@heroicons/react/24/outline'
 import { useGetShippingOrdersQuery } from '../../services/shippingApi'
-import { format } from 'date-fns'
+import { format } from 'date-fns/format'
 import { useListTools, type ListColumn } from '../../hooks/useListTools'
 import { ListToolbar, SortTh } from '../../components/ui/ListTools'
 

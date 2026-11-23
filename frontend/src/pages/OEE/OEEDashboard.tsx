@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useGetOEERecordsQuery } from '../../services/api'
-import { format } from 'date-fns'
+import { format } from 'date-fns/format'
 import { DetailSkeleton } from '../../components/ui/Skeleton'
 
 export default function OEEDashboard() {

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useGetQuotesQuery } from '../../services/api'
-import { format } from 'date-fns'
+import { format } from 'date-fns/format'
 import { BanknotesIcon, EyeIcon, PencilIcon, PlusIcon } from '@heroicons/react/24/outline'
 import { useListTools, type ListColumn } from '../../hooks/useListTools'
 import { ListToolbar, SortTh } from '../../components/ui/ListTools'

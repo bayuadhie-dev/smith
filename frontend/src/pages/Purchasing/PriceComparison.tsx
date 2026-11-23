@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useComparePricesMutation, useGetProductsQuery } from '../../services/api';
-import { format } from 'date-fns';
+import { format } from 'date-fns/format'
 import {
   ArrowDownIcon,
   CalendarIcon,

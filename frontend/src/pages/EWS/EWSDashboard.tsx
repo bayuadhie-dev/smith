@@ -6,7 +6,8 @@ import {
   useGetEWSSummaryQuery,
   useRescoreEWSShiftMutation,
 } from '../../services/api'
-import { format, subDays } from 'date-fns'
+import { format } from 'date-fns/format'
+import { subDays } from 'date-fns/subDays'
 import NumberInput from '../../components/ui/NumberInput'
 import { DetailSkeleton, Skeleton } from '../../components/ui/Skeleton'
 import { useUrlFilter } from '../../hooks/useUrlState'

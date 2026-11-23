@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { format } from 'date-fns'
+import { format } from 'date-fns/format'
 import toast from 'react-hot-toast'
 import { confirmDialog } from '../../components/ui'
 import {

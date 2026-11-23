@@ -6,7 +6,7 @@ import { useUrlState } from '../../hooks/useUrlState'
 import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail'
 import { useListTools, type ListColumn } from '../../hooks/useListTools'
 import { ListToolbar, SortTh } from '../../components/ui/ListTools'
-import { format } from 'date-fns'
+import { format } from 'date-fns/format'
 import {
   LinkIcon
 ,

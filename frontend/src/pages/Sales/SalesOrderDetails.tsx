@@ -7,7 +7,7 @@ import { useGetSalesOrderQuery } from '../../services/api';
 import axiosInstance from '../../utils/axiosConfig';
 import toast from 'react-hot-toast';
 import { confirmDialog } from '../../components/ui';
-import { format } from 'date-fns';
+import { format } from 'date-fns/format'
 import DocumentGenerateButton from '../../components/DocumentGenerateButton';
 import ConfirmAndStartProductionModal from '../../components/Sales/ConfirmAndStartProductionModal';
 import {

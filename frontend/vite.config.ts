@@ -4,15 +4,14 @@ import path from 'path'
 
 export default defineConfig({
   plugins: [react()],
-  // date-fns hanya dipakai 5 fungsi dari barel 1,2 MB, jadi dikeluarkan dari
-  // prabundel dev supaya yang terkirim cuma yang diimpor.
-  // Ikon TIDAK diurus lewat sini melainkan diimpor per berkas
-  // ('lucide-react/dist/esm/icons/...' dan '@heroicons/react/24/solid/esm/...'),
-  // karena mengecualikan paket ikon dari prabundel justru memecah barel
-  // outline yang memang dipakai luas - sempat dicoba: 138 request, 2,1 MB.
-  optimizeDeps: {
-    exclude: ['date-fns'],
-  },
+  // Paket berbarel besar TIDAK diurus lewat optimizeDeps.exclude. Dicoba dua
+  // kali dan dua kali merugikan: mengecualikan paket ikon memecah barel
+  // outline yang memang dipakai luas (138 request, 2,1 MB), dan
+  // mengecualikan date-fns menyajikan ~99 berkas satuan di VPS yang masih
+  // HTTP/1.1 - ukurannya nyaris tidak turun tapi request-nya meledak.
+  // Caranya: impor langsung ke berkasnya di sisi src
+  // ('lucide-react/dist/esm/icons/...', '@heroicons/react/24/solid/esm/...',
+  // 'date-fns/<fungsi>'), sehingga Vite cuma memprabundel yang dipakai.
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

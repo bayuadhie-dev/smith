@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom';
-import { format } from 'date-fns'
+import { format } from 'date-fns/format'
 import toast from 'react-hot-toast'
 import { formatRupiah, formatCurrencyAmount } from '../../utils/currencyUtils'
 import AccessibleModal from '../../components/ui/AccessibleModal'
@@ -342,7 +342,8 @@ const [status, setStatus] = useUrlFilter<string>('status', '')
       {!isLoading && tools.rows.length === 0 && (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center">
           <DocumentTextIcon className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">{tools.total === 0 ? 'Belum ada pesanan pembelian' : 'Tidak ada PO yang cocok'}</h3>
+          <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">{tools.total === 0 ? 'Belum ada pesanan pembelian' : 'Tidak ada PO yang cocok'}</h3>
+
           {tools.total === 0 && (
             <div className="mt-6">
               <Link to="/app/purchasing/purchase-orders/new" className="btn-primary">

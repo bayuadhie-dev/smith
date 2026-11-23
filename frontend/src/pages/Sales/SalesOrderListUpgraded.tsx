@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useGetSalesOrdersQuery } from '../../services/api';
-import { format } from 'date-fns';
+import { format } from 'date-fns/format'
 import {
   ArrowPathIcon,
   ClipboardDocumentListIcon,
