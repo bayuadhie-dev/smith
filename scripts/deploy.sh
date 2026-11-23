@@ -13,6 +13,8 @@
 #   --only     deploy ke satu server saja
 #   --dry-run  hanya periksa dan tampilkan rencana, tidak mengubah apa pun
 #   --no-wait  jangan menunggu Syncthing (gagal kalau server belum sinkron)
+#   --dev      VPS kembali disajikan Vite dev (untuk hari yang isinya
+#              bolak-balik perbaikan kecil); tanpa flag ini = mode build
 #   --force    lanjut walau ada perubahan lokal yang belum di-commit (tidak disarankan)
 set -euo pipefail
 
@@ -26,13 +28,16 @@ REMOTE_DIR="SourceCode"
 PM2_NAME="smith-backend"
 SYNC_TIMEOUT=180
 
-ONLY=""; DRY=0; WAIT=1; FORCE=0
+ONLY=""; DRY=0; WAIT=1; FORCE=0; MODE="build"
+# Hanya VPS yang disajikan dari hasil build; kantor masih Vite dev.
+BUILD_HOSTS="vps"
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --only) ONLY="${2:-}"; shift 2 ;;
     --dry-run) DRY=1; shift ;;
     --no-wait) WAIT=0; shift ;;
     --force) FORCE=1; shift ;;
+    --dev) MODE="dev"; shift ;;
     -h|--help) sed -n 2,19p "$0"; exit 0 ;;
     *) echo "Argumen tidak dikenal: $1"; exit 2 ;;
   esac
@@ -96,6 +101,24 @@ deploy_one() {
   local after
   after=$("${ssh[@]}" "cd ~/$REMOTE_DIR/backend && . venv/bin/activate && FLASK_APP=app.py flask db current 2>&1 | grep -E '^[0-9a-z_]{8,}' | tail -1")
   if [[ "$after" != *"(head)"* ]]; then red "[$name] database belum di versi terbaru: $after"; return 1; fi
+
+  # Frontend: build lalu terbitkan ke /var/www/erp. Kalau build gagal,
+  # salinan lama tetap tersaji - tidak ada waktu mati.
+  if [[ "$BUILD_HOSTS" == *"$name"* ]]; then
+    if [[ "$MODE" == "dev" ]]; then
+      "${ssh[@]}" "erp-mode dev" >/dev/null && ylw "[$name] frontend dikembalikan ke mode dev (Vite :3000)."
+    else
+      local bout
+      bout=$("${ssh[@]}" "set -o pipefail; cd ~/$REMOTE_DIR/frontend && npx vite build 2>&1 | tail -3") \
+        || { red "[$name] build frontend GAGAL - versi lama tetap tersaji:"; echo "$bout"; return 1; }
+      "${ssh[@]}" "rsync -a --delete --exclude='*.map' ~/$REMOTE_DIR/frontend/dist/ /var/www/erp/ && erp-mode build" >/dev/null \
+        || { red "[$name] gagal menerbitkan hasil build"; return 1; }
+      local cek
+      cek=$("${ssh[@]}" "curl -s -o /dev/null -w '%{http_code}' -m 10 https://erp.fsnindonesia.com/" || true)
+      [[ "$cek" == "200" ]] || { red "[$name] frontend menjawab $cek setelah build. Balikkan: ssh ... erp-mode dev"; return 1; }
+      grn "[$name] frontend: build terbit, halaman menjawab 200"
+    fi
+  fi
 
   local chg
   chg=$("${ssh[@]}" "cd ~/$REMOTE_DIR && git diff --name-only HEAD~1 HEAD 2>/dev/null | grep -E 'backend/requirements.txt|frontend/package.json' || true")
