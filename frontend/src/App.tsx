@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { Routes, Route, Navigate, useParams, useNavigate, useLocation } from 'react-router-dom'
 import { useAppSelector, useAppDispatch } from './hooks/redux'
 import { checkAuth } from './store/slices/authSlice'
@@ -12,393 +12,412 @@ import SessionTimeoutModal from './components/SessionTimeoutModal'
 import Layout from './components/Layout/Layout'
 import { registerAppRoutes } from './workspace/routeRegistry'
 import RoleBasedRedirect from './components/RoleBasedRedirect'
-import Login from './pages/Auth/Login'
-import Register from './pages/Auth/Register'
-import ForgotPassword from './pages/Auth/ForgotPassword'
-import ResetPassword from './pages/Auth/ResetPassword'
-import ApprovalEmail from './pages/Public/ApprovalEmail'
-import OAuthCallback from './pages/Auth/OAuthCallback'
-import CompleteProfile from './pages/Auth/CompleteProfile'
-import DashboardModules from './pages/Dashboard/DashboardModules'
-import GlobalSearchPage from './pages/Search/GlobalSearchPage'
-import ProductList from './pages/Products/ProductList'
-import NonwovenCalculator from './pages/Products/NonwovenCalculator'
-import ProductDashboard from './pages/Products/ProductDashboard'
-import ProductAnalytics from './pages/Products/ProductAnalytics'
-import ProductCategories from './pages/Products/ProductCategories'
-import BOMManagement from './pages/Products/BOMManagement'
-import ProductLifecycle from './pages/Products/ProductLifecycle'
-import ProductsNewPage from './pages/ProductsNewPage'
-import ImportCenter from './pages/ImportCenter'
-import PurchaseInvoiceForm from './pages/Purchasing/PurchaseInvoiceForm'
-import MasterDataPage from './pages/MasterData/MasterDataPage'
+const Login = lazy(() => import('./pages/Auth/Login'))
+const Register = lazy(() => import('./pages/Auth/Register'))
+const ForgotPassword = lazy(() => import('./pages/Auth/ForgotPassword'))
+const ResetPassword = lazy(() => import('./pages/Auth/ResetPassword'))
+const PageLoader = () => (
+  <div className="flex h-64 items-center justify-center">
+    <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary-600" />
+  </div>
+)
+
+const ApprovalEmail = lazy(() => import('./pages/Public/ApprovalEmail'))
+const OAuthCallback = lazy(() => import('./pages/Auth/OAuthCallback'))
+const CompleteProfile = lazy(() => import('./pages/Auth/CompleteProfile'))
+const DashboardModules = lazy(() => import('./pages/Dashboard/DashboardModules'))
+const GlobalSearchPage = lazy(() => import('./pages/Search/GlobalSearchPage'))
+const ProductList = lazy(() => import('./pages/Products/ProductList'))
+const NonwovenCalculator = lazy(() => import('./pages/Products/NonwovenCalculator'))
+const ProductDashboard = lazy(() => import('./pages/Products/ProductDashboard'))
+const ProductAnalytics = lazy(() => import('./pages/Products/ProductAnalytics'))
+const ProductCategories = lazy(() => import('./pages/Products/ProductCategories'))
+const BOMManagement = lazy(() => import('./pages/Products/BOMManagement'))
+const ProductLifecycle = lazy(() => import('./pages/Products/ProductLifecycle'))
+const ProductsNewPage = lazy(() => import('./pages/ProductsNewPage'))
+const ImportCenter = lazy(() => import('./pages/ImportCenter'))
+const PurchaseInvoiceForm = lazy(() => import('./pages/Purchasing/PurchaseInvoiceForm'))
+const MasterDataPage = lazy(() => import('./pages/MasterData/MasterDataPage'))
 import ProductFormNew from './components/ProductFormNew'
 import ProductVersionHistory from './components/ProductVersionHistory'
 import ProductCompare from './components/ProductCompare'
-import WarehouseLocations from './pages/Warehouse/WarehouseLocations'
-import WarehouseDashboardEnhanced from './pages/Warehouse/WarehouseDashboardEnhanced'
-import WarehouseAnalytics from './pages/Warehouse/WarehouseAnalytics'
-import ABCAnalysis from './pages/Warehouse/ABCAnalysis'
-import InventoryList from './pages/Warehouse/InventoryList'
-import InventoryListEnhanced from './pages/Warehouse/InventoryListEnhanced'
-import RawMaterialStockPage from './pages/Warehouse/RawMaterialStockPage'
-import AddProductToInventory from './pages/Warehouse/AddProductToInventory'
-import InventoryForm from './pages/Warehouse/InventoryForm'
-import LocationForm from './pages/Warehouse/LocationForm'
-import MovementForm from './pages/Warehouse/MovementForm'
-import MovementDetail from './pages/Warehouse/MovementDetail'
-import AdjustmentForm from './pages/Warehouse/AdjustmentForm'
-import AdjustmentList from './pages/Warehouse/AdjustmentList'
-import AdjustmentDetail from './pages/Warehouse/AdjustmentDetail'
-import TransferHub from './pages/Warehouse/TransferHub'
-import StockTransferForm from './pages/Warehouse/StockTransferForm'
-import StockTransferDetail from './pages/Warehouse/StockTransferDetail'
-import ItemStockPage from './pages/Warehouse/ItemStockPage'
-import LocationList from './pages/Warehouse/LocationList'
-import LocationDetail from './pages/Warehouse/LocationDetail'
-import MovementList from './pages/Warehouse/MovementList'
-import StockInput from './pages/Warehouse/StockInput'
-import WarehouseZones from './pages/Warehouse/WarehouseZones'
-import ZoneStockPage from './pages/Warehouse/ZoneStockPage'
-import MaterialsDashboard from './pages/Warehouse/MaterialsDashboard'
-import MaterialsList from './pages/Warehouse/MaterialsList'
-import MaterialView from './pages/Warehouse/MaterialView'
-import MaterialEdit from './pages/Warehouse/MaterialEdit'
-import MaterialCreate from './pages/Warehouse/MaterialCreate'
-import MaterialStockManagement from './pages/Warehouse/MaterialStockManagement'
-import StockOpnameList from './pages/Warehouse/StockOpnameList'
-import StockOpnameResultsPage from './pages/Warehouse/StockOpnameResultsPage'
-import StockOpnameForm from './pages/Warehouse/StockOpnameForm'
-import StockOpnameDetail from './pages/Warehouse/StockOpnameDetail'
-import UoMList from './pages/Warehouse/UoMList'
-import StockAlerts from './pages/Warehouse/StockAlerts'
-import CustomerList from './pages/Sales/CustomerList'
-import CustomerForm from './pages/Sales/CustomerForm'
-import CustomerDetails from './pages/Sales/CustomerDetails'
-import WorkflowStatus from './pages/Sales/WorkflowStatus'
-import SalesOrderList from './pages/Sales/SalesOrderListUpgraded'
-import SalesOrderDetails from './pages/Sales/SalesOrderDetails'
-import SalesOrderForm from './pages/Sales/SalesOrderForm'
-import SalesOrderSourcePicker from './pages/Sales/SalesOrderSourcePicker'
-import LeadList from './pages/Sales/LeadListUpgraded'
-import LeadForm from './pages/Sales/LeadForm'
-import OpportunityList from './pages/Sales/OpportunityListUpgraded'
-import OpportunityForm from './pages/Sales/OpportunityForm'
-import QuotationList from './pages/Sales/QuotationList'
-import QuotationForm from './pages/Sales/QuotationForm'
-import ActivityList from './pages/Sales/ActivityList'
-import ActivityForm from './pages/Sales/ActivityForm'
-import SalesDashboard from './pages/Sales/SalesDashboard'
-import SalesForecastList from './pages/Sales/SalesForecastList'
-import SalesForecastGrid from './pages/Sales/SalesForecastGrid'
-import SalesInvoiceForm from './pages/Sales/InvoiceForm'
-import SalesInvoiceFormNew from './pages/Sales/SalesInvoiceFormNew'
-import SupplierList from './pages/Purchasing/SupplierList'
-import SupplierForm from './pages/Purchasing/SupplierForm'
-import PurchaseOrderList from './pages/Purchasing/PurchaseOrderList'
-import PurchaseOrderForm from './pages/Purchasing/PurchaseOrderForm'
-import PODetail from './pages/Purchasing/PODetail'
-import Purchasing from './pages/Purchasing/Purchasing'
-import PriceComparison from './pages/Purchasing/PriceComparison'
-import ContractList from './pages/Purchasing/ContractList'
-import ContractForm from './pages/Purchasing/ContractForm'
-import RFQList from './pages/Purchasing/RFQList'
-import QuoteList from './pages/Purchasing/QuoteList'
-import RFQForm from './pages/Purchasing/RFQForm'
-import GRNForm from './pages/Purchasing/GRNForm'
-import SupplierQuoteForm from './pages/Purchasing/SupplierQuoteForm'
-import PRList from './pages/Purchasing/PRList'
-import PRForm from './pages/Purchasing/PRForm'
-import PRDetail from './pages/Purchasing/PRDetail'
-import GRNList from './pages/Purchasing/GRNList'
-import GRNDetail from './pages/Purchasing/GRNDetail'
-import DownPaymentList from './pages/Purchasing/DownPaymentList'
-import DownPaymentForm from './pages/Purchasing/DownPaymentForm'
-import DownPaymentDetail from './pages/Purchasing/DownPaymentDetail'
-import PurchaseInvoiceList from './pages/Purchasing/InvoiceList'
-import InvoiceMatching from './pages/Purchasing/InvoiceMatching'
-import PurchaseReturnList from './pages/Purchasing/PurchaseReturnList'
-import PurchaseReturnDetail from './pages/Purchasing/PurchaseReturnDetail'
-import PurchaseReturnForm from './pages/Purchasing/PurchaseReturnForm'
-import MachineList from './pages/Production/MachineList'
-import MachineForm from './pages/Production/MachineForm'
-import MachineDetail from './pages/Production/MachineDetail'
-import WorkCenterDashboard from './pages/Production/WorkCenterDashboard'
-import WorkOrderList from './pages/Production/WorkOrderList'
-import WorkOrderForm from './pages/Production/WorkOrderForm'
-import ProductionDashboard from './pages/Production/ProductionDashboard'
-import ProductionScheduling from './pages/Production/ProductionScheduling'
-import ProductionRecords from './pages/Production/ProductionRecords'
-import ProductionRecordForm from './pages/Production/ProductionRecordForm'
-import EfficiencyTracking from './pages/Production/EfficiencyTracking'
-import Traceability from './pages/Production/Traceability'
-import MBFReport from './pages/Production/MBFReport'
-import MBFReportList from './pages/Production/MBFReportList'
-import ProductionPlanningList from './pages/Production/ProductionPlanningList'
-import ProductionPlanningForm from './pages/Production/ProductionPlanningForm'
-import ProductionPlanningDashboard from './pages/Production/ProductionPlanningDashboard'
-import BatchSchedulingMasterData from './pages/Production/BatchSchedulingMasterData'
-import BatchSchedulingSettings from './pages/Settings/BatchSchedulingSettings'
-import BatchPlanning from './pages/Production/BatchPlanning'
-import MaterialIssueList from './pages/Production/MaterialIssueList'
-import MaterialIssueDetail from './pages/Production/MaterialIssueDetail'
-import MaterialIssueShortages from './pages/Production/MaterialIssueShortages'
-import WIPBatchForm from './pages/Production/WIPBatchForm'
-import ProductionApprovalList from './pages/Production/ProductionApprovalList'
-import ProductionApprovalDetail from './pages/Production/ProductionApprovalDetail'
-import FGConversionList from './pages/Production/FGConversionList'
-import FGConversionDetail from './pages/Production/FGConversionDetail'
-import ProductChangeover from './pages/Production/ProductChangeover'
-import ChangeoverList from './pages/Production/ChangeoverList'
-import NotFound from './pages/NotFound'
-import WeeklyProductionPlan from './pages/Production/WeeklyProductionPlan'
-import WeeklyPlanDetail from './pages/Production/WeeklyPlanDetail'
-import MonthlyProductionPlan from './pages/Production/MonthlyProductionPlan'
-import DailyController from './pages/Production/DailyController'
-import WeeklyController from './pages/Production/WeeklyController'
-import MonthlyController from './pages/Production/MonthlyController'
-import ConvertingDashboard from './pages/Production/ConvertingDashboard'
-import ConvertingInput from './pages/Production/ConvertingInput'
-import ConvertingDetail from './pages/Production/ConvertingDetail'
-import WorkOrderMonitoring from './pages/Production/WorkOrderMonitoring'
-import BreakdownSummary from './pages/Production/BreakdownSummary'
-import WorkOrderTimeline from './pages/Production/WorkOrderTimeline'
-import WorkOrderBreakdown from './pages/Production/WorkOrderBreakdown'
-import WorkOrderStatus from './pages/Production/WorkOrderStatus'
-import WorkOrderKanban from './pages/Production/WorkOrderKanban'
-import QualityTestList from './pages/Quality/QualityTestList'
-import QualityTestForm from './pages/Quality/QualityTestForm'
-import QualityInspectionDetail from './pages/Quality/QualityInspectionDetail'
-import QualityDashboardEnhanced from './pages/Quality/QualityDashboardEnhanced'
-import QualityAlerts from './pages/Quality/QualityAlerts'
-import QualityAnalytics from './pages/Quality/QualityAnalytics'
-import QualityAudits from './pages/Quality/QualityAudits'
-import PendingQC from './pages/Quality/PendingQC'
-import WorkOrderQCForm from './pages/Quality/WorkOrderQCForm'
-import QCToWarehouse from './pages/Quality/QCToWarehouse'
-import IncomingQC from './pages/Quality/IncomingQC'
-import SPCDashboard from './pages/Quality/SPC/SPCDashboard'
-import InProcessQC from './pages/Quality/InProcessQC'
-import FinishGoodQC from './pages/Quality/FinishGoodQC'
-import FinishGoodDetail from './pages/Quality/FinishGoodDetail'
-import BatchStatusChange from './pages/Quality/BatchStatusChange'
-import QualityObjectiveProduction from './pages/Quality/QualityObjectiveProduction'
-import DowntimeAnalysis from './pages/Quality/DowntimeAnalysis'
-import ShippingDashboard from './pages/Shipping/ShippingDashboard'
-import ShippingOrderList from './pages/Shipping/ShippingOrderList'
-import ShippingOrderForm from './pages/Shipping/ShippingOrderForm'
-import CreateShippingFromQC from './pages/Shipping/CreateShippingFromQC'
-import ShippingOrderDetails from './pages/Shipping/ShippingOrderDetails'
-import ShippingTrackingForm from './pages/Shipping/ShippingTrackingForm'
-import ShippingReportsForm from './pages/Shipping/ShippingReportsForm'
-import DeliveryTracking from './pages/Shipping/DeliveryTracking'
-import ShippingCalculator from './pages/Shipping/ShippingCalculator'
-import LogisticsProviders from './pages/Shipping/LogisticsProviders'
-import FinanceDashboard from './pages/Finance/FinanceDashboard'
-import AccountingManagement from './pages/Finance/AccountingManagement'
-import JournalEntryPage from './pages/Finance/JournalEntryPage'
-import BudgetPlanning from './pages/Finance/BudgetPlanning'
-import BankReconciliation from './pages/Finance/BankReconciliation'
-import CashFlowManagement from './pages/Finance/CashFlowManagement'
-import FinancialReports from './pages/Finance/FinancialReports'
-import SalesReport from './pages/Finance/SalesReport'
-import AgingReport from './pages/Finance/AgingReport'
-import ReportsHub from './pages/Finance/Reports/ReportsHub'
-import FinanceSearch from './pages/Finance/FinanceSearch'
-import TrialBalance from './pages/Finance/Reports/TrialBalance'
-import InventoryMutation from './pages/Finance/Reports/InventoryMutation'
-import InventoryByWarehouse from './pages/Finance/Reports/InventoryByWarehouse'
-import StockVsLedger from './pages/Finance/Reports/StockVsLedger'
-import NearExpiry from './pages/Finance/Reports/NearExpiry'
-import AccountLedger from './pages/Finance/Reports/AccountLedger'
-import CashDaily from './pages/Finance/Reports/CashDaily'
-import CashDailyDetail from './pages/Finance/Reports/CashDailyDetail'
-import CashPosition from './pages/Finance/Reports/CashPosition'
-import PartyStatements from './pages/Finance/Reports/PartyStatements'
-import PartyStatementDetail from './pages/Finance/Reports/PartyStatementDetail'
-import PurchaseReport from './pages/Finance/Reports/PurchaseReport'
-import VatReport from './pages/Finance/Reports/VatReport'
-import VatDetail from './pages/Finance/Reports/VatDetail'
-import EquityChanges from './pages/Finance/Reports/EquityChanges'
-import CreditMemoList from './pages/Finance/CreditMemoList'
-import InvoiceList from './pages/Finance/InvoiceList'
-import FinanceInvoiceForm from './pages/Finance/InvoiceForm'
-import AccountsReceivable from './pages/Finance/AccountsReceivable'
-import AccountsPayable from './pages/Finance/AccountsPayable'
-import GeneralLedger from './pages/Finance/GeneralLedger'
-import ChartOfAccounts from './pages/Finance/ChartOfAccounts'
-import PeriodClose from './pages/Finance/PeriodClose'
-import RecurringPayment from './pages/Finance/RecurringPayment'
-import RecurringPaymentTransactionDetail from './pages/Finance/RecurringPaymentTransactionDetail'
-import RecurringPaymentTransactionRedirect from './pages/Finance/RecurringPaymentTransactionRedirect'
-import ReimbursementDetail from './pages/Finance/ReimbursementDetail'
-import ExpenseDetail from './pages/Finance/ExpenseDetail'
-import PurchaseInvoiceDetail from './pages/Finance/PurchaseInvoiceDetail'
-import SalesInvoiceDetail from './pages/Finance/SalesInvoiceDetail'
-import CashBankManagement from './pages/Finance/CashBankManagement'
-import TaxManagement from './pages/Finance/TaxManagement'
-import CostingControlling from './pages/Finance/CostingControlling'
-import Consolidation from './pages/Finance/Consolidation'
-import PaymentForm from './pages/Finance/PaymentForm'
-import PaymentList from './pages/Finance/PaymentList'
-import BankTransferList from './pages/Finance/BankTransferList'
-import RollList from './pages/Production/RollList'
-import BankTransferForm from './pages/Finance/BankTransferForm'
-import AdvanceRecap from './pages/Finance/AdvanceRecap'
-import PaymentDetail from './pages/Finance/PaymentDetail'
-import EmployeeExpenseForm from './pages/Finance/EmployeeExpenseForm'
-import ClaimsHub from './pages/Finance/ClaimsHub'
-import ReimbursementForm from './pages/Finance/ReimbursementForm'
-import EmployeeList from './pages/HR/EmployeeList'
-import EmployeeForm from './pages/HR/EmployeeForm'
-import RosterCalendar from './pages/HR/RosterCalendar'
-import RosterManagementComplete from './pages/HR/RosterManagementComplete'
-import WorkRosterComplete from './pages/HR/WorkRosterComplete'
-import WorkRosterWeekly from './pages/HR/WorkRosterWeekly'
-import HRDashboard from './pages/HR/HRDashboard'
-import PettyCash from './pages/HR/PettyCash'
-import FingerprintMapping from './pages/HR/FingerprintMapping'
-import FingerprintAttendance from './pages/HR/FingerprintAttendance'
-import AttendanceSchedules from './pages/HR/AttendanceSchedules'
-import PayrollList from './pages/HR/PayrollList'
-import PayrollPeriodForm from './pages/HR/PayrollPeriodForm'
-import PayrollRecordList from './pages/HR/PayrollRecordList'
-import AttendanceManagement from './pages/HR/AttendanceManagement'
-import AttendanceAdmin from './pages/HR/AttendanceAdmin'
-import AttendanceReconciliation from './pages/HR/AttendanceReconciliation'
-import WorkScheduleManagement from './pages/HR/WorkScheduleManagement'
-import FaceAdmin from './pages/HR/FaceAdmin'
-import AttendancePage from './pages/HR/AttendancePage'
-import AttendanceReport from './pages/HR/AttendanceReport'
-import PublicAttendance from './pages/Public/PublicAttendance'
-import StaffLeaveRequest from './pages/Public/StaffLeaveRequest'
-import FaceRegistration from './pages/Public/FaceRegistration'
-import AttendanceCalendar from './pages/HR/AttendanceCalendar'
-import AttendanceNotClockedOut from './pages/HR/AttendanceNotClockedOut'
-import StaffLeaveManagement from './pages/HR/StaffLeaveManagement'
-import LeaveManagement from './pages/HR/LeaveManagement'
-import LeaveRequestForm from './pages/HR/LeaveRequestForm'
-import AppraisalList from './pages/HR/AppraisalList'
-import AppraisalCycleForm from './pages/HR/AppraisalCycleForm'
-import TrainingManagement from './pages/HR/TrainingManagement'
-import AttendanceForm from './pages/HR/AttendanceForm'
-import LeaveForm from './pages/HR/LeaveForm'
-import PayrollForm from './pages/HR/PayrollForm'
-import OutsourcingVendorList from './pages/HR/OutsourcingVendorList'
-import PieceworkLogList from './pages/HR/PieceworkLogList'
-import Departments from './pages/HR/Departments'
-import PositionManagement from './pages/HR/PositionManagement'
-import HRReports from './pages/HR/Reports'
-import MaintenanceList from './pages/Maintenance/MaintenanceList'
-import MaintenancePartsForm from './pages/Maintenance/MaintenancePartsForm'
-import MachineParts from './pages/Maintenance/MachineParts'
-import SparePartRequests from './pages/Maintenance/SparePartRequests'
-import MaintenanceAnalyticsForm from './pages/Maintenance/MaintenanceAnalyticsForm'
-import MaintenanceDashboardEnhanced from './pages/Maintenance/MaintenanceDashboardEnhanced'
-import MaintenanceSchedule from './pages/Maintenance/MaintenanceSchedule'
-import MaintenanceForm from './pages/Maintenance/MaintenanceForm'
-import MaintenanceRequestForm from './pages/Maintenance/MaintenanceRequestForm'
-import SparePartStock from './pages/Maintenance/SparePartStock'
-import SparePartDetail from './pages/Maintenance/SparePartDetail'
-import ChecklistNGItems from './pages/Maintenance/ChecklistNGItems'
-import { WMSDashboard, StockByWorkOrder, StockByWODetail, MaterialConsumptionPage, TransactionsPage, TransactionDetail, PickListPage, TransferOrderPage, CycleCountPage, BatchTraceability } from './pages/WMS'
-import AssetDashboard from './pages/AssetManagement/AssetDashboard'
-import AssetList from './pages/AssetManagement/AssetList'
-import AssetDetail from './pages/AssetManagement/AssetDetail'
-import AssetForm from './pages/AssetManagement/AssetForm'
-import FunctionalLocations from './pages/AssetManagement/FunctionalLocations'
-import SparePartsList from './pages/AssetManagement/SparePartsList'
-import DepreciationReport from './pages/AssetManagement/DepreciationReport'
-import { RNDDashboard, RNDProjectList, RNDProjectDetail, RNDProjectForm, RNDApprovals } from './pages/RND'
-import WasteRecordList from './pages/Waste/WasteRecordList'
-import WasteRecordForm from './pages/Waste/WasteRecordForm'
-import ReturnsDashboard from './pages/Returns/ReturnsDashboard'
-import ReturnDetails from './pages/Returns/ReturnDetails'
-import CreateReturnForm from './pages/Returns/CreateReturnForm'
-import OEEDashboard from './pages/OEE/OEEDashboard'
-import EWSDashboard from './pages/EWS/EWSDashboard'
-import OEEDashboardEnhanced from './pages/OEE/OEEDashboardEnhanced'
-import OEERecordForm from './pages/OEE/OEERecordForm'
-import MachineAnalytics from './pages/OEE/MachineAnalytics'
-import ProductionInput from './pages/Production/ProductionInput'
-import DowntimeInput from './pages/Production/DowntimeInput'
-import WorkOrderProductionInput from './pages/Production/WorkOrderProductionInput'
-import EditProductionRecord from './pages/Production/EditProductionRecord'
-import WorkOrderEdit from './pages/Production/WorkOrderEdit'
-import WorkOrderBOMEdit from './pages/Production/WorkOrderBOMEdit'
-import CloseWorkOrder from './pages/Production/CloseWorkOrder'
-import BatchClose from './pages/Production/BatchClose'
-import BatchRecord from './pages/Production/BatchRecord'
-import BatchRecordList from './pages/Production/BatchRecordList'
-import BatchRecordWeeklyReport from './pages/Production/BatchRecordWeeklyReport'
-import BOMForm from './pages/Products/BOMForm'
-import ProductionScheduleForm from './pages/Production/ProductionScheduleForm'
-import QualityCheckForm from './pages/Production/QualityCheckForm'
-import MaterialIssueForm from './pages/Production/MaterialIssueForm'
-import WIPDashboard from './pages/Production/WIPDashboard'
-import WIPBatchList from './pages/Production/WIPBatchList'
-import RemainingStock from './pages/Production/RemainingStock'
-import WIPStock from './pages/Production/WIPStock'
-import Reports from './pages/Reports/ReportsFixed'
-import AdvancedReportBuilder from './pages/Reports/AdvancedReportBuilder'
-import ExecutiveDashboard from './pages/Reports/ExecutiveDashboard'
-import ProductionByProductReport from './pages/Reports/ProductionByProductReport'
-import ProductionMonitoringDashboard from './pages/Executive/ProductionMonitoringDashboard'
-import FactoryLayoutDashboard from './pages/Executive/FactoryLayoutDashboard'
-import LiveMonitoringDashboard from './pages/Production/LiveMonitoringDashboard'
-import LiveMonitoringWeekly from './pages/Production/LiveMonitoringWeekly'
-import LiveMonitoringView from './pages/Production/LiveMonitoringView'
-import PreShiftChecklist from './pages/Production/PreShiftChecklist'
-import PreShiftChecklistForm from './pages/Production/PreShiftChecklistForm'
-import PreShiftChecklistView from './pages/Production/PreShiftChecklistView'
-import PreShiftChecklistWeekly from './pages/Production/PreShiftChecklistWeekly'
-import DocumentControlCenter from './pages/DCC/DocumentControlCenter'
-import DocumentVerifyPage from './pages/DCC/DocumentVerifyPage'
-import ReportGenerator from './pages/Reports/ReportGenerator'
-import CustomReportBuilder from './pages/Reports/CustomReportBuilder'
-import ReportScheduler from './pages/Reports/ReportScheduler'
-import Landing from './pages/Landing/Landing'
-import ApprovalDashboard from './pages/Approval/ApprovalDashboard'
-import ApprovalDetail from './pages/Approval/ApprovalDetail'
-import WIPLedger from './pages/Finance/WIPLedger'
-import WIPLedgerDetail from './pages/Finance/WIPLedgerDetail'
-import DocumentDashboard from './pages/Documents/DocumentDashboardUpgraded'
-import DocumentGenerator from './pages/Documents/DocumentGeneratorUpgraded'
-import TemplateList from './pages/Documents/TemplateList'
-import TemplateVersionEditor from './pages/Documents/TemplateVersionEditor'
-import WorkOrderDetail from './pages/Production/WorkOrderDetail'
-import Settings from './pages/Settings/Settings'
-import AdvancedSystemConfig from './pages/Settings/AdvancedSystemConfig'
-import UserRoleManagement from './pages/Settings/UserRoleManagement'
-import AuditTrail from './pages/Settings/AuditTrail'
-import BackupRestore from './pages/Settings/BackupRestore'
-import EmailSettings from './pages/Settings/EmailSettings'
-import KPITargetSettings from './pages/Settings/KPITargetSettings'
-import AccountPreferences from './pages/Settings/AccountPreferences'
-import SystemHealth from './pages/Settings/SystemHealth'
-import NettoDeductionRulesManager from './pages/Settings/NettoDeductionRulesManager'
-import FactoryLayoutAdmin from './pages/Settings/FactoryLayoutAdmin'
-import UserProfile from './pages/Profile/UserProfile'
-import UserManual from './pages/Manual/UserManual'
-import FAQPage from './pages/Manual/FAQPage'
-import ManualAdmin from './pages/Manual/ManualAdmin'
+const WarehouseLocations = lazy(() => import('./pages/Warehouse/WarehouseLocations'))
+const WarehouseDashboardEnhanced = lazy(() => import('./pages/Warehouse/WarehouseDashboardEnhanced'))
+const WarehouseAnalytics = lazy(() => import('./pages/Warehouse/WarehouseAnalytics'))
+const ABCAnalysis = lazy(() => import('./pages/Warehouse/ABCAnalysis'))
+const InventoryList = lazy(() => import('./pages/Warehouse/InventoryList'))
+const InventoryListEnhanced = lazy(() => import('./pages/Warehouse/InventoryListEnhanced'))
+const RawMaterialStockPage = lazy(() => import('./pages/Warehouse/RawMaterialStockPage'))
+const AddProductToInventory = lazy(() => import('./pages/Warehouse/AddProductToInventory'))
+const InventoryForm = lazy(() => import('./pages/Warehouse/InventoryForm'))
+const LocationForm = lazy(() => import('./pages/Warehouse/LocationForm'))
+const MovementForm = lazy(() => import('./pages/Warehouse/MovementForm'))
+const MovementDetail = lazy(() => import('./pages/Warehouse/MovementDetail'))
+const AdjustmentForm = lazy(() => import('./pages/Warehouse/AdjustmentForm'))
+const AdjustmentList = lazy(() => import('./pages/Warehouse/AdjustmentList'))
+const AdjustmentDetail = lazy(() => import('./pages/Warehouse/AdjustmentDetail'))
+const TransferHub = lazy(() => import('./pages/Warehouse/TransferHub'))
+const StockTransferForm = lazy(() => import('./pages/Warehouse/StockTransferForm'))
+const StockTransferDetail = lazy(() => import('./pages/Warehouse/StockTransferDetail'))
+const ItemStockPage = lazy(() => import('./pages/Warehouse/ItemStockPage'))
+const LocationList = lazy(() => import('./pages/Warehouse/LocationList'))
+const LocationDetail = lazy(() => import('./pages/Warehouse/LocationDetail'))
+const MovementList = lazy(() => import('./pages/Warehouse/MovementList'))
+const StockInput = lazy(() => import('./pages/Warehouse/StockInput'))
+const WarehouseZones = lazy(() => import('./pages/Warehouse/WarehouseZones'))
+const ZoneStockPage = lazy(() => import('./pages/Warehouse/ZoneStockPage'))
+const MaterialsDashboard = lazy(() => import('./pages/Warehouse/MaterialsDashboard'))
+const MaterialsList = lazy(() => import('./pages/Warehouse/MaterialsList'))
+const MaterialView = lazy(() => import('./pages/Warehouse/MaterialView'))
+const MaterialEdit = lazy(() => import('./pages/Warehouse/MaterialEdit'))
+const MaterialCreate = lazy(() => import('./pages/Warehouse/MaterialCreate'))
+const MaterialStockManagement = lazy(() => import('./pages/Warehouse/MaterialStockManagement'))
+const StockOpnameList = lazy(() => import('./pages/Warehouse/StockOpnameList'))
+const StockOpnameResultsPage = lazy(() => import('./pages/Warehouse/StockOpnameResultsPage'))
+const StockOpnameForm = lazy(() => import('./pages/Warehouse/StockOpnameForm'))
+const StockOpnameDetail = lazy(() => import('./pages/Warehouse/StockOpnameDetail'))
+const UoMList = lazy(() => import('./pages/Warehouse/UoMList'))
+const StockAlerts = lazy(() => import('./pages/Warehouse/StockAlerts'))
+const CustomerList = lazy(() => import('./pages/Sales/CustomerList'))
+const CustomerForm = lazy(() => import('./pages/Sales/CustomerForm'))
+const CustomerDetails = lazy(() => import('./pages/Sales/CustomerDetails'))
+const WorkflowStatus = lazy(() => import('./pages/Sales/WorkflowStatus'))
+const SalesOrderList = lazy(() => import('./pages/Sales/SalesOrderListUpgraded'))
+const SalesOrderDetails = lazy(() => import('./pages/Sales/SalesOrderDetails'))
+const SalesOrderForm = lazy(() => import('./pages/Sales/SalesOrderForm'))
+const SalesOrderSourcePicker = lazy(() => import('./pages/Sales/SalesOrderSourcePicker'))
+const LeadList = lazy(() => import('./pages/Sales/LeadListUpgraded'))
+const LeadForm = lazy(() => import('./pages/Sales/LeadForm'))
+const OpportunityList = lazy(() => import('./pages/Sales/OpportunityListUpgraded'))
+const OpportunityForm = lazy(() => import('./pages/Sales/OpportunityForm'))
+const QuotationList = lazy(() => import('./pages/Sales/QuotationList'))
+const QuotationForm = lazy(() => import('./pages/Sales/QuotationForm'))
+const ActivityList = lazy(() => import('./pages/Sales/ActivityList'))
+const ActivityForm = lazy(() => import('./pages/Sales/ActivityForm'))
+const SalesDashboard = lazy(() => import('./pages/Sales/SalesDashboard'))
+const SalesForecastList = lazy(() => import('./pages/Sales/SalesForecastList'))
+const SalesForecastGrid = lazy(() => import('./pages/Sales/SalesForecastGrid'))
+const SalesInvoiceForm = lazy(() => import('./pages/Sales/InvoiceForm'))
+const SalesInvoiceFormNew = lazy(() => import('./pages/Sales/SalesInvoiceFormNew'))
+const SupplierList = lazy(() => import('./pages/Purchasing/SupplierList'))
+const SupplierForm = lazy(() => import('./pages/Purchasing/SupplierForm'))
+const PurchaseOrderList = lazy(() => import('./pages/Purchasing/PurchaseOrderList'))
+const PurchaseOrderForm = lazy(() => import('./pages/Purchasing/PurchaseOrderForm'))
+const PODetail = lazy(() => import('./pages/Purchasing/PODetail'))
+const Purchasing = lazy(() => import('./pages/Purchasing/Purchasing'))
+const PriceComparison = lazy(() => import('./pages/Purchasing/PriceComparison'))
+const ContractList = lazy(() => import('./pages/Purchasing/ContractList'))
+const ContractForm = lazy(() => import('./pages/Purchasing/ContractForm'))
+const RFQList = lazy(() => import('./pages/Purchasing/RFQList'))
+const QuoteList = lazy(() => import('./pages/Purchasing/QuoteList'))
+const RFQForm = lazy(() => import('./pages/Purchasing/RFQForm'))
+const GRNForm = lazy(() => import('./pages/Purchasing/GRNForm'))
+const SupplierQuoteForm = lazy(() => import('./pages/Purchasing/SupplierQuoteForm'))
+const PRList = lazy(() => import('./pages/Purchasing/PRList'))
+const PRForm = lazy(() => import('./pages/Purchasing/PRForm'))
+const PRDetail = lazy(() => import('./pages/Purchasing/PRDetail'))
+const GRNList = lazy(() => import('./pages/Purchasing/GRNList'))
+const GRNDetail = lazy(() => import('./pages/Purchasing/GRNDetail'))
+const DownPaymentList = lazy(() => import('./pages/Purchasing/DownPaymentList'))
+const DownPaymentForm = lazy(() => import('./pages/Purchasing/DownPaymentForm'))
+const DownPaymentDetail = lazy(() => import('./pages/Purchasing/DownPaymentDetail'))
+const PurchaseInvoiceList = lazy(() => import('./pages/Purchasing/InvoiceList'))
+const InvoiceMatching = lazy(() => import('./pages/Purchasing/InvoiceMatching'))
+const PurchaseReturnList = lazy(() => import('./pages/Purchasing/PurchaseReturnList'))
+const PurchaseReturnDetail = lazy(() => import('./pages/Purchasing/PurchaseReturnDetail'))
+const PurchaseReturnForm = lazy(() => import('./pages/Purchasing/PurchaseReturnForm'))
+const MachineList = lazy(() => import('./pages/Production/MachineList'))
+const MachineForm = lazy(() => import('./pages/Production/MachineForm'))
+const MachineDetail = lazy(() => import('./pages/Production/MachineDetail'))
+const WorkCenterDashboard = lazy(() => import('./pages/Production/WorkCenterDashboard'))
+const WorkOrderList = lazy(() => import('./pages/Production/WorkOrderList'))
+const WorkOrderForm = lazy(() => import('./pages/Production/WorkOrderForm'))
+const ProductionDashboard = lazy(() => import('./pages/Production/ProductionDashboard'))
+const ProductionScheduling = lazy(() => import('./pages/Production/ProductionScheduling'))
+const ProductionRecords = lazy(() => import('./pages/Production/ProductionRecords'))
+const ProductionRecordForm = lazy(() => import('./pages/Production/ProductionRecordForm'))
+const EfficiencyTracking = lazy(() => import('./pages/Production/EfficiencyTracking'))
+const Traceability = lazy(() => import('./pages/Production/Traceability'))
+const MBFReport = lazy(() => import('./pages/Production/MBFReport'))
+const MBFReportList = lazy(() => import('./pages/Production/MBFReportList'))
+const ProductionPlanningList = lazy(() => import('./pages/Production/ProductionPlanningList'))
+const ProductionPlanningForm = lazy(() => import('./pages/Production/ProductionPlanningForm'))
+const ProductionPlanningDashboard = lazy(() => import('./pages/Production/ProductionPlanningDashboard'))
+const BatchSchedulingMasterData = lazy(() => import('./pages/Production/BatchSchedulingMasterData'))
+const BatchSchedulingSettings = lazy(() => import('./pages/Settings/BatchSchedulingSettings'))
+const BatchPlanning = lazy(() => import('./pages/Production/BatchPlanning'))
+const MaterialIssueList = lazy(() => import('./pages/Production/MaterialIssueList'))
+const MaterialIssueDetail = lazy(() => import('./pages/Production/MaterialIssueDetail'))
+const MaterialIssueShortages = lazy(() => import('./pages/Production/MaterialIssueShortages'))
+const WIPBatchForm = lazy(() => import('./pages/Production/WIPBatchForm'))
+const ProductionApprovalList = lazy(() => import('./pages/Production/ProductionApprovalList'))
+const ProductionApprovalDetail = lazy(() => import('./pages/Production/ProductionApprovalDetail'))
+const FGConversionList = lazy(() => import('./pages/Production/FGConversionList'))
+const FGConversionDetail = lazy(() => import('./pages/Production/FGConversionDetail'))
+const ProductChangeover = lazy(() => import('./pages/Production/ProductChangeover'))
+const ChangeoverList = lazy(() => import('./pages/Production/ChangeoverList'))
+const NotFound = lazy(() => import('./pages/NotFound'))
+const WeeklyProductionPlan = lazy(() => import('./pages/Production/WeeklyProductionPlan'))
+const WeeklyPlanDetail = lazy(() => import('./pages/Production/WeeklyPlanDetail'))
+const MonthlyProductionPlan = lazy(() => import('./pages/Production/MonthlyProductionPlan'))
+const DailyController = lazy(() => import('./pages/Production/DailyController'))
+const WeeklyController = lazy(() => import('./pages/Production/WeeklyController'))
+const MonthlyController = lazy(() => import('./pages/Production/MonthlyController'))
+const ConvertingDashboard = lazy(() => import('./pages/Production/ConvertingDashboard'))
+const ConvertingInput = lazy(() => import('./pages/Production/ConvertingInput'))
+const ConvertingDetail = lazy(() => import('./pages/Production/ConvertingDetail'))
+const WorkOrderMonitoring = lazy(() => import('./pages/Production/WorkOrderMonitoring'))
+const BreakdownSummary = lazy(() => import('./pages/Production/BreakdownSummary'))
+const WorkOrderTimeline = lazy(() => import('./pages/Production/WorkOrderTimeline'))
+const WorkOrderBreakdown = lazy(() => import('./pages/Production/WorkOrderBreakdown'))
+const WorkOrderStatus = lazy(() => import('./pages/Production/WorkOrderStatus'))
+const WorkOrderKanban = lazy(() => import('./pages/Production/WorkOrderKanban'))
+const QualityTestList = lazy(() => import('./pages/Quality/QualityTestList'))
+const QualityTestForm = lazy(() => import('./pages/Quality/QualityTestForm'))
+const QualityInspectionDetail = lazy(() => import('./pages/Quality/QualityInspectionDetail'))
+const QualityDashboardEnhanced = lazy(() => import('./pages/Quality/QualityDashboardEnhanced'))
+const QualityAlerts = lazy(() => import('./pages/Quality/QualityAlerts'))
+const QualityAnalytics = lazy(() => import('./pages/Quality/QualityAnalytics'))
+const QualityAudits = lazy(() => import('./pages/Quality/QualityAudits'))
+const PendingQC = lazy(() => import('./pages/Quality/PendingQC'))
+const WorkOrderQCForm = lazy(() => import('./pages/Quality/WorkOrderQCForm'))
+const QCToWarehouse = lazy(() => import('./pages/Quality/QCToWarehouse'))
+const IncomingQC = lazy(() => import('./pages/Quality/IncomingQC'))
+const SPCDashboard = lazy(() => import('./pages/Quality/SPC/SPCDashboard'))
+const InProcessQC = lazy(() => import('./pages/Quality/InProcessQC'))
+const FinishGoodQC = lazy(() => import('./pages/Quality/FinishGoodQC'))
+const FinishGoodDetail = lazy(() => import('./pages/Quality/FinishGoodDetail'))
+const BatchStatusChange = lazy(() => import('./pages/Quality/BatchStatusChange'))
+const QualityObjectiveProduction = lazy(() => import('./pages/Quality/QualityObjectiveProduction'))
+const DowntimeAnalysis = lazy(() => import('./pages/Quality/DowntimeAnalysis'))
+const ShippingDashboard = lazy(() => import('./pages/Shipping/ShippingDashboard'))
+const ShippingOrderList = lazy(() => import('./pages/Shipping/ShippingOrderList'))
+const ShippingOrderForm = lazy(() => import('./pages/Shipping/ShippingOrderForm'))
+const CreateShippingFromQC = lazy(() => import('./pages/Shipping/CreateShippingFromQC'))
+const ShippingOrderDetails = lazy(() => import('./pages/Shipping/ShippingOrderDetails'))
+const ShippingTrackingForm = lazy(() => import('./pages/Shipping/ShippingTrackingForm'))
+const ShippingReportsForm = lazy(() => import('./pages/Shipping/ShippingReportsForm'))
+const DeliveryTracking = lazy(() => import('./pages/Shipping/DeliveryTracking'))
+const ShippingCalculator = lazy(() => import('./pages/Shipping/ShippingCalculator'))
+const LogisticsProviders = lazy(() => import('./pages/Shipping/LogisticsProviders'))
+const FinanceDashboard = lazy(() => import('./pages/Finance/FinanceDashboard'))
+const AccountingManagement = lazy(() => import('./pages/Finance/AccountingManagement'))
+const JournalEntryPage = lazy(() => import('./pages/Finance/JournalEntryPage'))
+const BudgetPlanning = lazy(() => import('./pages/Finance/BudgetPlanning'))
+const BankReconciliation = lazy(() => import('./pages/Finance/BankReconciliation'))
+const CashFlowManagement = lazy(() => import('./pages/Finance/CashFlowManagement'))
+const FinancialReports = lazy(() => import('./pages/Finance/FinancialReports'))
+const SalesReport = lazy(() => import('./pages/Finance/SalesReport'))
+const AgingReport = lazy(() => import('./pages/Finance/AgingReport'))
+const ReportsHub = lazy(() => import('./pages/Finance/Reports/ReportsHub'))
+const FinanceSearch = lazy(() => import('./pages/Finance/FinanceSearch'))
+const TrialBalance = lazy(() => import('./pages/Finance/Reports/TrialBalance'))
+const InventoryMutation = lazy(() => import('./pages/Finance/Reports/InventoryMutation'))
+const InventoryByWarehouse = lazy(() => import('./pages/Finance/Reports/InventoryByWarehouse'))
+const StockVsLedger = lazy(() => import('./pages/Finance/Reports/StockVsLedger'))
+const NearExpiry = lazy(() => import('./pages/Finance/Reports/NearExpiry'))
+const AccountLedger = lazy(() => import('./pages/Finance/Reports/AccountLedger'))
+const CashDaily = lazy(() => import('./pages/Finance/Reports/CashDaily'))
+const CashDailyDetail = lazy(() => import('./pages/Finance/Reports/CashDailyDetail'))
+const CashPosition = lazy(() => import('./pages/Finance/Reports/CashPosition'))
+const PartyStatements = lazy(() => import('./pages/Finance/Reports/PartyStatements'))
+const PartyStatementDetail = lazy(() => import('./pages/Finance/Reports/PartyStatementDetail'))
+const PurchaseReport = lazy(() => import('./pages/Finance/Reports/PurchaseReport'))
+const VatReport = lazy(() => import('./pages/Finance/Reports/VatReport'))
+const VatDetail = lazy(() => import('./pages/Finance/Reports/VatDetail'))
+const EquityChanges = lazy(() => import('./pages/Finance/Reports/EquityChanges'))
+const CreditMemoList = lazy(() => import('./pages/Finance/CreditMemoList'))
+const InvoiceList = lazy(() => import('./pages/Finance/InvoiceList'))
+const FinanceInvoiceForm = lazy(() => import('./pages/Finance/InvoiceForm'))
+const AccountsReceivable = lazy(() => import('./pages/Finance/AccountsReceivable'))
+const AccountsPayable = lazy(() => import('./pages/Finance/AccountsPayable'))
+const GeneralLedger = lazy(() => import('./pages/Finance/GeneralLedger'))
+const ChartOfAccounts = lazy(() => import('./pages/Finance/ChartOfAccounts'))
+const PeriodClose = lazy(() => import('./pages/Finance/PeriodClose'))
+const RecurringPayment = lazy(() => import('./pages/Finance/RecurringPayment'))
+const RecurringPaymentTransactionDetail = lazy(() => import('./pages/Finance/RecurringPaymentTransactionDetail'))
+const RecurringPaymentTransactionRedirect = lazy(() => import('./pages/Finance/RecurringPaymentTransactionRedirect'))
+const ReimbursementDetail = lazy(() => import('./pages/Finance/ReimbursementDetail'))
+const ExpenseDetail = lazy(() => import('./pages/Finance/ExpenseDetail'))
+const PurchaseInvoiceDetail = lazy(() => import('./pages/Finance/PurchaseInvoiceDetail'))
+const SalesInvoiceDetail = lazy(() => import('./pages/Finance/SalesInvoiceDetail'))
+const CashBankManagement = lazy(() => import('./pages/Finance/CashBankManagement'))
+const TaxManagement = lazy(() => import('./pages/Finance/TaxManagement'))
+const CostingControlling = lazy(() => import('./pages/Finance/CostingControlling'))
+const Consolidation = lazy(() => import('./pages/Finance/Consolidation'))
+const PaymentForm = lazy(() => import('./pages/Finance/PaymentForm'))
+const PaymentList = lazy(() => import('./pages/Finance/PaymentList'))
+const BankTransferList = lazy(() => import('./pages/Finance/BankTransferList'))
+const RollList = lazy(() => import('./pages/Production/RollList'))
+const BankTransferForm = lazy(() => import('./pages/Finance/BankTransferForm'))
+const AdvanceRecap = lazy(() => import('./pages/Finance/AdvanceRecap'))
+const PaymentDetail = lazy(() => import('./pages/Finance/PaymentDetail'))
+const EmployeeExpenseForm = lazy(() => import('./pages/Finance/EmployeeExpenseForm'))
+const ClaimsHub = lazy(() => import('./pages/Finance/ClaimsHub'))
+const ReimbursementForm = lazy(() => import('./pages/Finance/ReimbursementForm'))
+const EmployeeList = lazy(() => import('./pages/HR/EmployeeList'))
+const EmployeeForm = lazy(() => import('./pages/HR/EmployeeForm'))
+const RosterCalendar = lazy(() => import('./pages/HR/RosterCalendar'))
+const RosterManagementComplete = lazy(() => import('./pages/HR/RosterManagementComplete'))
+const WorkRosterComplete = lazy(() => import('./pages/HR/WorkRosterComplete'))
+const WorkRosterWeekly = lazy(() => import('./pages/HR/WorkRosterWeekly'))
+const HRDashboard = lazy(() => import('./pages/HR/HRDashboard'))
+const PettyCash = lazy(() => import('./pages/HR/PettyCash'))
+const FingerprintMapping = lazy(() => import('./pages/HR/FingerprintMapping'))
+const FingerprintAttendance = lazy(() => import('./pages/HR/FingerprintAttendance'))
+const AttendanceSchedules = lazy(() => import('./pages/HR/AttendanceSchedules'))
+const PayrollList = lazy(() => import('./pages/HR/PayrollList'))
+const PayrollPeriodForm = lazy(() => import('./pages/HR/PayrollPeriodForm'))
+const PayrollRecordList = lazy(() => import('./pages/HR/PayrollRecordList'))
+const AttendanceManagement = lazy(() => import('./pages/HR/AttendanceManagement'))
+const AttendanceAdmin = lazy(() => import('./pages/HR/AttendanceAdmin'))
+const AttendanceReconciliation = lazy(() => import('./pages/HR/AttendanceReconciliation'))
+const WorkScheduleManagement = lazy(() => import('./pages/HR/WorkScheduleManagement'))
+const FaceAdmin = lazy(() => import('./pages/HR/FaceAdmin'))
+const AttendancePage = lazy(() => import('./pages/HR/AttendancePage'))
+const AttendanceReport = lazy(() => import('./pages/HR/AttendanceReport'))
+const PublicAttendance = lazy(() => import('./pages/Public/PublicAttendance'))
+const StaffLeaveRequest = lazy(() => import('./pages/Public/StaffLeaveRequest'))
+const FaceRegistration = lazy(() => import('./pages/Public/FaceRegistration'))
+const AttendanceCalendar = lazy(() => import('./pages/HR/AttendanceCalendar'))
+const AttendanceNotClockedOut = lazy(() => import('./pages/HR/AttendanceNotClockedOut'))
+const StaffLeaveManagement = lazy(() => import('./pages/HR/StaffLeaveManagement'))
+const LeaveManagement = lazy(() => import('./pages/HR/LeaveManagement'))
+const LeaveRequestForm = lazy(() => import('./pages/HR/LeaveRequestForm'))
+const AppraisalList = lazy(() => import('./pages/HR/AppraisalList'))
+const AppraisalCycleForm = lazy(() => import('./pages/HR/AppraisalCycleForm'))
+const TrainingManagement = lazy(() => import('./pages/HR/TrainingManagement'))
+const AttendanceForm = lazy(() => import('./pages/HR/AttendanceForm'))
+const LeaveForm = lazy(() => import('./pages/HR/LeaveForm'))
+const PayrollForm = lazy(() => import('./pages/HR/PayrollForm'))
+const OutsourcingVendorList = lazy(() => import('./pages/HR/OutsourcingVendorList'))
+const PieceworkLogList = lazy(() => import('./pages/HR/PieceworkLogList'))
+const Departments = lazy(() => import('./pages/HR/Departments'))
+const PositionManagement = lazy(() => import('./pages/HR/PositionManagement'))
+const HRReports = lazy(() => import('./pages/HR/Reports'))
+const MaintenanceList = lazy(() => import('./pages/Maintenance/MaintenanceList'))
+const MaintenancePartsForm = lazy(() => import('./pages/Maintenance/MaintenancePartsForm'))
+const MachineParts = lazy(() => import('./pages/Maintenance/MachineParts'))
+const SparePartRequests = lazy(() => import('./pages/Maintenance/SparePartRequests'))
+const MaintenanceAnalyticsForm = lazy(() => import('./pages/Maintenance/MaintenanceAnalyticsForm'))
+const MaintenanceDashboardEnhanced = lazy(() => import('./pages/Maintenance/MaintenanceDashboardEnhanced'))
+const MaintenanceSchedule = lazy(() => import('./pages/Maintenance/MaintenanceSchedule'))
+const MaintenanceForm = lazy(() => import('./pages/Maintenance/MaintenanceForm'))
+const MaintenanceRequestForm = lazy(() => import('./pages/Maintenance/MaintenanceRequestForm'))
+const SparePartStock = lazy(() => import('./pages/Maintenance/SparePartStock'))
+const SparePartDetail = lazy(() => import('./pages/Maintenance/SparePartDetail'))
+const ChecklistNGItems = lazy(() => import('./pages/Maintenance/ChecklistNGItems'))
+const WMSDashboard = lazy(() => import('./pages/WMS').then((m) => ({ default: m.WMSDashboard })))
+const StockByWorkOrder = lazy(() => import('./pages/WMS').then((m) => ({ default: m.StockByWorkOrder })))
+const StockByWODetail = lazy(() => import('./pages/WMS').then((m) => ({ default: m.StockByWODetail })))
+const MaterialConsumptionPage = lazy(() => import('./pages/WMS').then((m) => ({ default: m.MaterialConsumptionPage })))
+const TransactionsPage = lazy(() => import('./pages/WMS').then((m) => ({ default: m.TransactionsPage })))
+const TransactionDetail = lazy(() => import('./pages/WMS').then((m) => ({ default: m.TransactionDetail })))
+const PickListPage = lazy(() => import('./pages/WMS').then((m) => ({ default: m.PickListPage })))
+const TransferOrderPage = lazy(() => import('./pages/WMS').then((m) => ({ default: m.TransferOrderPage })))
+const CycleCountPage = lazy(() => import('./pages/WMS').then((m) => ({ default: m.CycleCountPage })))
+const BatchTraceability = lazy(() => import('./pages/WMS').then((m) => ({ default: m.BatchTraceability })))
+const AssetDashboard = lazy(() => import('./pages/AssetManagement/AssetDashboard'))
+const AssetList = lazy(() => import('./pages/AssetManagement/AssetList'))
+const AssetDetail = lazy(() => import('./pages/AssetManagement/AssetDetail'))
+const AssetForm = lazy(() => import('./pages/AssetManagement/AssetForm'))
+const FunctionalLocations = lazy(() => import('./pages/AssetManagement/FunctionalLocations'))
+const SparePartsList = lazy(() => import('./pages/AssetManagement/SparePartsList'))
+const DepreciationReport = lazy(() => import('./pages/AssetManagement/DepreciationReport'))
+const RNDDashboard = lazy(() => import('./pages/RND').then((m) => ({ default: m.RNDDashboard })))
+const RNDProjectList = lazy(() => import('./pages/RND').then((m) => ({ default: m.RNDProjectList })))
+const RNDProjectDetail = lazy(() => import('./pages/RND').then((m) => ({ default: m.RNDProjectDetail })))
+const RNDProjectForm = lazy(() => import('./pages/RND').then((m) => ({ default: m.RNDProjectForm })))
+const RNDApprovals = lazy(() => import('./pages/RND').then((m) => ({ default: m.RNDApprovals })))
+const WasteRecordList = lazy(() => import('./pages/Waste/WasteRecordList'))
+const WasteRecordForm = lazy(() => import('./pages/Waste/WasteRecordForm'))
+const ReturnsDashboard = lazy(() => import('./pages/Returns/ReturnsDashboard'))
+const ReturnDetails = lazy(() => import('./pages/Returns/ReturnDetails'))
+const CreateReturnForm = lazy(() => import('./pages/Returns/CreateReturnForm'))
+const OEEDashboard = lazy(() => import('./pages/OEE/OEEDashboard'))
+const EWSDashboard = lazy(() => import('./pages/EWS/EWSDashboard'))
+const OEEDashboardEnhanced = lazy(() => import('./pages/OEE/OEEDashboardEnhanced'))
+const OEERecordForm = lazy(() => import('./pages/OEE/OEERecordForm'))
+const MachineAnalytics = lazy(() => import('./pages/OEE/MachineAnalytics'))
+const ProductionInput = lazy(() => import('./pages/Production/ProductionInput'))
+const DowntimeInput = lazy(() => import('./pages/Production/DowntimeInput'))
+const WorkOrderProductionInput = lazy(() => import('./pages/Production/WorkOrderProductionInput'))
+const EditProductionRecord = lazy(() => import('./pages/Production/EditProductionRecord'))
+const WorkOrderEdit = lazy(() => import('./pages/Production/WorkOrderEdit'))
+const WorkOrderBOMEdit = lazy(() => import('./pages/Production/WorkOrderBOMEdit'))
+const CloseWorkOrder = lazy(() => import('./pages/Production/CloseWorkOrder'))
+const BatchClose = lazy(() => import('./pages/Production/BatchClose'))
+const BatchRecord = lazy(() => import('./pages/Production/BatchRecord'))
+const BatchRecordList = lazy(() => import('./pages/Production/BatchRecordList'))
+const BatchRecordWeeklyReport = lazy(() => import('./pages/Production/BatchRecordWeeklyReport'))
+const BOMForm = lazy(() => import('./pages/Products/BOMForm'))
+const ProductionScheduleForm = lazy(() => import('./pages/Production/ProductionScheduleForm'))
+const QualityCheckForm = lazy(() => import('./pages/Production/QualityCheckForm'))
+const MaterialIssueForm = lazy(() => import('./pages/Production/MaterialIssueForm'))
+const WIPDashboard = lazy(() => import('./pages/Production/WIPDashboard'))
+const WIPBatchList = lazy(() => import('./pages/Production/WIPBatchList'))
+const RemainingStock = lazy(() => import('./pages/Production/RemainingStock'))
+const WIPStock = lazy(() => import('./pages/Production/WIPStock'))
+const Reports = lazy(() => import('./pages/Reports/ReportsFixed'))
+const AdvancedReportBuilder = lazy(() => import('./pages/Reports/AdvancedReportBuilder'))
+const ExecutiveDashboard = lazy(() => import('./pages/Reports/ExecutiveDashboard'))
+const ProductionByProductReport = lazy(() => import('./pages/Reports/ProductionByProductReport'))
+const ProductionMonitoringDashboard = lazy(() => import('./pages/Executive/ProductionMonitoringDashboard'))
+const FactoryLayoutDashboard = lazy(() => import('./pages/Executive/FactoryLayoutDashboard'))
+const LiveMonitoringDashboard = lazy(() => import('./pages/Production/LiveMonitoringDashboard'))
+const LiveMonitoringWeekly = lazy(() => import('./pages/Production/LiveMonitoringWeekly'))
+const LiveMonitoringView = lazy(() => import('./pages/Production/LiveMonitoringView'))
+const PreShiftChecklist = lazy(() => import('./pages/Production/PreShiftChecklist'))
+const PreShiftChecklistForm = lazy(() => import('./pages/Production/PreShiftChecklistForm'))
+const PreShiftChecklistView = lazy(() => import('./pages/Production/PreShiftChecklistView'))
+const PreShiftChecklistWeekly = lazy(() => import('./pages/Production/PreShiftChecklistWeekly'))
+const DocumentControlCenter = lazy(() => import('./pages/DCC/DocumentControlCenter'))
+const DocumentVerifyPage = lazy(() => import('./pages/DCC/DocumentVerifyPage'))
+const ReportGenerator = lazy(() => import('./pages/Reports/ReportGenerator'))
+const CustomReportBuilder = lazy(() => import('./pages/Reports/CustomReportBuilder'))
+const ReportScheduler = lazy(() => import('./pages/Reports/ReportScheduler'))
+const Landing = lazy(() => import('./pages/Landing/Landing'))
+const ApprovalDashboard = lazy(() => import('./pages/Approval/ApprovalDashboard'))
+const ApprovalDetail = lazy(() => import('./pages/Approval/ApprovalDetail'))
+const WIPLedger = lazy(() => import('./pages/Finance/WIPLedger'))
+const WIPLedgerDetail = lazy(() => import('./pages/Finance/WIPLedgerDetail'))
+const DocumentDashboard = lazy(() => import('./pages/Documents/DocumentDashboardUpgraded'))
+const DocumentGenerator = lazy(() => import('./pages/Documents/DocumentGeneratorUpgraded'))
+const TemplateList = lazy(() => import('./pages/Documents/TemplateList'))
+const TemplateVersionEditor = lazy(() => import('./pages/Documents/TemplateVersionEditor'))
+const WorkOrderDetail = lazy(() => import('./pages/Production/WorkOrderDetail'))
+const Settings = lazy(() => import('./pages/Settings/Settings'))
+const AdvancedSystemConfig = lazy(() => import('./pages/Settings/AdvancedSystemConfig'))
+const UserRoleManagement = lazy(() => import('./pages/Settings/UserRoleManagement'))
+const AuditTrail = lazy(() => import('./pages/Settings/AuditTrail'))
+const BackupRestore = lazy(() => import('./pages/Settings/BackupRestore'))
+const EmailSettings = lazy(() => import('./pages/Settings/EmailSettings'))
+const KPITargetSettings = lazy(() => import('./pages/Settings/KPITargetSettings'))
+const AccountPreferences = lazy(() => import('./pages/Settings/AccountPreferences'))
+const SystemHealth = lazy(() => import('./pages/Settings/SystemHealth'))
+const NettoDeductionRulesManager = lazy(() => import('./pages/Settings/NettoDeductionRulesManager'))
+const FactoryLayoutAdmin = lazy(() => import('./pages/Settings/FactoryLayoutAdmin'))
+const UserProfile = lazy(() => import('./pages/Profile/UserProfile'))
+const UserManual = lazy(() => import('./pages/Manual/UserManual'))
+const FAQPage = lazy(() => import('./pages/Manual/FAQPage'))
+const ManualAdmin = lazy(() => import('./pages/Manual/ManualAdmin'))
 import AdminRoute from './components/Auth/AdminRoute'
 import StaffAdminRoute from './components/Auth/StaffAdminRoute'
-import AccurateIntegration from './pages/Integration/AccurateIntegration'
-import TVDisplayProduction from './pages/TVDisplay/TVDisplayProduction'
-import TVDisplayShipping from './pages/TVDisplay/TVDisplayShipping'
-import TVDisplaySelector from './pages/TVDisplay/TVDisplaySelector'
-import TVDisplayRoster from './pages/TVDisplay/TVDisplayRoster'
-import TVDisplayOverview from './pages/TVDisplay/TVDisplayOverview'
-import MRP from './pages/MRP/MRP'
-import WhatIfSimulation from './pages/MRP/WhatIfSimulation'
-import MRPDashboard from './pages/MRP/MRPDashboard'
-import MRPRun from './pages/MRP/MRPRun'
-import DemandPlanning from './pages/MRP/DemandPlanning'
-import CapacityPlanning from './pages/MRP/CapacityPlanning'
-import MaterialRequirements from './pages/MRP/MaterialRequirements'
-import SupplierIntegration from './pages/MRP/SupplierIntegration'
-import NotificationsPage from './pages/Notifications/NotificationsPage'
+const AccurateIntegration = lazy(() => import('./pages/Integration/AccurateIntegration'))
+const TVDisplayProduction = lazy(() => import('./pages/TVDisplay/TVDisplayProduction'))
+const TVDisplayShipping = lazy(() => import('./pages/TVDisplay/TVDisplayShipping'))
+const TVDisplaySelector = lazy(() => import('./pages/TVDisplay/TVDisplaySelector'))
+const TVDisplayRoster = lazy(() => import('./pages/TVDisplay/TVDisplayRoster'))
+const TVDisplayOverview = lazy(() => import('./pages/TVDisplay/TVDisplayOverview'))
+const MRP = lazy(() => import('./pages/MRP/MRP'))
+const WhatIfSimulation = lazy(() => import('./pages/MRP/WhatIfSimulation'))
+const MRPDashboard = lazy(() => import('./pages/MRP/MRPDashboard'))
+const MRPRun = lazy(() => import('./pages/MRP/MRPRun'))
+const DemandPlanning = lazy(() => import('./pages/MRP/DemandPlanning'))
+const CapacityPlanning = lazy(() => import('./pages/MRP/CapacityPlanning'))
+const MaterialRequirements = lazy(() => import('./pages/MRP/MaterialRequirements'))
+const SupplierIntegration = lazy(() => import('./pages/MRP/SupplierIntegration'))
+const NotificationsPage = lazy(() => import('./pages/Notifications/NotificationsPage'))
 // Redirect component for warehouse zones with ID
 const WarehouseZoneRedirect = () => {
   const { id } = useParams()
@@ -448,6 +467,7 @@ const ProductFormNewWrapper = () => {
 // Every /app/* page. Rendered by the main router (non-module pages) and by each workspace tab.
 function AppChildRoutes() {
   return (
+    <Suspense fallback={<PageLoader />}>
     <Routes>
                 <Route index element={<DashboardModules />} />
 
@@ -1039,6 +1059,7 @@ function AppChildRoutes() {
                 <Route path="reports/production-by-product" element={<ProductionByProductReport />} />
                 <Route path="*" element={<NotFound />} />
     </Routes>
+    </Suspense>
   )
 }
 registerAppRoutes(AppChildRoutes)
@@ -1101,6 +1122,7 @@ function App() {
             <ToastProvider />
             <ConfirmDialogProvider />
             {!isPublicRoute && <SessionTimeoutModal />}
+            <Suspense fallback={<PageLoader />}>
             <Routes>
               {/* System Overview for non-authenticated users */}
               <Route path="/" element={!isAuthenticated ? <Landing /> : <RoleBasedRedirect />} />
@@ -1232,6 +1254,7 @@ function App() {
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
+            </Suspense>
           </PermissionProvider>
         </ThemeProvider>
       </LanguageProvider>
