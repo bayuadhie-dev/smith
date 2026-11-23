@@ -12,6 +12,7 @@ Sub-Modul:
 from flask import Blueprint, request, jsonify, send_file, abort
 from datetime import datetime, date, timedelta
 from sqlalchemy import extract, func, or_
+from sqlalchemy.orm import selectinload
 from models import db, User
 from models.dcc import (
     DccDocument, DccDocumentRevision, DccDocumentDistribution,
@@ -164,11 +165,35 @@ def get_documents():
             )
         )
 
-    docs = query.order_by(DccDocument.document_number).all()
+    docs = query.options(selectinload(DccDocument.created_by_user)).order_by(
+        DccDocument.document_number
+    ).all()
+
+    # Tiga pertanyaan per dokumen sebelumnya: current_revision (properti yang
+    # mengambil sendiri), created_by_user, dan revisions.count(). Untuk 136
+    # dokumen itu ~400 query. Sekarang dua query saja untuk semuanya.
+    doc_ids = [d.id for d in docs]
+    revisi_aktif = {}
+    jumlah_revisi = {}
+    if doc_ids:
+        for rev in DccDocumentRevision.query.filter(
+            DccDocumentRevision.document_id.in_(doc_ids),
+            DccDocumentRevision.status == 'active',
+        ).all():
+            revisi_aktif.setdefault(rev.document_id, rev)
+
+        jumlah_revisi = dict(
+            db.session.query(
+                DccDocumentRevision.document_id, db.func.count(DccDocumentRevision.id)
+            )
+            .filter(DccDocumentRevision.document_id.in_(doc_ids))
+            .group_by(DccDocumentRevision.document_id)
+            .all()
+        )
 
     result = []
     for doc in docs:
-        current_rev = doc.current_revision
+        current_rev = revisi_aktif.get(doc.id)
         result.append({
             'id': doc.id,
             'document_number': doc.document_number,
@@ -186,7 +211,7 @@ def get_documents():
                 'status': current_rev.status,
                 'effective_date': current_rev.effective_date.isoformat() if current_rev.effective_date else None,
             } if current_rev else None,
-            'total_revisions': doc.revisions.count(),
+            'total_revisions': jumlah_revisi.get(doc.id, 0),
         })
 
     response_data = {'documents': result}

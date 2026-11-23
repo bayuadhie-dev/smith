@@ -10,6 +10,7 @@ from utils.i18n import success_response, error_response
 from utils import generate_number
 from datetime import datetime, date, timedelta
 from sqlalchemy import func, and_, or_
+from sqlalchemy.orm import selectinload
 from utils.timezone import get_local_now, get_local_today
 
 wip_job_costing_bp = Blueprint('wip_job_costing', __name__)
@@ -31,7 +32,20 @@ def get_wip_batches():
         date_from = request.args.get('date_from')
         date_to = request.args.get('date_to')
         
-        query = db.session.query(WIPBatch).outerjoin(WorkOrder).outerjoin(Product)
+        # outerjoin di bawah hanya untuk menyaring; tanpa selectinload setiap
+        # baris menarik work_order, product, machine, dan operator sendiri-sendiri
+        # (644 baris -> ribuan query, 0,9 detik).
+        query = (
+            db.session.query(WIPBatch)
+            .outerjoin(WorkOrder)
+            .outerjoin(Product)
+            .options(
+                selectinload(WIPBatch.work_order),
+                selectinload(WIPBatch.product),
+                selectinload(WIPBatch.machine),
+                selectinload(WIPBatch.operator),
+            )
+        )
         
         # Apply filters
         if status:
