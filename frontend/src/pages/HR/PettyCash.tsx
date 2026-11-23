@@ -1,5 +1,4 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import * as XLSX from 'xlsx'
 import axiosInstance from '../../utils/axiosConfig'
 import { PageHeader, Panel, KpiStrip, type KpiItem } from '../../components/ui/PageKit'
 import AccessibleModal from '../../components/ui/AccessibleModal'
@@ -668,7 +667,9 @@ function Laporan({ categories }: { categories: string[] }) {
   const approver = (t: any) => (t.approved_by_name ? `${t.approved_by_name}, ${dmy(t.approved_at)}` : '-')
   const payer = (t: any) => (t.paid_by_name ? `${t.paid_by_name}, ${dmy(t.paid_at)}` : '-')
 
-  const exportExcel = () => {
+  const exportExcel = async () => {
+    // xlsx 3,2 MB di mode dev - diambil hanya saat tombol ekspor ditekan.
+    const XLSX = await import('xlsx')
     if (!data) return
     const head = ['No. Transaksi', 'Tanggal', 'Pemohon', 'Departemen', 'Untuk Apa', 'Kategori', 'No. Nota', 'Jumlah', 'Status',
       'Disetujui oleh', 'Tanggal Persetujuan', 'Dicairkan oleh', 'Tanggal Pencairan', 'No. Pengisian']

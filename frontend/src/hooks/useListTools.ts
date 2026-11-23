@@ -1,5 +1,4 @@
 import { useCallback, useMemo } from 'react'
-import * as XLSX from 'xlsx'
 import { useSearchParams } from 'react-router-dom'
 import { useUrlMulti, useUrlState } from './useUrlState'
 
@@ -134,7 +133,11 @@ export function useListTools<T>(
     return list
   }, [data, columns, query, sortKey, sortDir, dateCol, allPeriod, periodFrom, periodTo])
 
-  const exportExcel = useCallback(() => {
+  // xlsx itu 3,2 MB di mode dev dan hook ini dipakai hampir semua halaman
+  // daftar, jadi kalau diimpor di atas ia ikut termuat di dashboard sekalipun.
+  // Diambil saat tombol Ekspor ditekan.
+  const exportExcel = useCallback(async () => {
+    const XLSX = await import('xlsx')
     const cols = columns.filter((c) => c.exportable !== false)
     const head = cols.map((c) => c.label)
     const body = rows.map((r) => cols.map((c) => {

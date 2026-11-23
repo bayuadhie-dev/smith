@@ -11,7 +11,6 @@ import CheckCircle2 from 'lucide-react/dist/esm/icons/check-circle-2'
 import Factory from 'lucide-react/dist/esm/icons/factory'
 import AlertTriangle from 'lucide-react/dist/esm/icons/alert-triangle'
 import TrendingDown from 'lucide-react/dist/esm/icons/trending-down'
-import * as XLSX from 'xlsx';
 import { useUrlFilter, useUrlState } from '../../hooks/useUrlState';
 import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail';
 import axiosInstance from '../../utils/axiosConfig';
@@ -838,7 +837,9 @@ const MachineDailyTab: React.FC<{ data: any }> = ({ data }) => {
     Friday: 'Jumat', Saturday: 'Sabtu', Sunday: 'Minggu'
   };
 
-  const exportToExcel = () => {
+  const exportToExcel = async () => {
+    // xlsx 3,2 MB di mode dev - diambil hanya saat tombol ekspor ditekan.
+    const XLSX = await import('xlsx')
     if (!data || !data.daily_table) return;
 
     // ── Sheet 1: Detail per Shift ──────────────────────────────────────

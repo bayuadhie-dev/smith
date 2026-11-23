@@ -20,7 +20,6 @@ import {
   ArrowDownTrayIcon,
   BeakerIcon
 } from '@heroicons/react/24/outline';
-import * as XLSX from 'xlsx';
 import axiosInstance from '../../utils/axiosConfig';
 import { toast } from 'react-hot-toast';
 import { useUrlFilter } from '../../hooks/useUrlState'
@@ -905,7 +904,9 @@ export default function WorkRosterWeekly() {
   };
 
   // Export weekly roster to Excel in a single sheet
-  const exportToExcel = () => {
+  const exportToExcel = async () => {
+    // xlsx 3,2 MB di mode dev - diambil hanya saat tombol ekspor ditekan.
+    const XLSX = await import('xlsx')
     try {
       const rows: any[] = [];
 

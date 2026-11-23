@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import axiosInstance from '../../utils/axiosConfig';
 import { toast } from 'react-hot-toast';
-import * as XLSX from 'xlsx';
 import {
   ArrowsRightLeftIcon,
   MagnifyingGlassIcon,
@@ -417,7 +416,9 @@ const TransactionsPage: React.FC = () => {
     'Dibuat Oleh': txn.created_by || '',
   }));
 
-  const handleExportExcel = () => {
+  const handleExportExcel = async () => {
+    // xlsx 3,2 MB di mode dev - diambil hanya saat tombol ekspor ditekan.
+    const XLSX = await import('xlsx')
     if (visibleRows.length === 0) {
       toast.error('Tidak ada data untuk diekspor pada halaman ini');
       return;
