@@ -81,6 +81,38 @@ DEPARTMENTS = [
 ]
 
 
+
+class _WajibKosong(Exception):
+    """Dilempar saat ada isian wajib yang kosong, ditangkap jadi 400."""
+
+
+def wajib(data, *kolom):
+    """Pastikan isian wajib benar-benar terisi.
+
+    Kebanyakan endpoint pembuatan di modul ini dulu langsung memakai
+    data['x'], sehingga kunci yang HILANG jadi 500 (KeyError) dan kunci yang
+    KOSONG lolos begitu saja. Hasilnya terlihat di basis data: satu memo dan
+    satu rekaman mutu tersimpan tanpa nomor dan tanpa judul, lalu menyangkut
+    di daftar tanpa bisa dikenali.
+    """
+    kurang = [k for k in kolom if not str((data or {}).get(k) or '').strip()]
+    if kurang:
+        nama = {
+            'record_number': 'Nomor rekaman', 'title': 'Judul', 'department': 'Departemen',
+            'issue_description': 'Deskripsi masalah', 'capa_source': 'Sumber CAPA',
+            'due_date': 'Batas waktu', 'action_due_date': 'Batas waktu tindakan',
+            'destruction_date': 'Tanggal pemusnahan', 'document_form': 'Bentuk dokumen',
+            'document_type': 'Jenis dokumen', 'reason': 'Alasan',
+            'change_description': 'Uraian perubahan', 'review_result': 'Hasil kaji ulang',
+            'next_review_date': 'Tanggal kaji ulang berikutnya',
+        }
+        raise _WajibKosong(', '.join(nama.get(k, k) for k in kurang) + ' wajib diisi')
+
+
+@dcc_bp.errorhandler(_WajibKosong)
+def _tangani_wajib_kosong(e):
+    return jsonify({'error': str(e)}), 400
+
 # ============================================================
 # DASHBOARD / STATISTICS
 # ============================================================
@@ -861,6 +893,7 @@ def get_capa_list():
 def create_capa():
     """Create new CPAR or SCAR"""
     data = request.get_json()
+    wajib(data, 'issue_description', 'capa_source', 'due_date')
     user_id = get_jwt_identity()
     capa_type = data.get('capa_type', 'CPAR')
 
@@ -967,6 +1000,7 @@ def save_investigation(capa_id):
     capa = db.session.get(CapaRequest, capa_id) or abort(404)
     user_id = get_jwt_identity()
     data = request.get_json()
+    wajib(data, 'action_due_date')
 
     inv = capa.investigation
     if not inv:
@@ -1335,6 +1369,7 @@ def get_destructions():
 def create_destruction():
     """Create destruction log (Berita Acara Pemusnahan)"""
     data = request.get_json()
+    wajib(data, 'document_type', 'document_form', 'reason', 'destruction_date')
     user_id = get_jwt_identity()
 
     # Auto-generate number
@@ -1623,6 +1658,7 @@ def create_change_notice(doc_id):
     doc = db.session.get(DccDocument, doc_id) or abort(404)
     user_id = get_jwt_identity()
     data = request.get_json()
+    wajib(data, 'change_description', 'reason')
 
     now = datetime.now()
     count = DccChangeNotice.query.filter(extract('year', DccChangeNotice.created_at) == now.year).count()
@@ -1803,6 +1839,7 @@ def submit_document_review(doc_id):
     doc = db.session.get(DccDocument, doc_id) or abort(404)
     user_id = get_jwt_identity()
     data = request.get_json()
+    wajib(data, 'review_result', 'next_review_date')
 
     review = DccDocumentReview(
         document_id=doc_id,
@@ -1895,6 +1932,7 @@ def get_quality_records():
 def create_quality_record():
     """Create quality record entry"""
     data = request.get_json()
+    wajib(data, 'record_number', 'title', 'department')
     user_id = get_jwt_identity()
 
     record = DccQualityRecord(
@@ -1952,6 +1990,27 @@ def update_quality_record(rec_id):
 
     db.session.commit()
     return jsonify({'message': 'Rekaman mutu berhasil diperbarui'})
+
+
+@dcc_bp.route('/quality-records/<int:rec_id>', methods=['DELETE'])
+@jwt_required()
+@require_permission('dcc.delete')
+def delete_quality_record(rec_id):
+    """Hapus satu baris daftar induk rekaman mutu.
+
+    Sebelumnya tidak ada jalan untuk menghapus, jadi baris sampah dari masa
+    sebelum isian wajib diperiksa (nomor dan judul kosong) menyangkut
+    selamanya di daftar. Yang sudah punya berita acara pemusnahan tidak
+    boleh hilang - itu jejak audit.
+    """
+    r = db.session.get(DccQualityRecord, rec_id) or abort(404)
+
+    if r.destruction_log.count() > 0:
+        return jsonify({'error': 'Rekaman ini sudah punya berita acara pemusnahan, tidak bisa dihapus'}), 400
+
+    db.session.delete(r)
+    db.session.commit()
+    return jsonify({'message': 'Rekaman mutu berhasil dihapus'})
 
 @dcc_bp.route('/verify/<token>', methods=['GET'])
 def verify_document(token):

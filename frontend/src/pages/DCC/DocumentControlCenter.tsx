@@ -574,7 +574,7 @@ const DocumentDetailModal = ({ docId, onClose }: { docId: number; onClose: () =>
   };
 
   const handleNewRevision = async () => {
-    if (!revFormData.change_notice_id) { showWarning('Pilih Change Notice'); return; }
+    if (!revFormData.change_notice_id) { showWarning('Pilih usulan perubahan'); return; }
     try {
       const payload: any = { ...revFormData, change_notice_id: Number(revFormData.change_notice_id) };
       if (payload.assigned_reviewer_id) payload.assigned_reviewer_id = Number(payload.assigned_reviewer_id);
@@ -647,7 +647,7 @@ const DocumentDetailModal = ({ docId, onClose }: { docId: number; onClose: () =>
           <div className="flex gap-2 flex-wrap">
             <button onClick={openRevisionForm} disabled={!canCreateRevision}
               className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm ${canCreateRevision ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-gray-200 text-gray-400 cursor-not-allowed dark:bg-gray-700'}`}
-              title={canCreateRevision ? `${availableDcns.length} DCN siap diproses` : 'Ajukan & setujui Change Notice (DCN) terlebih dahulu'}>
+              title={canCreateRevision ? `${availableDcns.length} DCN siap diproses` : 'Ajukan dan setujui usulan perubahan (DCN) dulu'}>
               <Plus className="w-3 h-3" /> Revisi Baru {canCreateRevision && <span className="bg-blue-500 text-white text-[10px] px-1.5 rounded-full">{availableDcns.length}</span>}
             </button>
             <button onClick={() => setShowDistForm(true)} className="flex items-center gap-1 px-3 py-1.5 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700">
@@ -871,11 +871,11 @@ const DocumentDetailModal = ({ docId, onClose }: { docId: number; onClose: () =>
           <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[60] p-4">
             <div className="fn-card p-6 w-full max-w-lg shadow-xl max-h-[85vh] overflow-y-auto">
               <h3 className="text-lg font-semibold mb-1">Buat Revisi Baru</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Revisi baru berdasarkan Change Notice yang telah disetujui</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Revisi baru berdasarkan usulan perubahan yang sudah disetujui</p>
 
               <div className="space-y-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Change Notice (DCN) *</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Usulan perubahan (DCN) *</label>
                   <select value={revFormData.change_notice_id}
                     onChange={e => {
                       const dcn = availableDcns.find((n: any) => n.id === Number(e.target.value));
@@ -1172,7 +1172,7 @@ const CapaTab = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Due Date</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Batas Waktu</label>
                   <input type="date" value={formData.due_date} onChange={e => setFormData({ ...formData, due_date: e.target.value })}
                     className="w-full border rounded-lg px-3 py-2 text-sm" />
                 </div>
@@ -1199,7 +1199,7 @@ const CapaTab = () => {
                 <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Tipe</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Deskripsi</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">PIC</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Due Date</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Batas Waktu</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Status</th>
               </tr>
             </thead>
@@ -1823,6 +1823,20 @@ const MemoTab = () => {
   );
 };
 
+// Nilai mentah kolom di basis data - dulu tercetak apa adanya di tabel
+// ("Physical", "Shredder", "expired retention").
+const BENTUK_DOKUMEN: Record<string, string> = {
+  physical: 'Fisik', digital: 'Digital', both: 'Fisik & digital',
+};
+const METODE_MUSNAH: Record<string, string> = {
+  shredder: 'Dicacah (shredder)', incineration: 'Dibakar', burning: 'Dibakar',
+  permanent_delete: 'Dihapus permanen', secure_wipe: 'Dihapus aman', pulping: 'Dihancurkan jadi bubur',
+};
+const ALASAN_MUSNAH: Record<string, string> = {
+  expired_retention: 'Masa simpan habis', obsolete: 'Sudah tidak berlaku',
+  damaged: 'Rusak', duplicate: 'Duplikat', superseded: 'Digantikan revisi baru',
+};
+
 // ============================================================
 // DESTRUCTION TAB
 // ============================================================
@@ -1950,16 +1964,18 @@ const DestructionTab = () => {
                 <tr key={l.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                   <td className="px-4 py-3 font-mono text-sm">{l.destruction_number}</td>
                   <td className="px-4 py-3">{l.destruction_date}</td>
-                  <td className="px-4 py-3 capitalize">{l.document_form}</td>
-                  <td className="px-4 py-3 capitalize">{l.method_physical || l.method_digital || '-'}</td>
-                  <td className="px-4 py-3">{l.reason?.replace(/_/g, ' ')}</td>
+                  <td className="px-4 py-3">{BENTUK_DOKUMEN[l.document_form] || l.document_form}</td>
+                  <td className="px-4 py-3">
+                    {(() => { const m = l.method_physical || l.method_digital; return m ? (METODE_MUSNAH[m] || m) : '-'; })()}
+                  </td>
+                  <td className="px-4 py-3">{ALASAN_MUSNAH[l.reason] || l.reason?.replace(/_/g, ' ')}</td>
                   <td className="px-4 py-3">{l.destroyed_by || '-'}</td>
                   <td className="px-4 py-3">
                     {l.witness_confirmed ? <span className="text-green-600 dark:text-green-400">✓ {l.witnessed_by}</span> : (
                       <button onClick={async () => {
                         try { await fetchApi(`/destructions/${l.id}/witness`, { method: 'POST' }); loadLogs(); }
                         catch (e: any) { showError('Error: ' + e.message); }
-                      }} className="px-2 py-1 bg-yellow-500 text-white rounded text-xs hover:bg-yellow-600">Witness</button>
+                      }} className="px-2 py-1 bg-yellow-500 text-white rounded text-xs hover:bg-yellow-600">Saksikan</button>
                     )}
                   </td>
                   <td className="px-4 py-3">
@@ -1968,7 +1984,7 @@ const DestructionTab = () => {
                         <button onClick={async () => {
                           try { await fetchApi(`/destructions/${l.id}/verify`, { method: 'POST' }); loadLogs(); }
                           catch (e: any) { showError('Error: ' + e.message); }
-                        }} className="px-2 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700">Verify</button>
+                        }} className="px-2 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700">Verifikasi</button>
                       ) : <span className="text-gray-400">Tunggu saksi</span>
                     )}
                   </td>
@@ -2005,6 +2021,16 @@ const QualityRecordsTab = () => {
     } catch (e: any) { showError('Error: ' + e.message); }
   };
 
+  const hapusRekaman = async (r: QualityRecordItem) => {
+    const nama = r.record_number || r.title || `rekaman #${r.id}`;
+    if (!(await confirmDialog(`Hapus ${nama} dari daftar induk rekaman mutu?`))) return;
+    try {
+      await fetchApi(`/quality-records/${r.id}`, { method: 'DELETE' });
+      showSuccess('Rekaman mutu dihapus');
+      loadRecords();
+    } catch (e: any) { showError('Error: ' + e.message); }
+  };
+
   const departments = [
     { code: 'MRE', name: 'Manajemen Review' }, { code: 'DCC', name: 'Document Control Centre' },
     { code: 'MKT', name: 'Marketing & Sales' }, { code: 'PRC', name: 'Purchasing' },
@@ -2016,7 +2042,7 @@ const QualityRecordsTab = () => {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h3 className="font-semibold">Daftar Induk Rekaman Mutu (FRM-DCC-03)</h3>
+        <h3 className="font-semibold">Daftar Induk Rekaman Mutu <span className="fn-label">FRM-DCC-03</span></h3>
         <button onClick={() => setShowForm(true)} className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-indigo-700">
           <Plus className="w-4 h-4" /> Tambah Rekaman
         </button>
@@ -2085,11 +2111,12 @@ const QualityRecordsTab = () => {
                 <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Lokasi</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Masa Simpan</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Status</th>
+                <th className="text-right px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y">
-              {loading ? <tr><td colSpan={7} className="px-4 py-4"><div className="space-y-2" role="status" aria-label="Memuat data">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-5 w-full" />)}</div></td></tr> :
-                records.length === 0 ? <tr><td colSpan={7} className="text-center py-8 text-gray-400">Belum ada rekaman mutu</td></tr> :
+              {loading ? <tr><td colSpan={8} className="px-4 py-4"><div className="space-y-2" role="status" aria-label="Memuat data">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-5 w-full" />)}</div></td></tr> :
+                records.length === 0 ? <tr><td colSpan={8} className="text-center py-8 text-gray-400">Belum ada rekaman mutu</td></tr> :
                 records.map(r => (
                   <tr key={r.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                     <td className="px-4 py-3 font-mono font-medium">{r.record_number}</td>
@@ -2099,6 +2126,11 @@ const QualityRecordsTab = () => {
                     <td className="px-4 py-3">{r.storage_location || '-'}</td>
                     <td className="px-4 py-3">{r.retention_period || '-'}</td>
                     <td className="px-4 py-3"><StatusBadge status={r.status} /></td>
+                    <td className="px-4 py-3 text-right">
+                      <button onClick={() => hapusRekaman(r)} title="Hapus rekaman" className="fn-press p-1.5 rounded text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </td>
                   </tr>
                 ))}
             </tbody>
@@ -2161,7 +2193,7 @@ const ChangeNoticeTab = () => {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h3 className="font-semibold">Change Notice — FRM-DCC-05</h3>
+        <h3 className="font-semibold">Usulan Perubahan Dokumen <span className="fn-label">FRM-DCC-05</span></h3>
         <button onClick={() => setShowForm(true)} className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">
           <Plus className="w-4 h-4" /> Ajukan Perubahan
         </button>
@@ -2236,7 +2268,7 @@ const ChangeNoticeTab = () => {
               </thead>
               <tbody className="divide-y">
                 {notices.length === 0 ? (
-                  <tr><td colSpan={6} className="text-center py-8 text-gray-400">Belum ada change notice untuk dokumen ini</td></tr>
+                  <tr><td colSpan={6} className="text-center py-8 text-gray-400">Belum ada usulan perubahan untuk dokumen ini</td></tr>
                 ) : notices.map((n: any) => (
                   <tr key={n.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                     <td className="px-4 py-3 font-mono text-sm">{n.request_number}</td>
@@ -2247,8 +2279,8 @@ const ChangeNoticeTab = () => {
                     <td className="px-4 py-3 text-center">
                       {n.status === 'pending' && (
                         <div className="flex gap-1 justify-center flex-wrap">
-                          <button onClick={() => handleApprove(n.id, 'approved')} className="px-2 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700">Approve</button>
-                          <button onClick={() => handleApprove(n.id, 'rejected')} className="px-2 py-1 bg-red-600 text-white rounded text-xs hover:bg-red-700">Reject</button>
+                          <button onClick={() => handleApprove(n.id, 'approved')} className="px-2 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700">Setujui</button>
+                          <button onClick={() => handleApprove(n.id, 'rejected')} className="px-2 py-1 bg-red-600 text-white rounded text-xs hover:bg-red-700">Tolak</button>
                         </div>
                       )}
                       {n.status === 'approved' && <span className="text-xs text-green-600 dark:text-green-400">✓ {n.approved_by}</span>}
@@ -2315,7 +2347,7 @@ const DocumentReviewTab = () => {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h3 className="font-semibold">Kaji Ulang Dokumen — FRM-DCC-10</h3>
+        <h3 className="font-semibold">Kaji Ulang Dokumen <span className="fn-label">FRM-DCC-10</span></h3>
         <button onClick={() => setShowForm(true)} className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">
           <Plus className="w-4 h-4" /> Kaji Ulang Baru
         </button>
@@ -2387,11 +2419,11 @@ const DocumentReviewTab = () => {
             <table className="w-full text-sm">
               <thead className="bg-gray-50 dark:bg-gray-900 border-b">
                 <tr>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Tanggal Review</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Tanggal Kaji Ulang</th>
                   <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Hasil</th>
                   <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Catatan</th>
                   <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Reviewer</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Next Review</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Kaji Ulang Berikutnya</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
@@ -2425,7 +2457,7 @@ type TabKey = 'dashboard' | 'documents' | 'quality_records' | 'capa' | 'memos' |
 const VALID_TABS: TabKey[] = ['dashboard', 'documents', 'quality_records', 'capa', 'memos', 'change_notice', 'review', 'destruction'];
 
 const DCC_TAB_LABELS: Record<TabKey, string> = {
-  dashboard: 'Dashboard', documents: 'Daftar Induk Dokumen', change_notice: 'Change Notice', review: 'Kaji Ulang',
+  dashboard: 'Dashboard', documents: 'Daftar Induk Dokumen', change_notice: 'Usulan Perubahan', review: 'Kaji Ulang',
   quality_records: 'Rekaman Mutu', capa: 'CAPA', memos: 'Komunikasi Internal', destruction: 'Pemusnahan Dokumen',
 };
 
