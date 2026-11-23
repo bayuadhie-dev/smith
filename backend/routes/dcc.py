@@ -1092,10 +1092,17 @@ def create_memo():
     ).count()
     memo_number = f"MEMO/{now.month:02d}/{now.year % 100:02d}/{count + 1:03d}"
 
+    subject = (data.get('subject') or '').strip()
+    if not subject:
+        return jsonify({'error': 'Subjek memo wajib diisi'}), 400
+    content = (data.get('content') or '').strip()
+    if not content:
+        return jsonify({'error': 'Isi memo wajib diisi'}), 400
+
     memo = InternalMemo(
         memo_number=memo_number,
-        subject=data['subject'],
-        content=data['content'],
+        subject=subject,
+        content=content,
         category=data.get('category', 'lainnya'),
         is_audit_related=data.get('is_audit_related', False),
         published_by=user_id,
@@ -1158,6 +1165,63 @@ def update_memo(memo_id):
     return jsonify({'message': 'Memo berhasil diperbarui'})
 
 
+@dcc_bp.route('/memos/<int:memo_id>', methods=['DELETE'])
+@jwt_required()
+@require_permission('dcc.create')
+def delete_memo(memo_id):
+    """Hapus memo yang masih DRAF.
+
+    Memo yang sudah terbit sengaja tidak bisa dihapus: tanda terimanya adalah
+    catatan siapa sudah membaca apa, dan itu tidak boleh hilang begitu saja.
+    Tanpa rute ini draf yang terlanjur salah (mis. tersimpan tanpa subjek)
+    menyangkut selamanya di daftar.
+    """
+    memo = db.session.get(InternalMemo, memo_id) or abort(404)
+    if memo.status != 'draft':
+        return jsonify({'error': 'Memo yang sudah terbit tidak bisa dihapus'}), 400
+
+    db.session.delete(memo)
+    db.session.commit()
+    return jsonify({'message': f'Draf {memo.memo_number} dihapus'})
+
+
+@dcc_bp.route('/memos/recipients', methods=['GET'])
+@jwt_required()
+@require_permission('dcc.view')
+def get_memo_recipients():
+    """Calon penerima memo: departemen yang BENAR ada di master, plus daftar
+    akun aktif supaya pengirim bisa menunjuk orang langsung.
+
+    Form lama memakai daftar departemen yang ditulis tetap di kode (MRE, MKT,
+    PRC, ...) sedangkan kolom department di akun berisi nama panjang, jadi
+    hampir semua pilihan tidak cocok dengan siapa pun.
+    """
+    from models.hr import Department
+
+    akun = User.query.filter_by(is_active=True).order_by(User.full_name).all()
+
+    jumlah = {}
+    for u in akun:
+        if u.department:
+            jumlah[u.department] = jumlah.get(u.department, 0) + 1
+
+    departemen = []
+    for d in Department.query.order_by(Department.name).all():
+        departemen.append({'name': d.name, 'user_count': jumlah.get(d.name, 0)})
+    # Nilai department yang dipakai akun tapi tidak ada di master tetap
+    # ditampilkan - kalau tidak, penerimanya tidak akan pernah bisa dipilih.
+    nama_master = {d['name'] for d in departemen}
+    for nama, n in sorted(jumlah.items()):
+        if nama not in nama_master:
+            departemen.append({'name': nama, 'user_count': n, 'outside_master': True})
+
+    return jsonify({
+        'departments': departemen,
+        'users': [{'id': u.id, 'name': u.full_name or u.username,
+                   'department': u.department or None} for u in akun],
+    })
+
+
 @dcc_bp.route('/memos/<int:memo_id>/publish', methods=['POST'])
 @jwt_required()
 @require_permission('dcc.create')
@@ -1170,25 +1234,38 @@ def publish_memo(memo_id):
     memo.status = 'published'
     memo.published_date = date.today()
 
-    distributed_count = 0
+    # Penerima bisa ditunjuk langsung (user_ids) dan/atau lewat departemen.
+    # Memilih orang langsung itu jalan yang selalu bisa diandalkan: di basis
+    # data ini cuma 3 dari 17 akun yang kolom departmentnya terisi, jadi
+    # distribusi murni per departemen nyaris tidak sampai ke siapa pun.
+    user_ids = data.get('user_ids') or []
+
+    penerima = {}          # user_id -> nama departemen untuk dicatat
+    dept_kosong = []
+
     for dept in departments:
-        # Get users in this department
         users = User.query.filter_by(department=dept, is_active=True).all()
-        if users:
-            for user in users:
-                existing = InternalMemoDistribution.query.filter_by(memo_id=memo_id, user_id=user.id).first()
-                if not existing:
-                    dist = InternalMemoDistribution(memo_id=memo_id, department=dept, user_id=user.id)
-                    db.session.add(dist)
-                    distributed_count += 1
-        else:
-            # Departemen tidak ada user — tetap catat distribusi ke dept tanpa user tertentu
-            # Buat 1 record placeholder agar tercatat di FRM-DCC-07
-            existing = InternalMemoDistribution.query.filter_by(memo_id=memo_id, department=dept).first()
-            if not existing:
-                dist = InternalMemoDistribution(memo_id=memo_id, department=dept, user_id=get_jwt_identity())
-                db.session.add(dist)
-                distributed_count += 1
+        if not users:
+            # Dulu di sini dibuat satu baris distribusi atas nama PEMBUAT memo
+            # supaya "tercatat". Itu memalsukan tanda terima: penghitung
+            # dibaca/penerima jadi tidak ada artinya. Sekarang dilaporkan apa
+            # adanya ke pemanggil.
+            dept_kosong.append(dept)
+            continue
+        for user in users:
+            penerima.setdefault(user.id, dept)
+
+    for uid in user_ids:
+        u = db.session.get(User, uid)
+        if u and u.is_active:
+            penerima.setdefault(u.id, u.department or '-')
+
+    distributed_count = 0
+    for uid, dept in penerima.items():
+        existing = InternalMemoDistribution.query.filter_by(memo_id=memo_id, user_id=uid).first()
+        if not existing:
+            db.session.add(InternalMemoDistribution(memo_id=memo_id, department=dept, user_id=uid))
+            distributed_count += 1
 
     db.session.commit()
 
@@ -1203,16 +1280,21 @@ def publish_memo(memo_id):
                 category='dcc', notification_type='info', priority='normal',
                 action_url='/app/dcc', reference_type='memo', reference_id=memo.id)
 
+    pesan = f'Memo dikirim ke {distributed_count} penerima'
+    if dept_kosong:
+        pesan += f" - tidak ada akun di departemen: {', '.join(dept_kosong)}"
+
     return jsonify({
-        'message': f'Memo dipublikasikan ke {len(departments)} departemen ({distributed_count} penerima)',
+        'message': pesan,
         'departments': departments,
         'distributed_count': distributed_count,
+        'departments_without_users': dept_kosong,
     })
 
 
 @dcc_bp.route('/memos/<int:memo_id>/read', methods=['POST'])
 @jwt_required()
-@require_permission('dcc.create')
+@require_permission('dcc.view')
 def mark_memo_read(memo_id):
     """Legacy endpoint — redirects to acknowledge_memo"""
     return acknowledge_memo(memo_id)
@@ -1478,7 +1560,10 @@ def get_capa_monthly_report():
 
 @dcc_bp.route('/memos/<int:memo_id>/acknowledge', methods=['POST'])
 @jwt_required()
-@require_permission('dcc.create')
+# Menandai sudah membaca itu hak penerima, bukan hak pembuat memo. Dulu ini
+# minta 'dcc.create' sehingga 7 peran yang boleh MELIHAT memo - termasuk para
+# Direktur - tidak bisa menandainya terbaca, dan tanda terima jadi tak berguna.
+@require_permission('dcc.view')
 def acknowledge_memo(memo_id):
     """Tandai memo sudah dibaca (FRM-DCC-07)"""
     user_id = get_jwt_identity()
@@ -1670,7 +1755,10 @@ def get_distributions(doc_id):
 
 @dcc_bp.route('/distribution/<int:dist_id>/acknowledge', methods=['POST'])
 @jwt_required()
-@require_permission('dcc.create')
+# Sama seperti tanda baca memo: menandatangani terima dokumen itu perbuatan
+# PENERIMA, jadi cukup izin melihat. Minta 'dcc.create' berarti orang yang
+# dikirimi dokumen tidak bisa menyatakan sudah menerimanya.
+@require_permission('dcc.view')
 def acknowledge_distribution(dist_id):
     """Penerima TTD digital (FRM-DCC-01 Serah Terima Dokumen)"""
     dist = db.session.get(DccDocumentDistribution, dist_id) or abort(404)

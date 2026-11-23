@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import FileText from 'lucide-react/dist/esm/icons/file-text'
 import AlertTriangle from 'lucide-react/dist/esm/icons/alert-triangle'
@@ -1461,21 +1461,36 @@ const CapaDetailModal = ({ capaId, onClose }: { capaId: number; onClose: () => v
 // ============================================================
 // INTERNAL MEMO TAB
 // ============================================================
+const KATEGORI_MEMO = [
+  { value: 'kebijakan_mutu', label: 'Kebijakan Mutu' },
+  { value: 'jadwal_produksi', label: 'Jadwal Produksi' },
+  { value: 'kebutuhan_bahan', label: 'Kebutuhan Bahan' },
+  { value: 'maklum_balas', label: 'Maklum Balas Pelanggan' },
+  { value: 'audit', label: 'Audit' },
+  { value: 'lainnya', label: 'Lainnya' },
+];
+
+interface CalonDepartemen { name: string; user_count: number; outside_master?: boolean }
+interface CalonAkun { id: number; name: string; department: string | null }
+
 const MemoTab = () => {
   const [memos, setMemos] = useState<MemoItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState({ subject: '', content: '', category: 'lainnya' });
-  const [publishMemoId, setPublishMemoId] = useState<number | null>(null);
-  const [publishDepts, setPublishDepts] = useState<string[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const deptList = [
-    { code: 'MRE', name: 'Manajemen Review' }, { code: 'DCC', name: 'Document Control Centre' },
-    { code: 'MKT', name: 'Marketing & Sales' }, { code: 'PRC', name: 'Purchasing' },
-    { code: 'RND', name: 'Research And Development' }, { code: 'HRD', name: 'Human Resource Department' },
-    { code: 'EPD', name: 'End Product' }, { code: 'QAS', name: 'Quality Assurance' },
-    { code: 'PIC', name: 'Production, Planning & Inventory Control' }, { code: 'MTC', name: 'Maintenance' },
-  ];
+  const [form, setForm] = useState({ subject: '', content: '', category: 'lainnya' });
+  const [menyimpan, setMenyimpan] = useState(false);
+
+  const [kirimId, setKirimId] = useState<number | null>(null);
+  const [depts, setDepts] = useState<string[]>([]);
+  const [orang, setOrang] = useState<number[]>([]);
+  const [calonDept, setCalonDept] = useState<CalonDepartemen[]>([]);
+  const [calonAkun, setCalonAkun] = useState<CalonAkun[]>([]);
+  const [cariOrang, setCariOrang] = useState('');
+  const [mengirim, setMengirim] = useState(false);
+
+  const [rincianId, setRincianId] = useState<number | null>(null);
+  const [rincian, setRincian] = useState<any | null>(null);
+  const [belumDibaca, setBelumDibaca] = useState<MemoItem[]>([]);
 
   const loadMemos = useCallback(async () => {
     setLoading(true);
@@ -1485,140 +1500,322 @@ const MemoTab = () => {
         fetchApi('/memos/unread').catch(() => ({ unread: [] })),
       ]);
       setMemos(memosData.memos || []);
-      setUnreadCount(unreadData.unread?.length || 0);
+      setBelumDibaca(unreadData.unread || []);
     } catch (e) { console.error(e); }
     setLoading(false);
   }, []);
 
   useEffect(() => { loadMemos(); }, [loadMemos]);
 
-  const handleCreate = async () => {
+  // Daftar penerima diambil dari master, bukan ditulis tetap di kode.
+  useEffect(() => {
+    if (kirimId === null || calonAkun.length) return;
+    fetchApi('/memos/recipients')
+      .then((d) => { setCalonDept(d.departments || []); setCalonAkun(d.users || []); })
+      .catch(() => showError('Gagal memuat daftar penerima'));
+  }, [kirimId, calonAkun.length]);
+
+  const buatMemo = async () => {
+    if (!form.subject.trim()) return showError('Subjek memo belum diisi');
+    if (!form.content.trim()) return showError('Isi memo belum diisi');
+    setMenyimpan(true);
     try {
-      await fetchApi('/memos', { method: 'POST', body: JSON.stringify(formData) });
+      await fetchApi('/memos', { method: 'POST', body: JSON.stringify(form) });
       setShowForm(false);
-      setFormData({ subject: '', content: '', category: 'lainnya' });
+      setForm({ subject: '', content: '', category: 'lainnya' });
+      showSuccess('Memo tersimpan sebagai draf. Kirim ke penerima lewat tombol Kirim.');
       loadMemos();
-    } catch (e: any) { showError('Error: ' + e.message); }
+    } catch (e: any) { showError(e.message || 'Gagal membuat memo'); }
+    setMenyimpan(false);
   };
 
-  const categories = [
-    { value: 'kebijakan_mutu', label: 'Kebijakan Mutu' },
-    { value: 'jadwal_produksi', label: 'Jadwal Produksi' },
-    { value: 'kebutuhan_bahan', label: 'Kebutuhan Bahan' },
-    { value: 'maklum_balas', label: 'Maklum Balas Pelanggan' },
-    { value: 'audit', label: 'Audit' },
-    { value: 'lainnya', label: 'Lainnya' },
-  ];
+  // Orang yang benar-benar akan menerima: dari departemen terpilih + yang ditunjuk.
+  const penerimaAkhir = useMemo(() => {
+    const ids = new Set(orang);
+    calonAkun.forEach((u) => { if (u.department && depts.includes(u.department)) ids.add(u.id); });
+    return ids;
+  }, [orang, depts, calonAkun]);
+
+  const kirimMemo = async () => {
+    if (penerimaAkhir.size === 0) return showError('Belum ada penerima yang dipilih');
+    setMengirim(true);
+    try {
+      const r = await fetchApi(`/memos/${kirimId}/publish`, {
+        method: 'POST',
+        body: JSON.stringify({ departments: depts, user_ids: orang }),
+      });
+      setKirimId(null); setDepts([]); setOrang([]); setCariOrang('');
+      showSuccess(r.message || 'Memo terkirim');
+      loadMemos();
+    } catch (e: any) { showError(e.message || 'Gagal mengirim memo'); }
+    setMengirim(false);
+  };
+
+  const hapusDraf = async (m: MemoItem) => {
+    const ok = await confirmDialog(
+      `Hapus draf ${m.memo_number}${m.subject ? ` "${m.subject}"` : ''}? Draf yang belum dikirim akan hilang.`,
+      { title: 'Hapus draf memo', confirmText: 'Hapus draf' },
+    );
+    if (!ok) return;
+    try {
+      await fetchApi(`/memos/${m.id}`, { method: 'DELETE' });
+      showSuccess('Draf dihapus');
+      loadMemos();
+    } catch (e: any) { showError(e.message || 'Gagal menghapus draf'); }
+  };
+
+  const bukaRincian = async (id: number) => {
+    setRincianId(id); setRincian(null);
+    try { setRincian(await fetchApi(`/memos/${id}`)); }
+    catch { showError('Gagal memuat rincian memo'); }
+  };
+
+  const tandaiDibaca = async (id: number) => {
+    try {
+      await fetchApi(`/memos/${id}/acknowledge`, { method: 'POST' });
+      showSuccess('Ditandai sudah dibaca');
+      loadMemos();
+      if (rincianId === id) bukaRincian(id);
+    } catch (e: any) { showError(e.message || 'Gagal menandai memo'); }
+  };
+
+  const akunTersaring = calonAkun.filter((u) =>
+    !cariOrang || u.name.toLowerCase().includes(cariOrang.toLowerCase()));
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-3">
-          <h3 className="font-semibold">Internal Memo</h3>
-          {unreadCount > 0 && (
-            <span className="px-2 py-0.5 bg-red-500 text-white text-xs font-bold rounded-full">{unreadCount} belum dibaca</span>
-          )}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h3 className="font-semibold text-gray-900 dark:text-white">Memo Internal</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Pengumuman antar bagian, lengkap dengan catatan siapa yang sudah membacanya.
+          </p>
         </div>
         <button onClick={() => setShowForm(true)}
-          className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700">
-          <Plus className="w-4 h-4" /> Buat Memo
+          className="fn-press inline-flex items-center gap-2 rounded-lg bg-cta-600 px-4 py-2 text-sm font-medium text-white hover:bg-cta-700">
+          <Plus className="h-4 w-4" /> Buat Memo
         </button>
       </div>
 
+      {belumDibaca.length > 0 && (
+        <div className="fn-card border-l-4 border-amber-400 p-4">
+          <p className="text-sm font-medium text-gray-900 dark:text-white">
+            {belumDibaca.length} memo untuk Anda belum ditandai dibaca
+          </p>
+          <div className="mt-2 space-y-1">
+            {belumDibaca.map((m) => (
+              <div key={m.id} className="flex flex-wrap items-center justify-between gap-2 text-sm">
+                <button onClick={() => bukaRincian(m.id)} className="text-left text-cta-600 hover:underline dark:text-cta-400">
+                  {m.memo_number} &middot; {m.subject}
+                </button>
+                <button onClick={() => tandaiDibaca(m.id)}
+                  className="fn-press rounded-lg border border-gray-200 px-3 py-1 text-xs text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">
+                  Tandai dibaca
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {showForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="fn-card p-6 w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-semibold mb-4">Buat Memo Internal Baru</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="fn-card max-h-[90vh] w-full max-w-lg overflow-y-auto p-6 shadow-xl">
+            <h3 className="mb-4 text-lg font-semibold">Buat Memo Internal</h3>
             <div className="space-y-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Subjek</label>
-                <input type="text" value={formData.subject} onChange={e => setFormData({ ...formData, subject: e.target.value })}
-                  className="w-full border rounded-lg px-3 py-2 text-sm" />
+                <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-200">Subjek *</label>
+                <input type="text" value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })}
+                  placeholder="mis. Perubahan jadwal produksi minggu depan" className="input w-full" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Kategori</label>
-                <select value={formData.category} onChange={e => setFormData({ ...formData, category: e.target.value })}
-                  className="w-full border rounded-lg px-3 py-2 text-sm">
-                  {categories.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+                <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-200">Kategori</label>
+                <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="input w-full">
+                  {KATEGORI_MEMO.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Isi Memo</label>
-                <textarea value={formData.content} onChange={e => setFormData({ ...formData, content: e.target.value })}
-                  rows={5} className="w-full border rounded-lg px-3 py-2 text-sm" />
+                <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-200">Isi memo *</label>
+                <textarea value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })}
+                  rows={6} className="input w-full" />
               </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Memo tersimpan sebagai draf dulu. Penerimanya dipilih saat ditekan Kirim.
+              </p>
             </div>
-            <div className="flex justify-end gap-2 mt-6 flex-wrap">
-              <button onClick={() => setShowForm(false)} className="px-4 py-2 border rounded-lg text-sm">Batal</button>
-              <button onClick={handleCreate} className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700">Simpan</button>
+            <div className="mt-6 flex flex-wrap justify-end gap-2">
+              <button onClick={() => setShowForm(false)} className="rounded-lg border border-gray-200 px-4 py-2 text-sm dark:border-gray-700">Batal</button>
+              <button onClick={buatMemo} disabled={menyimpan}
+                className="fn-press rounded-lg bg-cta-600 px-4 py-2 text-sm font-medium text-white hover:bg-cta-700 disabled:opacity-60">
+                {menyimpan ? 'Menyimpan...' : 'Simpan draf'}
+              </button>
             </div>
           </div>
         </div>
       )}
 
       <div className="space-y-3">
-        {loading ? <div className="space-y-3 py-4" role="status" aria-label="Memuat data">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-16 w-full" />)}</div> :
-          memos.length === 0 ? <p className="text-center py-8 text-gray-400">Belum ada memo</p> :
-            memos.map(m => (
-              <div key={m.id} className="fn-card p-4 hover:shadow-sm transition-shadow">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-sm text-gray-500 dark:text-gray-400">{m.memo_number}</span>
-                      <StatusBadge status={m.status} />
-                    </div>
-                    <h4 className="font-medium mt-1">{m.subject}</h4>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{m.published_by} · {m.published_date || m.created_at?.split('T')[0]}</p>
+        {loading ? (
+          <div className="space-y-3 py-4" role="status" aria-label="Memuat data">
+            {[0, 1, 2].map((i) => <Skeleton key={i} className="h-16 w-full" />)}
+          </div>
+        ) : memos.length === 0 ? (
+          <p className="py-8 text-center text-gray-400">Belum ada memo</p>
+        ) : (
+          memos.map((m) => (
+            <div key={m.id} className="fn-card p-4">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-mono text-sm text-gray-500 dark:text-gray-400">{m.memo_number}</span>
+                    <StatusBadge status={m.status} />
                   </div>
-                  <div className="text-right">
-                    {m.status === 'draft' ? (
-                      <button onClick={() => { setPublishMemoId(m.id); setPublishDepts([]); }}
-                        className="flex items-center gap-1 px-3 py-1.5 bg-green-600 text-white rounded-lg text-xs font-medium hover:bg-green-700">
-                        <Send className="w-3 h-3" /> Publish
+                  <button onClick={() => bukaRincian(m.id)} className="mt-1 block text-left font-medium hover:underline">
+                    {m.subject || <span className="text-gray-400">(tanpa subjek)</span>}
+                  </button>
+                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                    {m.published_by} &middot; {m.published_date || m.created_at?.split('T')[0]}
+                  </p>
+                </div>
+                <div className="text-right">
+                  {m.status === 'draft' ? (
+                    <div className="flex flex-wrap items-center justify-end gap-2">
+                      <button onClick={() => hapusDraf(m)}
+                        className="fn-press rounded-lg border border-gray-200 px-3 py-1.5 text-xs text-gray-500 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800">
+                        Hapus
                       </button>
-                    ) : (
-                      <p className="text-sm text-gray-500 dark:text-gray-400">{m.read_count}/{m.total_recipients} dibaca</p>
-                    )}
-                  </div>
+                      <button onClick={() => { setKirimId(m.id); setDepts([]); setOrang([]); }}
+                        className="fn-press inline-flex items-center gap-1 rounded-lg bg-cta-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-cta-700">
+                        <Send className="h-3 w-3" /> Kirim
+                      </button>
+                    </div>
+                  ) : (
+                    <button onClick={() => bukaRincian(m.id)} className="text-sm text-gray-500 hover:underline dark:text-gray-400">
+                      <span className="fn-num">{m.read_count}</span>/<span className="fn-num">{m.total_recipients}</span> sudah baca
+                    </button>
+                  )}
                 </div>
               </div>
-            ))}
+            </div>
+          ))
+        )}
       </div>
 
-      {/* Publish Memo Dialog */}
-      {publishMemoId && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="fn-card p-6 w-full max-w-md shadow-xl max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-semibold mb-2">Publish Memo</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Pilih departemen tujuan distribusi memo</p>
-            <div className="space-y-2 max-h-64 overflow-y-auto">
-              {deptList.map(dept => (
-                <label key={dept.code} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 cursor-pointer">
-                  <input type="checkbox" checked={publishDepts.includes(dept.code)}
-                    onChange={e => {
-                      if (e.target.checked) setPublishDepts([...publishDepts, dept.code]);
-                      else setPublishDepts(publishDepts.filter(d => d !== dept.code));
-                    }} className="w-4 h-4 rounded" />
-                  <span className="text-sm"><span className="font-medium">{dept.code}</span> — {dept.name}</span>
+      {/* Pilih penerima */}
+      {kirimId !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="fn-card max-h-[90vh] w-full max-w-xl overflow-y-auto p-6 shadow-xl">
+            <h3 className="text-lg font-semibold">Kirim memo</h3>
+            <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
+              Pilih departemen, atau tunjuk orangnya langsung.
+            </p>
+
+            <div className="mb-2 fn-label">Departemen</div>
+            <div className="max-h-40 space-y-1 overflow-y-auto">
+              {calonDept.map((d) => (
+                <label key={d.name}
+                  className={`flex items-center gap-3 rounded-lg p-2 ${d.user_count === 0 ? 'opacity-50' : 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800'}`}>
+                  <input type="checkbox" disabled={d.user_count === 0} checked={depts.includes(d.name)}
+                    onChange={(e) => setDepts(e.target.checked ? [...depts, d.name] : depts.filter((x) => x !== d.name))}
+                    className="h-4 w-4 rounded" />
+                  <span className="text-sm">{d.name}</span>
+                  <span className="ml-auto text-xs text-gray-400">
+                    {d.user_count === 0 ? 'belum ada akun' : `${d.user_count} akun`}
+                  </span>
                 </label>
               ))}
             </div>
-            <div className="flex items-center justify-between mt-4 pt-4 border-t">
-              <button onClick={() => setPublishDepts(deptList.map(d => d.code))} className="text-xs text-blue-600 underline dark:text-blue-400">Pilih Semua</button>
-              <div className="flex gap-2 flex-wrap">
-                <button onClick={() => setPublishMemoId(null)} className="px-4 py-2 border rounded-lg text-sm">Batal</button>
-                <button onClick={async () => {
-                  if (publishDepts.length === 0) { showWarning('Pilih minimal 1 departemen'); return; }
-                  try {
-                    await fetchApi(`/memos/${publishMemoId}/publish`, { method: 'POST', body: JSON.stringify({ departments: publishDepts }) });
-                    setPublishMemoId(null);
-                    loadMemos();
-                  } catch (e: any) { showError('Error: ' + e.message); }
-                }} className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700">
-                  Publish ({publishDepts.length} dept)
+
+            <div className="mb-2 mt-4 fn-label">Orang tertentu</div>
+            <input value={cariOrang} onChange={(e) => setCariOrang(e.target.value)}
+              placeholder="Cari nama..." className="input mb-2 w-full" />
+            <div className="max-h-40 space-y-1 overflow-y-auto">
+              {akunTersaring.map((u) => {
+                const lewatDept = !!u.department && depts.includes(u.department);
+                return (
+                  <label key={u.id} className="flex cursor-pointer items-center gap-3 rounded-lg p-2 hover:bg-gray-50 dark:hover:bg-gray-800">
+                    <input type="checkbox" checked={orang.includes(u.id) || lewatDept} disabled={lewatDept}
+                      onChange={(e) => setOrang(e.target.checked ? [...orang, u.id] : orang.filter((x) => x !== u.id))}
+                      className="h-4 w-4 rounded" />
+                    <span className="text-sm">{u.name}</span>
+                    <span className="ml-auto text-xs text-gray-400">
+                      {lewatDept ? 'ikut departemen' : u.department || 'tanpa departemen'}
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t pt-4 dark:border-gray-700">
+              <span className="text-sm text-gray-600 dark:text-gray-300">
+                <span className="fn-num">{penerimaAkhir.size}</span> penerima
+              </span>
+              <div className="flex flex-wrap gap-2">
+                <button onClick={() => { setKirimId(null); setCariOrang(''); }}
+                  className="rounded-lg border border-gray-200 px-4 py-2 text-sm dark:border-gray-700">Batal</button>
+                <button onClick={kirimMemo} disabled={mengirim || penerimaAkhir.size === 0}
+                  className="fn-press rounded-lg bg-cta-600 px-4 py-2 text-sm font-medium text-white hover:bg-cta-700 disabled:opacity-60">
+                  {mengirim ? 'Mengirim...' : 'Kirim memo'}
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Rincian + siapa yang sudah baca */}
+      {rincianId !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="fn-card max-h-[90vh] w-full max-w-2xl overflow-y-auto p-6 shadow-xl">
+            {!rincian ? (
+              <Skeleton className="h-40 w-full" />
+            ) : (
+              <>
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <div className="fn-label">{rincian.memo.memo_number}</div>
+                    <h3 className="text-lg font-semibold">{rincian.memo.subject}</h3>
+                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                      {rincian.memo.published_by} &middot; {rincian.memo.published_date || '-'} &middot;{' '}
+                      {KATEGORI_MEMO.find((c) => c.value === rincian.memo.category)?.label || rincian.memo.category}
+                    </p>
+                  </div>
+                  <StatusBadge status={rincian.memo.status} />
+                </div>
+
+                <div className="mt-4 whitespace-pre-wrap rounded-lg bg-gray-50 p-4 text-sm dark:bg-gray-900">
+                  {rincian.memo.content}
+                </div>
+
+                <div className="mt-5 fn-label">Penerima</div>
+                {rincian.distributions.length === 0 ? (
+                  <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">Memo ini belum dikirim ke siapa pun.</p>
+                ) : (
+                  <div className="mt-2 space-y-1">
+                    {rincian.distributions.map((d: any) => (
+                      <div key={d.id} className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 py-1.5 text-sm last:border-b-0 dark:border-gray-800">
+                        <span>{d.user_name}</span>
+                        <span className="text-xs text-gray-400">{d.department}</span>
+                        <span className={d.is_read ? 'text-xs text-emerald-600 dark:text-emerald-400' : 'text-xs text-gray-400'}>
+                          {d.is_read ? `sudah baca ${d.read_at?.split('T')[0] || ''}` : 'belum baca'}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div className="mt-6 flex flex-wrap justify-end gap-2">
+                  <button onClick={() => { setRincianId(null); setRincian(null); }}
+                    className="rounded-lg border border-gray-200 px-4 py-2 text-sm dark:border-gray-700">Tutup</button>
+                  {belumDibaca.some((m) => m.id === rincianId) && (
+                    <button onClick={() => tandaiDibaca(rincianId)}
+                      className="fn-press rounded-lg bg-cta-600 px-4 py-2 text-sm font-medium text-white hover:bg-cta-700">
+                      Tandai sudah dibaca
+                    </button>
+                  )}
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
