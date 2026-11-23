@@ -1,3 +1,4 @@
+import { getBaseURL } from '../../utils/apiConfig'
 import React, { useState, useRef, useEffect } from 'react';
 import Camera from 'lucide-react/dist/esm/icons/camera'
 import UserPlus from 'lucide-react/dist/esm/icons/user-plus'
@@ -21,17 +22,7 @@ const FaceRegistration: React.FC = () => {
   const streamRef = useRef<MediaStream | null>(null);
 
   // Get API base URL - match hostname dynamically
-  const getApiBase = () => {
-    if (import.meta.env.VITE_API_URL) {
-    return import.meta.env.VITE_API_URL.replace(/\/api$/, '');
-  }
-
-  const hostname = window.location.hostname;
-    if (hostname === 'erp.graterp.my.id' || hostname.endsWith('.graterp.my.id')) {
-      return 'https://api.graterp.my.id';
-    }
-    return `http://${hostname}:5000`;
-  };
+  const getApiBase = () => getBaseURL();;
   const API_BASE_URL = getApiBase();
 
   useEffect(() => {

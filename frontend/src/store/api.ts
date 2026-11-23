@@ -1,28 +1,9 @@
+import { getBaseURL } from '../utils/apiConfig'
 import { createApi, fetchBaseQuery, BaseQueryFn, FetchArgs, FetchBaseQueryError } from '@reduxjs/toolkit/query/react'
 import type { RootState } from './index'
 
 // Auto-detect the correct API base URL with better network handling
-const getApiBaseUrl = () => {
-  // Check for environment variable first
-  if (import.meta.env.VITE_API_URL) {
-    return import.meta.env.VITE_API_URL;
-  }
-  
-  const hostname = window.location.hostname;
-  
-  // Production domain - use HTTPS API subdomain
-  if (hostname === 'erp.graterp.my.id' || hostname.endsWith('.graterp.my.id')) {
-    return 'https://api.graterp.my.id/api';
-  }
-
-  // Fengsheng - lihat catatan yang sama di utils/axiosConfig.ts.
-  if (hostname === 'erp.fsnindonesia.com' || hostname.endsWith('.fsnindonesia.com')) {
-    return 'https://api.fsnindonesia.com/api';
-  }
-  
-  // Local/LAN - use same hostname with port 5000
-  return `http://${hostname}:5000/api`;
-};
+const getApiBaseUrl = () => `${getBaseURL()}/api`;
 
 const rawBaseQuery = fetchBaseQuery({
   baseUrl: getApiBaseUrl(),

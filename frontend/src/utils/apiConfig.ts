@@ -1,6 +1,12 @@
 /**
- * API Configuration Helper
- * Provides consistent base URL across the application
+ * SATU-SATUNYA tempat alamat server API ditentukan.
+ *
+ * Jangan menyalin logika ini ke berkas lain. Sampai 2026-11-22 ada 14 berkas
+ * yang masing-masing menghitung sendiri, dan sebagian hanya tahu domain
+ * graterp. Di mode dev hal itu tertutupi karena VITE_API_URL di
+ * .env.development menimpa semuanya; begitu dijalankan dari hasil build
+ * (.env.production, tanpa VITE_API_URL) panggilan jatuh ke
+ * http://<host>:5000 dan aplikasi mati di layar "Verifying session".
  */
 
 /**
@@ -15,12 +21,17 @@ export const getBaseURL = (): string => {
 
   const hostname = window.location.hostname;
   
-  // Production domain - use HTTPS API subdomain
+  // Falmaco
   if (hostname === 'erp.graterp.my.id' || hostname.endsWith('.graterp.my.id')) {
     return 'https://api.graterp.my.id';
   }
-  
-  // Local development - use same hostname with port 5000
+
+  // Fengsheng
+  if (hostname === 'erp.fsnindonesia.com' || hostname.endsWith('.fsnindonesia.com')) {
+    return 'https://api.fsnindonesia.com';
+  }
+
+  // Lokal / jaringan kantor - host yang sama, port 5000
   return `http://${hostname}:5000`;
 };
 

@@ -1,3 +1,4 @@
+import { getBaseURL } from '../../utils/apiConfig'
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -135,12 +136,7 @@ export default function WorkOrderQCForm() {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const hostname = window.location.hostname;
-      const baseURL = import.meta.env.VITE_API_URL
-        ? import.meta.env.VITE_API_URL.replace(/\/api$/, '')
-        : (hostname === 'erp.graterp.my.id' || hostname.endsWith('.graterp.my.id'))
-        ? 'https://api.graterp.my.id'
-        : `http://${hostname}:5000`;
+      const baseURL = getBaseURL();
       
       // Fetch pending QC data to get SPK info
       const response = await fetch(`${baseURL}/api/quality/pending-qc`, {
@@ -217,12 +213,7 @@ export default function WorkOrderQCForm() {
       
       const fullNotes = `${checkResults}${rejectSummary}\n\n${formData.notes || ''}`.trim();
       
-      const hostname = window.location.hostname;
-      const baseURL = import.meta.env.VITE_API_URL
-        ? import.meta.env.VITE_API_URL.replace(/\/api$/, '')
-        : (hostname === 'erp.graterp.my.id' || hostname.endsWith('.graterp.my.id'))
-        ? 'https://api.graterp.my.id'
-        : `http://${hostname}:5000`;
+      const baseURL = getBaseURL();
       
       if (existingTest) {
         // Update existing test

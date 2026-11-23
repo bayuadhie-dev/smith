@@ -1,3 +1,4 @@
+import { getBaseURL } from '../utils/apiConfig'
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -216,12 +217,7 @@ export default function SessionTimeoutModal({ onExtendSession }: SessionTimeoutM
     
     try {
       // Call extend-session endpoint - use same logic as axiosConfig
-      const hostname = window.location.hostname;
-      const baseURL = import.meta.env.VITE_API_URL
-        ? import.meta.env.VITE_API_URL.replace(/\/api$/, '')
-        : (hostname === 'erp.graterp.my.id' || hostname.endsWith('.graterp.my.id'))
-        ? 'https://api.graterp.my.id'
-        : `http://${hostname}:5000`;
+      const baseURL = getBaseURL();
 
       const response = await fetch(`${baseURL}/api/auth/extend-session`, {
         method: 'POST',

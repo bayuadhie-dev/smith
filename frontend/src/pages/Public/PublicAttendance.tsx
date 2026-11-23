@@ -1,3 +1,4 @@
+import { getBaseURL } from '../../utils/apiConfig'
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import Camera from 'lucide-react/dist/esm/icons/camera'
 import Clock from 'lucide-react/dist/esm/icons/clock'
@@ -12,19 +13,7 @@ import * as faceapi from 'face-api.js';
 import { useNavigate } from 'react-router-dom';
 
 // Get API base URL - match axiosConfig.ts logic
-const getApiBase = () => {
-  if (import.meta.env.VITE_API_URL) {
-    return import.meta.env.VITE_API_URL.replace(/\/api$/, '');
-  }
-
-  const hostname = window.location.hostname;
-  // Production domain - use HTTPS API subdomain
-  if (hostname === 'erp.graterp.my.id' || hostname.endsWith('.graterp.my.id')) {
-    return 'https://api.graterp.my.id';
-  }
-  // Local development - use same hostname with port 5000
-  return `http://${hostname}:5000`;
-};
+const getApiBase = () => getBaseURL();;
 const API_BASE = getApiBase();
 
 interface AttendanceRecord {

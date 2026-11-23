@@ -1,3 +1,4 @@
+import { getBaseURL } from '../../utils/apiConfig'
 import React, { useState, useMemo } from 'react'
 import { PageHeader, KpiStrip } from '../../components/ui/PageKit'
 import { Link } from 'react-router-dom';
@@ -95,16 +96,7 @@ const CircularProgress = ({ value, size = 70, strokeWidth = 6, color = 'blue' }:
   );
 };
 
-const getApiBase = () => {
-  if (import.meta.env.VITE_API_URL) {
-    return import.meta.env.VITE_API_URL;
-  }
-  const hostname = window.location.hostname;
-  if (hostname === 'erp.graterp.my.id' || hostname.endsWith('.graterp.my.id')) {
-    return 'https://api.graterp.my.id/api';
-  }
-  return `http://${hostname}:5000/api`;
-};
+const getApiBase = () => getBaseURL() + '/api';;
 
 export default function OEEDashboardEnhanced() {
   const [selectedMachine, setSelectedMachine] = useState<number | null>(null)

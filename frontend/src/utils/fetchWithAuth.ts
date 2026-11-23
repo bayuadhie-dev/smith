@@ -1,10 +1,10 @@
+import { getBaseURL as sumberAlamatApi } from './apiConfig'
+
 // Custom event for session expiry
 export const SESSION_EXPIRED_EVENT = 'session-expired';
 
 // Get the current host for LAN access
-const getBaseURL = () => {
-  return `http://${window.location.hostname}:5000`;
-};
+const getBaseURL = () => sumberAlamatApi();
 
 interface FetchOptions extends RequestInit {
   skipAuth?: boolean;

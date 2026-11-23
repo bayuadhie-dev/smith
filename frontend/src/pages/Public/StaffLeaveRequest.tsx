@@ -1,3 +1,4 @@
+import { getBaseURL } from '../../utils/apiConfig'
 import React, { useState, useEffect } from 'react';
 import Calendar from 'lucide-react/dist/esm/icons/calendar'
 import User from 'lucide-react/dist/esm/icons/user'
@@ -14,17 +15,7 @@ import { useNavigate } from 'react-router-dom';
 import { confirmDialog } from '../../components/ui';
 
 // Get API base URL
-const getApiBase = () => {
-  if (import.meta.env.VITE_API_URL) {
-    return import.meta.env.VITE_API_URL.replace(/\/api$/, '');
-  }
-
-  const hostname = window.location.hostname;
-  if (hostname === 'erp.graterp.my.id' || hostname.endsWith('.graterp.my.id')) {
-    return 'https://api.graterp.my.id';
-  }
-  return `http://${hostname}:5000`;
-};
+const getApiBase = () => getBaseURL();;
 const API_BASE = getApiBase();
 
 interface LeaveRequest {

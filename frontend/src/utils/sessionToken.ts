@@ -1,3 +1,4 @@
+import { getBaseURL } from './apiConfig'
 // Sliding session: while the user is active the access token is renewed in the background, so nobody is logged out
 // in the middle of work just because the token's 2 hours are up. Renewal uses /auth/extend-session (needs a still-valid
 // token), so the 30-minute inactivity limit enforced by SessionTimeoutModal keeps working: an idle user is not renewed.
@@ -10,11 +11,8 @@ const RENEW_WHEN_LESS_THAN_MS = 60 * 60 * 1000   // renew once less than 1 hour 
 const ACTIVE_WITHIN_MS = 30 * 60 * 1000          // ... and the user did something in the last 30 minutes
 const CHECK_EVERY_MS = 60 * 1000
 
-const apiBase = () => {
-  if (import.meta.env.VITE_API_URL) return String(import.meta.env.VITE_API_URL).replace(/\/api$/, '')
-  const host = window.location.hostname
-  return host === 'erp.graterp.my.id' || host.endsWith('.graterp.my.id') ? 'https://api.graterp.my.id' : `http://${host}:5000`
-}
+const apiBase = () => getBaseURL()
+
 
 export function tokenExpiresInMs(token: string | null | undefined): number | null {
   if (!token) return null

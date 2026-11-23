@@ -1,26 +1,8 @@
+import { getBaseURL } from '../../utils/apiConfig'
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import axios from 'axios'
 // Auto-detect the correct API base URL
-const getApiBaseUrl = () => {
-  if (import.meta.env.VITE_API_URL) {
-    return import.meta.env.VITE_API_URL.replace(/\/api$/, '');
-  }
-
-  const hostname = window.location.hostname;
-
-  // Production domain - use HTTPS API subdomain
-  if (hostname === 'erp.graterp.my.id' || hostname.endsWith('.graterp.my.id')) {
-    return 'https://api.graterp.my.id';
-  }
-  
-  // Local development
-  if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    return 'http://localhost:5000';
-  }
-  
-  // LAN access - use same IP but port 5000
-  return `http://${hostname}:5000`;
-};
+const getApiBaseUrl = () => getBaseURL();;
 
 const API_BASE_URL = getApiBaseUrl()
 
