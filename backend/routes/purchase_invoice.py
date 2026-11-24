@@ -697,7 +697,7 @@ def create_purchase_invoice_core(data, user_id, commit=True):
             }])
 
         # Determine debit account: inventory if this is a stocked item
-        # (Material is always inventory; Product depends on material_type),
+        # (barang dari PO/GRN selalu persediaan; jasa/biaya punya jalurnya sendiri),
         # otherwise expense.
         line_amount = float(item_data.get('total_price') or 0)
         line_amount_idr = line_amount * inv_rate
@@ -715,9 +715,16 @@ def create_purchase_invoice_core(data, user_id, commit=True):
             else:
                 is_inventory_item = True
         elif product_id:
-            product = db.session.get(Product, product_id)
-            if product and product.material_type in ('raw_materials', 'packaging_materials', 'chemical_materials', 'finished_goods'):
-                is_inventory_item = True
+            # Barang yang datang lewat PO/GRN selalu masuk stok - penerimaannya
+            # (routes/purchasing.py) tidak menyaring jenis apa pun, jadi di sini
+            # pun tidak boleh menyaring. Dulu hanya empat jenis yang dianggap
+            # persediaan; jenis lain - 'wip', 'premix', 'waste' - jatuh ke akun
+            # beban, padahal GRN-nya sudah mengkredit GR/IR. Akibatnya di
+            # Fengsheng: GR/IR BPB-26/11/004 Rp 372.800.539 tidak pernah lunas,
+            # dan nilai yang sama tercatat dua kali - sekali sebagai persediaan,
+            # sekali sebagai Biaya Umum dan Adm Lainnya (dilaporkan 2026-11-24;
+            # 122 dari 293 produk Fengsheng berjenis 'wip').
+            is_inventory_item = True
 
         # Fase 3 (2026-09-21): for stocked items, GRN already posted a
         # provisional Dr Persediaan / Cr GR/IR Clearing when the goods
