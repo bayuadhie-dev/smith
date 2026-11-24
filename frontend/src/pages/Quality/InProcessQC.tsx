@@ -20,6 +20,7 @@ import {
 } from '@heroicons/react/24/outline';
 import NumberInput from '../../components/ui/NumberInput'
 import { useUrlFilter } from '../../hooks/useUrlState'
+import { getApiURL } from '../../utils/apiConfig'
 
 interface ProductionProcess {
   id: number;
@@ -113,7 +114,7 @@ export default function InProcessQC() {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`/api/quality/in-process?status=${filterStatus}`, {
+      const response = await fetch(getApiURL(`/api/quality/in-process?status=${filterStatus}`), {
         headers: { 'Authorization': `Bearer ${token}` },
       });
       
@@ -156,7 +157,7 @@ export default function InProcessQC() {
     setSubmitting(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`/api/quality/in-process/${selectedProcess.id}/inspect`, {
+      const response = await fetch(getApiURL(`/api/quality/in-process/${selectedProcess.id}/inspect`), {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { getApiURL } from '../../utils/apiConfig'
 import {
   CalendarIcon as Calendar,
   CheckCircleIcon as CheckCircle,
@@ -94,7 +95,7 @@ const LeaveForm: React.FC = () => {
 
   const fetchEmployees = async () => {
     try {
-      const response = await fetch('/api/hr/employees?status=active', {
+      const response = await fetch(getApiURL('/api/hr/employees?status=active'), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -123,7 +124,7 @@ const LeaveForm: React.FC = () => {
 
   const fetchLeave = async () => {
     try {
-      const response = await fetch(`/api/hr/leaves/${id}`, {
+      const response = await fetch(getApiURL(`/api/hr/leaves/${id}`), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }

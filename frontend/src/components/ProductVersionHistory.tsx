@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
+import { getApiURL } from '../utils/apiConfig'
 import {
   ArrowLeftIcon as ArrowLeft,
   CalendarIcon as Calendar,
@@ -53,7 +54,7 @@ const ProductVersionHistory: React.FC = () => {
   const fetchProductVersions = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/products-excel/${kode_produk}/versions`);
+      const response = await fetch(getApiURL(`/api/products-excel/${kode_produk}/versions`));
       
       if (!response.ok) {
         throw new Error('Failed to fetch product versions');

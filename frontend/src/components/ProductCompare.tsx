@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
+import { getApiURL } from '../utils/apiConfig'
 import {
   CheckIcon,
   CodeBracketIcon,
@@ -64,7 +65,7 @@ const ProductCompare: React.FC = () => {
   const fetchCompareData = async (version1: string, version2: string) => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/products-excel/${kode_produk}/compare?version1=${version1}&version2=${version2}`);
+      const response = await fetch(getApiURL(`/api/products-excel/${kode_produk}/compare?version1=${version1}&version2=${version2}`));
       
       if (!response.ok) {
         throw new Error('Failed to fetch comparison data');

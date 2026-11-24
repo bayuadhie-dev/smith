@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getApiURL } from '../../utils/apiConfig'
 import {
   ArrowPathIcon,
   ChartBarIcon,
@@ -52,7 +53,7 @@ export default function TVDisplayOverview() {
 
   const fetchData = async () => {
     try {
-      const response = await fetch('/api/tv-display/fullscreen?type=overview');
+      const response = await fetch(getApiURL('/api/tv-display/fullscreen?type=overview'));
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }

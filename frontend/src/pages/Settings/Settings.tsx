@@ -43,6 +43,7 @@ import { useGetRolesQuery } from '../../services/userManagementApi';
 import UserModal from '../../components/Settings/UserModal';
 import { useUrlState } from '../../hooks/useUrlState';
 import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail';
+import { getApiURL } from '../../utils/apiConfig'
 
 interface SettingsTab {
   id: string;
@@ -484,7 +485,7 @@ const Settings: React.FC = () => {
       formData.append('file', file);
       formData.append('type', type);
 
-      const response = await fetch('/api/import/data', {
+      const response = await fetch(getApiURL('/api/import/data'), {
         method: 'POST',
         body: formData,
         headers: {

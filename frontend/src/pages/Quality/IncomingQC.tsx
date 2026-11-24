@@ -20,6 +20,7 @@ import NumberInput from '../../components/ui/NumberInput'
 import { useListTools, type ListColumn } from '../../hooks/useListTools';
 import { ListToolbar, SortTh } from '../../components/ui/ListTools';
 import { useUrlFilter } from '../../hooks/useUrlState'
+import { getApiURL } from '../../utils/apiConfig'
 
 interface IncomingMaterial {
   id: number;
@@ -101,7 +102,7 @@ export default function IncomingQC() {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`/api/quality/incoming-materials?status=${filterStatus}`, {
+      const response = await fetch(getApiURL(`/api/quality/incoming-materials?status=${filterStatus}`), {
         headers: { 'Authorization': `Bearer ${token}` },
       });
       
@@ -142,7 +143,7 @@ export default function IncomingQC() {
     setSubmitting(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`/api/quality/incoming-materials/${selectedMaterial.id}/inspect`, {
+      const response = await fetch(getApiURL(`/api/quality/incoming-materials/${selectedMaterial.id}/inspect`), {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

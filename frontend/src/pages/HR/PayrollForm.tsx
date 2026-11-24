@@ -17,6 +17,7 @@ import {
   CreditCardIcon as CreditCard
 } from '@heroicons/react/24/outline';
 import NumberInput from '../../components/ui/NumberInput'
+import { getApiURL } from '../../utils/apiConfig'
 interface Employee {
   id: number;
   employee_number: string;
@@ -138,7 +139,7 @@ const PayrollForm: React.FC = () => {
 
   const fetchEmployees = async () => {
     try {
-      const response = await fetch('/api/hr/employees?status=active', {
+      const response = await fetch(getApiURL('/api/hr/employees?status=active'), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -154,7 +155,7 @@ const PayrollForm: React.FC = () => {
 
   const fetchPayrollPeriods = async () => {
     try {
-      const response = await fetch('/api/hr/payroll/periods?status=draft,processing', {
+      const response = await fetch(getApiURL('/api/hr/payroll/periods?status=draft,processing'), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -170,7 +171,7 @@ const PayrollForm: React.FC = () => {
 
   const fetchPayrollRecord = async () => {
     try {
-      const response = await fetch(`/api/hr/payroll/records/${id}`, {
+      const response = await fetch(getApiURL(`/api/hr/payroll/records/${id}`), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }

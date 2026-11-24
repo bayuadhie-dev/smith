@@ -15,6 +15,7 @@ import {
   XMarkIcon as X
 } from '@heroicons/react/24/outline';
 import NumberInput from '../../components/ui/NumberInput'
+import { getApiURL } from '../../utils/apiConfig'
 interface TrackingFormData {
   shipping_order_id: number;
   event_date: string;
@@ -87,7 +88,7 @@ const ShippingTrackingForm: React.FC = () => {
 
   const fetchShippingOrder = async () => {
     try {
-      const response = await fetch(`/api/shipping/orders/${orderId}`, {
+      const response = await fetch(getApiURL(`/api/shipping/orders/${orderId}`), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -103,7 +104,7 @@ const ShippingTrackingForm: React.FC = () => {
 
   const fetchTrackingEvent = async () => {
     try {
-      const response = await fetch(`/api/shipping/tracking/${trackingId}`, {
+      const response = await fetch(getApiURL(`/api/shipping/tracking/${trackingId}`), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }

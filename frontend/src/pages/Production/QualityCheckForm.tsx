@@ -17,6 +17,7 @@ import {
   XMarkIcon as X
 } from '@heroicons/react/24/outline';
 import NumberInput from '../../components/ui/NumberInput'
+import { getApiURL } from '../../utils/apiConfig'
 interface Product {
   id: number;
   name: string;
@@ -89,7 +90,7 @@ const QualityCheckForm: React.FC = () => {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch('/api/products-new/?per_page=1000', {
+      const response = await fetch(getApiURL('/api/products-new/?per_page=1000'), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -112,7 +113,7 @@ const QualityCheckForm: React.FC = () => {
 
   const fetchQualityCheck = async () => {
     try {
-      const response = await fetch(`/api/quality/inspections/${id}`, {
+      const response = await fetch(getApiURL(`/api/quality/inspections/${id}`), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }

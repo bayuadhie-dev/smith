@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { showError } from '../../components/ui';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { getApiURL } from '../../utils/apiConfig'
 import {
   ArrowDownTrayIcon,
   ArrowTrendingUpIcon,
@@ -105,7 +106,7 @@ const ShippingReportsForm: React.FC = () => {
 
   const fetchCustomers = async () => {
     try {
-      const response = await fetch('/api/sales/customers', {
+      const response = await fetch(getApiURL('/api/sales/customers'), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -121,7 +122,7 @@ const ShippingReportsForm: React.FC = () => {
 
   const fetchCarriers = async () => {
     try {
-      const response = await fetch('/api/shipping/carriers', {
+      const response = await fetch(getApiURL('/api/shipping/carriers'), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -143,7 +144,7 @@ const ShippingReportsForm: React.FC = () => {
         if (value) params.append(key, value);
       });
 
-      const response = await fetch(`/api/shipping/reports?${params}`, {
+      const response = await fetch(getApiURL(`/api/shipping/reports?${params}`), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -170,7 +171,7 @@ const ShippingReportsForm: React.FC = () => {
       });
       params.append('format', format);
 
-      const response = await fetch(`/api/shipping/reports/export?${params}`, {
+      const response = await fetch(getApiURL(`/api/shipping/reports/export?${params}`), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }

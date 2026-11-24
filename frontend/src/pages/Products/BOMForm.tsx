@@ -17,6 +17,7 @@ import {
 import SearchableSelect from '../../components/SearchableSelect';
 import { showSuccess } from '../../components/ui';
 import NumberInput from '../../components/ui/NumberInput'
+import { getApiURL } from '../../utils/apiConfig'
 interface Product {
   id: number;
   code: string;
@@ -117,7 +118,7 @@ const BOMForm: React.FC = () => {
   const fetchProducts = async () => {
     try {
       // Fetch from products-new API (updated product data)
-      const response = await fetch('/api/products-new/?per_page=1000', {
+      const response = await fetch(getApiURL('/api/products-new/?per_page=1000'), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -141,7 +142,7 @@ const BOMForm: React.FC = () => {
       } else {
         // Fallback to old API if products-new fails
         console.log('Falling back to old products API');
-        const fallbackResponse = await fetch('/api/products?per_page=1000', {
+        const fallbackResponse = await fetch(getApiURL('/api/products?per_page=1000'), {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
@@ -158,7 +159,7 @@ const BOMForm: React.FC = () => {
 
   const fetchMaterials = async () => {
     try {
-      const response = await fetch('/api/materials?per_page=2000', {
+      const response = await fetch(getApiURL('/api/materials?per_page=2000'), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -190,7 +191,7 @@ const BOMForm: React.FC = () => {
 
   const fetchBOM = async () => {
     try {
-      const response = await fetch(`/api/boms/${id}`, {
+      const response = await fetch(getApiURL(`/api/boms/${id}`), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }

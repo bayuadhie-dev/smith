@@ -15,6 +15,7 @@ import {
 import { useListTools, type ListColumn } from '../../hooks/useListTools'
 import { ListToolbar, SortTh } from '../../components/ui/ListTools'
 import { useUrlFilter } from '../../hooks/useUrlState'
+import { getApiURL } from '../../utils/apiConfig'
 
 interface PendingTransfer {
   id: number
@@ -85,13 +86,13 @@ export default function QCToWarehouse() {
     setIsLoading(true)
     try {
       const [pendingRes, locationsRes, summaryRes] = await Promise.all([
-        fetch('/api/quality/inspections/pending-transfer', {
+        fetch(getApiURL('/api/quality/inspections/pending-transfer'), {
           headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         }),
-        fetch('/api/warehouse/locations?material_type=finished_goods', {
+        fetch(getApiURL('/api/warehouse/locations?material_type=finished_goods'), {
           headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         }),
-        fetch('/api/quality/warehouse/by-status', {
+        fetch(getApiURL('/api/quality/warehouse/by-status'), {
           headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         })
       ])
@@ -141,7 +142,7 @@ export default function QCToWarehouse() {
 
     setIsTransferring(true)
     try {
-      const response = await fetch(`/api/quality/inspections/${inspectionId}/transfer-to-warehouse`, {
+      const response = await fetch(getApiURL(`/api/quality/inspections/${inspectionId}/transfer-to-warehouse`), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -184,7 +185,7 @@ export default function QCToWarehouse() {
 
     for (const id of selectedItems) {
       try {
-        const response = await fetch(`/api/quality/inspections/${id}/transfer-to-warehouse`, {
+        const response = await fetch(getApiURL(`/api/quality/inspections/${id}/transfer-to-warehouse`), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

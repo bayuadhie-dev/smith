@@ -17,6 +17,7 @@ import {
   TrashIcon
 } from '@heroicons/react/24/outline';
 import { useUrlFilter } from '../../hooks/useUrlState'
+import { getApiURL } from '../../utils/apiConfig'
 interface WarehouseLocation {
   id: number;
   code?: string;
@@ -62,7 +63,7 @@ const LocationList: React.FC = () => {
     try {
       // Halaman master: lokasi di gudang nonaktif pun harus kelihatan supaya
       // bisa diurus. Pilihan di form transaksi memakai daftar yang sudah tersaring.
-      const response = await fetch('/api/warehouse/locations?include_inactive=1&per_page=500', {
+      const response = await fetch(getApiURL('/api/warehouse/locations?include_inactive=1&per_page=500'), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -81,7 +82,7 @@ const LocationList: React.FC = () => {
 
   const fetchZones = async () => {
     try {
-      const response = await fetch('/api/warehouse/zones', {
+      const response = await fetch(getApiURL('/api/warehouse/zones'), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -99,7 +100,7 @@ const LocationList: React.FC = () => {
     if (!(await confirmDialog('Are you sure you want to delete this location?'))) return;
 
     try {
-      const response = await fetch(`/api/warehouse/locations/${id}`, {
+      const response = await fetch(getApiURL(`/api/warehouse/locations/${id}`), {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`

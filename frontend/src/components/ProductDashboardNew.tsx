@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { getApiURL } from '../utils/apiConfig'
 import {
   ArrowTrendingUpIcon,
   ChartBarIcon,
@@ -38,7 +39,7 @@ const ProductDashboardNew: React.FC = () => {
   const fetchDashboardStats = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/products-excel/dashboard?time_range=${timeRange}`);
+      const response = await fetch(getApiURL(`/api/products-excel/dashboard?time_range=${timeRange}`));
       const data = await response.json();
 
       if (response.ok) {

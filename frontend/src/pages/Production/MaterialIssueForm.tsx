@@ -17,6 +17,7 @@ import {
 } from '@heroicons/react/24/outline';
 import SearchableSelect from '../../components/SearchableSelect';
 import NumberInput from '../../components/ui/NumberInput'
+import { getApiURL } from '../../utils/apiConfig'
 interface WorkOrder {
   id: number;
   wo_number: string;
@@ -126,7 +127,7 @@ const MaterialIssueForm: React.FC = () => {
 
   const fetchWorkOrders = async () => {
     try {
-      const response = await fetch('/api/production/work-orders?status=released,in_progress', {
+      const response = await fetch(getApiURL('/api/production/work-orders?status=released,in_progress'), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -142,7 +143,7 @@ const MaterialIssueForm: React.FC = () => {
 
   const fetchMaterials = async () => {
     try {
-      const response = await fetch('/api/materials', {
+      const response = await fetch(getApiURL('/api/materials'), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -158,7 +159,7 @@ const MaterialIssueForm: React.FC = () => {
 
   const fetchLocations = async () => {
     try {
-      const response = await fetch('/api/warehouse/locations', {
+      const response = await fetch(getApiURL('/api/warehouse/locations'), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -174,7 +175,7 @@ const MaterialIssueForm: React.FC = () => {
 
   const fetchMaterialIssue = async () => {
     try {
-      const response = await fetch(`/api/production/material-issues/${id}`, {
+      const response = await fetch(getApiURL(`/api/production/material-issues/${id}`), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }

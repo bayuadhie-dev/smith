@@ -64,28 +64,39 @@ export default function ZoneStockPage() {
         </div>
       </Panel>
       <Panel title="Barang di gudang ini">
-        <div className="mb-3 flex flex-wrap items-center gap-4">
-          {serbaguna ? (
-            <div>
-              <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Kelompok barang</label>
-              <select className="input" value={kelompok} onChange={(e) => setKelompok(e.target.value)}>
+        <div className="mb-4 flex flex-wrap items-end justify-between gap-x-6 gap-y-3 border-b border-gray-100 pb-4 dark:border-gray-700">
+          <div>
+            <p className="fn-label mb-1">Kelompok barang</p>
+            {serbaguna ? (
+              <select className="input w-56" value={kelompok} onChange={(e) => setKelompok(e.target.value)}>
                 <option value="">Pilih kelompok</option>
                 {Object.entries(JENIS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
               </select>
-            </div>
-          ) : (
-            <p className="text-sm text-gray-600 dark:text-gray-300">
-              Gudang ini untuk <span className="font-medium">{JENIS[(d.zone.material_type || '').toLowerCase()] || d.zone.material_type}</span>.
-            </p>
-          )}
-          <label className="flex cursor-pointer items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
-            <input type="checkbox" checked={tampilkanNol} disabled={serbaguna && !kelompok}
-              onChange={(e) => setNolParam(e.target.checked ? '1' : '')} />
-            Tampilkan barang yang stoknya nol
-          </label>
-          {memuat && <span className="text-sm text-gray-500">memuat...</span>}
+            ) : (
+              <p className="text-sm font-medium text-gray-900 dark:text-white">
+                {JENIS[(d.zone.material_type || '').toLowerCase()] || d.zone.material_type}
+                <span className="ml-2 font-normal text-gray-500 dark:text-gray-400">mengikuti kategori gudang</span>
+              </p>
+            )}
+          </div>
+          <div className="flex items-center gap-3">
+            {memuat && <span className="text-sm text-gray-500 dark:text-gray-400">memuat…</span>}
+            <label className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm ${serbaguna && !kelompok
+              ? 'cursor-not-allowed border-gray-200 text-gray-400 dark:border-gray-700 dark:text-gray-600'
+              : 'cursor-pointer border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700'}`}>
+              <input type="checkbox" checked={tampilkanNol} disabled={serbaguna && !kelompok}
+                onChange={(e) => setNolParam(e.target.checked ? '1' : '')} />
+              Tampilkan yang stoknya nol
+            </label>
+          </div>
         </div>
-        {d.items.length === 0 ? <p className="text-sm text-gray-500 dark:text-gray-400">{tampilkanNol ? 'Tidak ada barang di kelompok ini.' : 'Tidak ada stok. Centang "Tampilkan barang yang stoknya nol" untuk melihat seluruh barang yang seharusnya di gudang ini.'}</p> : (
+        {d.items.length === 0 ? (
+          <p className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+            {serbaguna && !kelompok ? 'Belum ada stok di gudang ini. Pilih kelompok barang untuk melihat daftar lengkapnya.'
+              : tampilkanNol ? 'Tidak ada barang di kelompok ini.'
+                : 'Belum ada stok. Centang "Tampilkan yang stoknya nol" untuk melihat seluruh barang yang seharusnya di gudang ini.'}
+          </p>
+        ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200 text-sm dark:divide-gray-700">
               <thead><tr><th className={th}>Kode</th><th className={th}>Nama</th><th className={th}>Kelompok</th><th className={`${th} text-right`}>Stok</th><th className={`${th} text-right`}>Tersedia</th></tr></thead>

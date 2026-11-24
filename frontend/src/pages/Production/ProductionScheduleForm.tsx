@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { getApiURL } from '../../utils/apiConfig'
 import {
   CalendarIcon as Calendar,
   CheckIcon as Save,
@@ -103,7 +104,7 @@ const ProductionScheduleForm: React.FC = () => {
 
   const fetchWorkOrders = async () => {
     try {
-      const response = await fetch('/api/production/work-orders?status=released,in_progress&per_page=1000', {
+      const response = await fetch(getApiURL('/api/production/work-orders?status=released,in_progress&per_page=1000'), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -119,7 +120,7 @@ const ProductionScheduleForm: React.FC = () => {
 
   const fetchMachines = async () => {
     try {
-      const response = await fetch('/api/production/machines?status=available,running', {
+      const response = await fetch(getApiURL('/api/production/machines?status=available,running'), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -135,7 +136,7 @@ const ProductionScheduleForm: React.FC = () => {
 
   const fetchSchedule = async () => {
     try {
-      const response = await fetch(`/api/production/schedules/${id}`, {
+      const response = await fetch(getApiURL(`/api/production/schedules/${id}`), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }

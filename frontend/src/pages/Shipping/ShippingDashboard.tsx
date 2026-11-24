@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useGetShippingOrdersQuery } from '../../services/shippingApi'
 import { PageHeader, KpiStrip, QuickLinks } from '../../components/ui/PageKit'
+import { getApiURL } from '../../utils/apiConfig'
 import {
   CalculatorIcon,
   ChartBarIcon,
@@ -58,7 +59,7 @@ export default function ShippingDashboard() {
   useEffect(() => {
     const fetchReadyItems = async () => {
       try {
-        const response = await fetch('/api/shipping/ready-for-shipping', {
+        const response = await fetch(getApiURL('/api/shipping/ready-for-shipping'), {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }

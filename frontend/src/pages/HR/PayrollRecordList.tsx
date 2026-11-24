@@ -15,6 +15,7 @@ import {
 import { confirmDialog, showError } from '../../components/ui'
 import { useListTools, type ListColumn } from '../../hooks/useListTools'
 import { ListToolbar, SortTh } from '../../components/ui/ListTools'
+import { getApiURL } from '../../utils/apiConfig'
 
 interface PayrollRecord {
   id: number
@@ -108,7 +109,7 @@ export default function PayrollRecordList() {
 
   const fetchPeriod = async () => {
     try {
-      const response = await fetch(`/api/hr/payroll/periods`, {
+      const response = await fetch(getApiURL(`/api/hr/payroll/periods`), {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       if (response.ok) {
@@ -124,7 +125,7 @@ export default function PayrollRecordList() {
   const fetchRecords = async () => {
     setLoading(true)
     try {
-      const response = await fetch(`/api/hr/payroll/periods/${periodId}/records?per_page=1000`, {
+      const response = await fetch(getApiURL(`/api/hr/payroll/periods/${periodId}/records?per_page=1000`), {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       if (response.ok) {
@@ -141,7 +142,7 @@ export default function PayrollRecordList() {
   const handleApproveRecord = async (recordId: number) => {
     if (!(await confirmDialog('Setujui data gaji ini?'))) return
     try {
-      const response = await fetch(`/api/hr/payroll/records/${recordId}/approve`, {
+      const response = await fetch(getApiURL(`/api/hr/payroll/records/${recordId}/approve`), {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
       })
@@ -158,7 +159,7 @@ export default function PayrollRecordList() {
   const handleMarkPaid = async (recordId: number) => {
     if (!(await confirmDialog('Tandai sebagai sudah dibayar?'))) return
     try {
-      const response = await fetch(`/api/hr/payroll/records/${recordId}/pay`, {
+      const response = await fetch(getApiURL(`/api/hr/payroll/records/${recordId}/pay`), {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ payment_method: 'bank_transfer' })
@@ -175,7 +176,7 @@ export default function PayrollRecordList() {
 
   const handleViewPayslip = async (record: PayrollRecord) => {
     try {
-      const response = await fetch(`/api/hr/payroll/records/${record.id}/payslip`, {
+      const response = await fetch(getApiURL(`/api/hr/payroll/records/${record.id}/payslip`), {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       if (response.ok) {

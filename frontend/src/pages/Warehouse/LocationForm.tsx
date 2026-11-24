@@ -12,6 +12,7 @@ import {
   XMarkIcon as X
 } from '@heroicons/react/24/outline';
 import NumberInput from '../../components/ui/NumberInput'
+import { getApiURL } from '../../utils/apiConfig'
 interface Zone {
   id: number;
   name: string;
@@ -78,7 +79,7 @@ const LocationForm: React.FC = () => {
 
   const fetchZones = async () => {
     try {
-      const response = await fetch('/api/warehouse/zones', {
+      const response = await fetch(getApiURL('/api/warehouse/zones'), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -94,7 +95,7 @@ const LocationForm: React.FC = () => {
 
   const fetchLocation = async () => {
     try {
-      const response = await fetch(`/api/warehouse/locations/${id}`, {
+      const response = await fetch(getApiURL(`/api/warehouse/locations/${id}`), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }

@@ -16,6 +16,7 @@ import {
   XMarkIcon as X
 } from '@heroicons/react/24/outline';
 import NumberInput from '../../components/ui/NumberInput'
+import { getApiURL } from '../../utils/apiConfig'
 interface Employee {
   id: number;
   employee_number: string;
@@ -94,7 +95,7 @@ const AttendanceForm: React.FC = () => {
 
   const fetchEmployees = async () => {
     try {
-      const response = await fetch('/api/hr/employees?status=active', {
+      const response = await fetch(getApiURL('/api/hr/employees?status=active'), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -110,7 +111,7 @@ const AttendanceForm: React.FC = () => {
 
   const fetchShifts = async () => {
     try {
-      const response = await fetch('/api/hr/shifts', {
+      const response = await fetch(getApiURL('/api/hr/shifts'), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -126,7 +127,7 @@ const AttendanceForm: React.FC = () => {
 
   const fetchAttendance = async () => {
     try {
-      const response = await fetch(`/api/hr/attendance/${id}`, {
+      const response = await fetch(getApiURL(`/api/hr/attendance/${id}`), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }

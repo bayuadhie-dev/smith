@@ -21,6 +21,7 @@ import { useUrlState } from '../../hooks/useUrlState';
 import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail';
 import { useListTools, type ListColumn } from '../../hooks/useListTools';
 import { ListToolbar, SortTh } from '../../components/ui/ListTools';
+import { getApiURL } from '../../utils/apiConfig'
 
 interface FinishGoodItem {
   id: number;
@@ -76,7 +77,7 @@ export default function FinishGoodQC() {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`/api/quality/pending-qc`, {
+      const response = await fetch(getApiURL(`/api/quality/pending-qc`), {
         headers: { 'Authorization': `Bearer ${token}` },
       });
       

@@ -18,6 +18,7 @@ import {
 } from '@heroicons/react/24/outline';
 import NumberInput from './ui/NumberInput'
 import { useUrlFilter, useUrlPage } from '../hooks/useUrlState'
+import { getApiURL } from '../utils/apiConfig'
 interface ProductNew {
   id: number;
   kode_produk: string;
@@ -98,7 +99,7 @@ const ProductListNew: React.FC<ProductListNewProps> = ({ onEdit, onView, onAdd, 
         ...filters
       });
 
-      const response = await fetch(`/api/products-excel?${params}`);
+      const response = await fetch(getApiURL(`/api/products-excel?${params}`));
       const data = await response.json();
 
       if (response.ok) {
@@ -136,7 +137,7 @@ const ProductListNew: React.FC<ProductListNewProps> = ({ onEdit, onView, onAdd, 
     }
 
     try {
-      const response = await fetch(`/api/products-excel/${product.kode_produk}`, {
+      const response = await fetch(getApiURL(`/api/products-excel/${product.kode_produk}`), {
         method: 'DELETE'
       });
 
@@ -154,7 +155,7 @@ const ProductListNew: React.FC<ProductListNewProps> = ({ onEdit, onView, onAdd, 
 
   const handleExport = async () => {
     try {
-      const response = await fetch('/api/products-new/export');
+      const response = await fetch(getApiURL('/api/products-new/export'));
       if (response.ok) {
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);

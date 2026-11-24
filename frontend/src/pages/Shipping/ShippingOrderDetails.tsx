@@ -32,6 +32,7 @@ import {
   TrashIcon as Trash2
 } from '@heroicons/react/24/outline';
 import NumberInput from '../../components/ui/NumberInput'
+import { getApiURL } from '../../utils/apiConfig'
 
 interface HandlingUnit {
   id: number;
@@ -145,7 +146,7 @@ const ShippingOrderDetails: React.FC = () => {
   const fetchHandlingUnits = async (itemId: number) => {
     setHuLoading(prev => ({ ...prev, [itemId]: true }));
     try {
-      const res = await fetch(`/api/shipping/shipping-items/${itemId}/handling-units`, {
+      const res = await fetch(getApiURL(`/api/shipping/shipping-items/${itemId}/handling-units`), {
         headers: authHeaders()
       });
       if (res.ok) {
@@ -177,7 +178,7 @@ const ShippingOrderDetails: React.FC = () => {
     setHuSubmitting(prev => ({ ...prev, [itemId]: true }));
     setHuError(prev => ({ ...prev, [itemId]: '' }));
     try {
-      const res = await fetch(`/api/shipping/shipping-items/${itemId}/handling-units`, {
+      const res = await fetch(getApiURL(`/api/shipping/shipping-items/${itemId}/handling-units`), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...authHeaders() },
         body: JSON.stringify({ quantity: qty, notes: newHuNotes[itemId] || undefined })
@@ -200,7 +201,7 @@ const ShippingOrderDetails: React.FC = () => {
   const deleteHu = async (itemId: number, huId: number) => {
     setConfirmDeleteHuId(null);
     try {
-      const res = await fetch(`/api/shipping/handling-units/${huId}`, {
+      const res = await fetch(getApiURL(`/api/shipping/handling-units/${huId}`), {
         method: 'DELETE',
         headers: authHeaders()
       });
@@ -221,7 +222,7 @@ const ShippingOrderDetails: React.FC = () => {
     setScanError('');
     setScanResult(null);
     try {
-      const res = await fetch(`/api/shipping/handling-units/scan/${encodeURIComponent(hu)}`, {
+      const res = await fetch(getApiURL(`/api/shipping/handling-units/scan/${encodeURIComponent(hu)}`), {
         headers: authHeaders()
       });
       const data = await res.json();
@@ -240,7 +241,7 @@ const ShippingOrderDetails: React.FC = () => {
   const fetchOrderDetails = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/shipping/orders/${id}`, {
+      const response = await fetch(getApiURL(`/api/shipping/orders/${id}`), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -261,7 +262,7 @@ const ShippingOrderDetails: React.FC = () => {
 
   const updateOrderStatus = async (newStatus: string) => {
     try {
-      const response = await fetch(`/api/shipping/orders/${id}/status`, {
+      const response = await fetch(getApiURL(`/api/shipping/orders/${id}/status`), {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -284,7 +285,7 @@ const ShippingOrderDetails: React.FC = () => {
     if (!(await confirmDialog('Are you sure you want to delete this shipping order?'))) return;
 
     try {
-      const response = await fetch(`/api/shipping/orders/${id}`, {
+      const response = await fetch(getApiURL(`/api/shipping/orders/${id}`), {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -307,7 +308,7 @@ const ShippingOrderDetails: React.FC = () => {
 
   const downloadPOD = async () => {
     try {
-      const response = await fetch(`/api/shipping/orders/${id}/pod`, {
+      const response = await fetch(getApiURL(`/api/shipping/orders/${id}/pod`), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }

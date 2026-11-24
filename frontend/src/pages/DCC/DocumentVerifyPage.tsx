@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
+import { getApiURL } from '../../utils/apiConfig'
 
 const DocumentVerifyPage = () => {
   const { token } = useParams()
@@ -7,7 +8,7 @@ const DocumentVerifyPage = () => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch(`/api/dcc/verify/${token}`)
+    fetch(getApiURL(`/api/dcc/verify/${token}`))
       .then(res => res.json())
       .then(data => { setResult(data); setLoading(false) })
       .catch(() => { setResult({ valid: false }); setLoading(false) })

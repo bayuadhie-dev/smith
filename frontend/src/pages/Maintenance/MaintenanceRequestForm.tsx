@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import NumberInput from '../../components/ui/NumberInput'
 import { PageHeader, Panel } from '../../components/ui/PageKit'
+import { getApiURL } from '../../utils/apiConfig'
 interface Machine {
   id: number;
   name: string;
@@ -102,7 +103,7 @@ const MaintenanceRequestForm: React.FC = () => {
 
   const fetchMachines = async () => {
     try {
-      const response = await fetch('/api/production/machines?status=active', {
+      const response = await fetch(getApiURL('/api/production/machines?status=active'), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -118,7 +119,7 @@ const MaintenanceRequestForm: React.FC = () => {
 
   const fetchMaintenanceRequest = async () => {
     try {
-      const response = await fetch(`/api/maintenance/records/${id}`, {
+      const response = await fetch(getApiURL(`/api/maintenance/records/${id}`), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }

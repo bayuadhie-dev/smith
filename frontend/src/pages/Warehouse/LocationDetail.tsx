@@ -3,6 +3,7 @@ import ItemStockModal from '../../components/Warehouse/ItemStockModal';
 import { useUrlState } from '../../hooks/useUrlState';
 import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { getApiURL } from '../../utils/apiConfig'
 import {
   ArrowLeftIcon,
   ArrowDownTrayIcon,
@@ -103,7 +104,7 @@ const LocationDetail: React.FC = () => {
   const fetchLocationDetail = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/warehouse/locations/${id}`, {
+      const response = await fetch(getApiURL(`/api/warehouse/locations/${id}`), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }

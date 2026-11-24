@@ -1,3 +1,4 @@
+import { getApiURL } from '../utils/apiConfig'
 // Export utility functions for Finance module
 
 interface ExportData {
@@ -58,7 +59,7 @@ export const exportToJSON = (data: any, filename: string) => {
 export const generatePDFReport = async (reportType: string, data: any) => {
   try {
     // This would typically call a backend service to generate PDF
-    const response = await fetch('/api/finance/reports/generate-pdf', {
+    const response = await fetch(getApiURL('/api/finance/reports/generate-pdf'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

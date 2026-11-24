@@ -15,6 +15,7 @@ import {
   BuildingOfficeIcon
 } from '@heroicons/react/24/outline'
 import NumberInput from '../../components/ui/NumberInput'
+import { getApiURL } from '../../utils/apiConfig'
 
 interface ReadyForShippingItem {
   work_order_id: number
@@ -91,7 +92,7 @@ export default function CreateShippingFromQC() {
 
   const fetchReadyItems = async () => {
     try {
-      const response = await fetch('/api/shipping/ready-for-shipping', {
+      const response = await fetch(getApiURL('/api/shipping/ready-for-shipping'), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -110,7 +111,7 @@ export default function CreateShippingFromQC() {
 
   const fetchProviders = async () => {
     try {
-      const response = await fetch('/api/shipping/providers', {
+      const response = await fetch(getApiURL('/api/shipping/providers'), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -172,7 +173,7 @@ export default function CreateShippingFromQC() {
         number_of_packages: parseInt(formData.number_of_packages.toString()) || 1
       }
 
-      const response = await fetch('/api/shipping/create-from-qc', {
+      const response = await fetch(getApiURL('/api/shipping/create-from-qc'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

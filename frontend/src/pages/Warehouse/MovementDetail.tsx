@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
+import { getApiURL } from '../../utils/apiConfig'
 import {
   ArrowLeftIcon,
   PencilSquareIcon,
@@ -86,7 +87,7 @@ const MovementDetail: React.FC = () => {
   const fetchMovement = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/warehouse/movements/${id}`, {
+      const response = await fetch(getApiURL(`/api/warehouse/movements/${id}`), {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       if (response.ok) {

@@ -19,6 +19,7 @@ import SearchableSelect from '../../components/SearchableSelect';
 import NumberInput from '../../components/ui/NumberInput'
 import { TableSkeleton } from '../../components/ui/Skeleton'
 import { useUrlFilter } from '../../hooks/useUrlState'
+import { getApiURL } from '../../utils/apiConfig'
 
 interface BOMItem {
   id: number;
@@ -302,7 +303,7 @@ const BOMManagement: React.FC = () => {
     }
 
     try {
-      const response = await fetch(`/api/boms/${bomId}/items/${itemId}`, {
+      const response = await fetch(getApiURL(`/api/boms/${bomId}/items/${itemId}`), {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`

@@ -17,6 +17,7 @@ import { useListTools, type ListColumn } from '../../hooks/useListTools'
 import { ListToolbar, SortTh } from '../../components/ui/ListTools'
 import { TableSkeleton } from '../../components/ui/Skeleton'
 import { useUrlFilter } from '../../hooks/useUrlState'
+import { getApiURL } from '../../utils/apiConfig'
 
 const STATUS_LABEL: Record<string, string> = { draft: 'Draft', processing: 'Diproses', completed: 'Selesai', locked: 'Terkunci' }
 const fmtDate = (v?: string | null) => (v ? new Date(v).toLocaleDateString('id-ID') : '-')
@@ -66,7 +67,7 @@ const navigate = useNavigate()
   const handleApprovePayroll = async (periodId: number) => {
     if (!(await confirmDialog('Setujui payroll untuk periode ini?'))) return
     try {
-      const response = await fetch(`/api/hr/payroll/periods/${periodId}/approve`, {
+      const response = await fetch(getApiURL(`/api/hr/payroll/periods/${periodId}/approve`), {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,

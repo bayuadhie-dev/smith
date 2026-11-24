@@ -15,6 +15,7 @@ import {
   XMarkIcon
 } from '@heroicons/react/24/outline';
 import NumberInput from '../../components/ui/NumberInput'
+import { getApiURL } from '../../utils/apiConfig'
 interface Product {
   id: number;
   name: string;
@@ -109,7 +110,7 @@ const MovementForm: React.FC = () => {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch('/api/products-new/?per_page=1000', {
+      const response = await fetch(getApiURL('/api/products-new/?per_page=1000'), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -131,7 +132,7 @@ const MovementForm: React.FC = () => {
 
   const fetchLocations = async () => {
     try {
-      const response = await fetch('/api/warehouse/locations', {
+      const response = await fetch(getApiURL('/api/warehouse/locations'), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -147,7 +148,7 @@ const MovementForm: React.FC = () => {
 
   const fetchMovement = async () => {
     try {
-      const response = await fetch(`/api/warehouse/movements/${id}`, {
+      const response = await fetch(getApiURL(`/api/warehouse/movements/${id}`), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }

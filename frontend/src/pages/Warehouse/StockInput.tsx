@@ -14,6 +14,7 @@ import SearchableSelect from '../../components/SearchableSelect';
 import { showSuccess } from '../../components/ui';
 import NumberInput from '../../components/ui/NumberInput'
 import { useUrlFilter } from '../../hooks/useUrlState'
+import { getApiURL } from '../../utils/apiConfig'
 
 interface Product {
   id: number;
@@ -96,7 +97,7 @@ const StockInput: React.FC = () => {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch('/api/products-new/?per_page=1000', {
+      const response = await fetch(getApiURL('/api/products-new/?per_page=1000'), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -118,7 +119,7 @@ const StockInput: React.FC = () => {
 
   const fetchMaterials = async () => {
     try {
-      const response = await fetch('/api/production/materials?is_active=true', {
+      const response = await fetch(getApiURL('/api/production/materials?is_active=true'), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -134,7 +135,7 @@ const StockInput: React.FC = () => {
 
   const fetchLocations = async () => {
     try {
-      const response = await fetch('/api/warehouse/locations?is_active=true', {
+      const response = await fetch(getApiURL('/api/warehouse/locations?is_active=true'), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -292,7 +293,7 @@ const StockInput: React.FC = () => {
         }))
       };
 
-      const response = await fetch('/api/warehouse/stock-input', {
+      const response = await fetch(getApiURL('/api/warehouse/stock-input'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { showError, showSuccess } from '../../components/ui';
 import NumberInput from '../../components/ui/NumberInput'
+import { getApiURL } from '../../utils/apiConfig'
 const NonwovenCalculator: React.FC = () => {
   const { t } = useLanguage();
 
@@ -33,7 +34,7 @@ const NonwovenCalculator: React.FC = () => {
 
   const handleGsmCalculate = async () => {
     try {
-      const response = await fetch('/api/products/calculate/gsm', {
+      const response = await fetch(getApiURL('/api/products/calculate/gsm'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -51,7 +52,7 @@ const NonwovenCalculator: React.FC = () => {
 
   const handleSheetWeightCalculate = async () => {
     try {
-      const response = await fetch('/api/products/calculate/sheet-weight', {
+      const response = await fetch(getApiURL('/api/products/calculate/sheet-weight'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -69,7 +70,7 @@ const NonwovenCalculator: React.FC = () => {
 
   const handlePackagingCalculate = async () => {
     try {
-      const response = await fetch('/api/products/calculate/packaging', {
+      const response = await fetch(getApiURL('/api/products/calculate/packaging'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -86,7 +87,7 @@ const NonwovenCalculator: React.FC = () => {
 
   const handleUomConvert = async () => {
     try {
-      const response = await fetch('/api/products/convert/uom', {
+      const response = await fetch(getApiURL('/api/products/convert/uom'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

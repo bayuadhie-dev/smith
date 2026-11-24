@@ -4,6 +4,7 @@ import {
 } from 'recharts';
 import { showError } from '../../components/ui';
 import { PageHeader, KpiStrip, Panel } from '../../components/ui/PageKit';
+import { getApiURL } from '../../utils/apiConfig'
 
 interface AnalyticsFilters {
   date_from: string;
@@ -92,7 +93,7 @@ const MaintenanceAnalyticsForm: React.FC = () => {
 
   const fetchMachines = async () => {
     try {
-      const response = await fetch('/api/production/machines', {
+      const response = await fetch(getApiURL('/api/production/machines'), {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
       if (response.ok) {
@@ -106,7 +107,7 @@ const MaintenanceAnalyticsForm: React.FC = () => {
 
   const fetchDepartments = async () => {
     try {
-      const response = await fetch('/api/hr/departments', {
+      const response = await fetch(getApiURL('/api/hr/departments'), {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
       if (response.ok) {
@@ -129,7 +130,7 @@ const MaintenanceAnalyticsForm: React.FC = () => {
   const generateAnalytics = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/maintenance/analytics?${buildParams()}`, {
+      const response = await fetch(getApiURL(`/api/maintenance/analytics?${buildParams()}`), {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
       if (response.ok) {
@@ -149,7 +150,7 @@ const MaintenanceAnalyticsForm: React.FC = () => {
     try {
       const params = buildParams();
       params.append('format', 'excel');
-      const response = await fetch(`/api/maintenance/analytics/export?${params}`, {
+      const response = await fetch(getApiURL(`/api/maintenance/analytics/export?${params}`), {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
       if (!response.ok) {

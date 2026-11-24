@@ -4,6 +4,7 @@ import { PageHeader } from '../../components/ui/PageKit'
 import { useLanguage } from '../../contexts/LanguageContext';
 import { showError } from '../../components/ui';
 import { useUrlFilter, useUrlState, useUrlPage } from '../../hooks/useUrlState';
+import { getApiURL } from '../../utils/apiConfig'
 import {
   ArrowDownTrayIcon,
   ArrowUpTrayIcon,
@@ -104,7 +105,7 @@ const MovementList: React.FC = () => {
         ...(dateTo && { date_to: dateTo })
       });
 
-      const response = await fetch(`/api/warehouse/movements?${params}`, {
+      const response = await fetch(getApiURL(`/api/warehouse/movements?${params}`), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -156,7 +157,7 @@ const MovementList: React.FC = () => {
         ...(dateTo && { date_to: dateTo })
       });
 
-      const response = await fetch(`/api/warehouse/movements/export?${params}`, {
+      const response = await fetch(getApiURL(`/api/warehouse/movements/export?${params}`), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { getApiURL } from '../utils/apiConfig'
 import {
   ArrowLeftIcon as ArrowLeft,
   ChartBarIcon,
@@ -87,7 +88,7 @@ const ProductDetailNew: React.FC<ProductDetailNewProps> = ({ productId, onEdit, 
 
   const fetchProductDetail = async () => {
     try {
-      const response = await fetch(`/api/products-excel/${productId}`);
+      const response = await fetch(getApiURL(`/api/products-excel/${productId}`));
       const data = await response.json();
 
       if (response.ok) {
@@ -104,7 +105,7 @@ const ProductDetailNew: React.FC<ProductDetailNewProps> = ({ productId, onEdit, 
 
   const fetchProductVersions = async () => {
     try {
-      const response = await fetch(`/api/products-new/${productId}/versions`);
+      const response = await fetch(getApiURL(`/api/products-new/${productId}/versions`));
       const data = await response.json();
 
       if (response.ok) {
