@@ -557,6 +557,19 @@ def _berat_roll_per_spk(tanggal_set):
 JENIS_UJI = 'trial'          # MaterialIssue.issue_type untuk uji jalan mesin
 
 
+def _komposisi(bahan):
+    """Porsi tiap bahan terhadap total pemakaian, dalam persen.
+
+    Produksi ingin tahu campurannya: rayon berapa persen, polyester berapa
+    persen. Dihitung hanya dari bahan bersatuan KG - mencampur kg dengan pcs
+    atau liter akan menghasilkan persentase yang tidak berarti apa-apa.
+    """
+    total = sum(b['qty'] for b in bahan if (b['uom'] or '').upper() == 'KG')
+    for b in bahan:
+        b['pct'] = round(b['qty'] / total * 100, 1) if total and (b['uom'] or '').upper() == 'KG' else None
+    return bahan
+
+
 def _waste_kembali(mi_ids):
     """Waste yang masuk lagi ke stok dari dokumen-dokumen pemakaian ini (kg).
 
@@ -695,6 +708,8 @@ def spk_summary(wo_id):
 
     bahan, fiber_kg, pembagian, waste_produksi_kg = _bahan_spk_spunlace(wo)
     bahan_uji, fiber_uji_kg, waste_uji_kg = _bahan_uji(wo)
+    _komposisi(bahan)
+    _komposisi(bahan_uji)
     # Waste yang dikembalikan ke gudang bukan susut - barangnya masih ada.
     susut_kg = round(fiber_kg - net_total - waste_produksi_kg, 2) if fiber_kg else 0.0
     susut_pct = round(susut_kg / fiber_kg * 100, 2) if fiber_kg else 0.0
@@ -926,9 +941,9 @@ def daftar_pemakaian_bahan():
             'work_order_id': mi.work_order_id,
             'wo_number': mi.work_order.wo_number if mi.work_order else None,
             'notes': mi.notes,
-            'items': [{'name': i.description, 'uom': i.uom,
-                       'qty': round(float(i.issued_quantity or 0) - float(i.returned_quantity or 0), 2)}
-                      for i in mi.items],
+            'items': _komposisi([{'name': i.description, 'uom': i.uom,
+                                  'qty': round(float(i.issued_quantity or 0) - float(i.returned_quantity or 0), 2)}
+                                 for i in mi.items]),
             'waste': _waste_dokumen(mi.id),
         })
     return jsonify({'usages': keluar})

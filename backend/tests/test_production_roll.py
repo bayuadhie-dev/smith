@@ -672,3 +672,43 @@ def test_roll_uji_tetap_masuk_stok_kain(client, auth_headers, kain, db_session):
 
     inv = Inventory.query.filter_by(batch_number=d['batch_number']).first()
     assert inv is not None and float(inv.quantity_on_hand) == 95
+
+
+def test_komposisi_bahan_dalam_persen(client, auth_headers, kain, db_session, test_user, fiber,
+                                      lokasi_gudang_baku):
+    """Produksi ingin tahu campurannya: rayon berapa persen, polyester berapa
+    persen dari total pemakaian."""
+    from models.product import Material
+    poly = Material(code='POLY-U', name='POLYESTER 1.5DX38MM', material_type='raw_materials',
+                    category='fiber', primary_uom='KG')
+    db_session.add(poly)
+    db_session.commit()
+
+    _post(client, auth_headers, kain, roll_number=91, gross_weight_kg=100, net_weight_kg=90)
+    _bon(db_session, test_user, _njo().id, fiber, 70, date.today(), nomor='MI-KOMP-1')
+    _bon(db_session, test_user, _njo().id, poly, 30, date.today(), nomor='MI-KOMP-2')
+
+    d = client.get(f'/api/production/rolls/spk/{_njo().id}/summary', headers=auth_headers).get_json()
+    pct = {b['name']: b['pct'] for b in d['materials']}
+    assert pct['RAYON A2'] == 70.0
+    assert pct['POLYESTER 1.5DX38MM'] == 30.0
+
+
+def test_komposisi_abaikan_satuan_selain_kg(client, auth_headers, kain, db_session, test_user, fiber):
+    """Mencampur kg dengan pcs menghasilkan persentase yang tidak berarti."""
+    from models.product import Material
+    sticker = Material(code='STK-U', name='STICKER', material_type='packaging_materials',
+                       category='BAHAN PEMBANTU', primary_uom='PCS')
+    db_session.add(sticker)
+    db_session.commit()
+
+    _post(client, auth_headers, kain, roll_number=92, gross_weight_kg=100, net_weight_kg=90)
+    _bon(db_session, test_user, _njo().id, fiber, 100, date.today(), nomor='MI-KOMP-3')
+    bon = _bon(db_session, test_user, _njo().id, sticker, 500, date.today(), nomor='MI-KOMP-4')
+    bon.items[0].uom = 'PCS'
+    db_session.commit()
+
+    d = client.get(f'/api/production/rolls/spk/{_njo().id}/summary', headers=auth_headers).get_json()
+    pct = {b['name']: b['pct'] for b in d['materials']}
+    assert pct['RAYON A2'] == 100.0      # 100 kg dari 100 kg
+    assert pct['STICKER'] is None        # pcs tidak ikut dipersentasekan

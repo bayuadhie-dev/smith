@@ -590,6 +590,13 @@ function PemakaianForm({ onClose, onSaved }: { onClose: () => void; onSaved: () 
 
   const totalBahan = bahan.reduce((a, b) => a + (Number(b.quantity) || 0), 0)
   const totalWaste = waste.reduce((a, b) => a + (Number(b.quantity) || 0), 0)
+  const komposisi = useMemo(() => {
+    if (!totalBahan) return []
+    const nama = (id: string) => (meta.materials || []).find((m: any) => String(m.id) === String(id))?.name || ''
+    return bahan
+      .filter((b) => b.material_id && Number(b.quantity) > 0)
+      .map((b) => ({ nama: nama(b.material_id), pct: Math.round((Number(b.quantity) / totalBahan) * 1000) / 10 }))
+  }, [bahan, totalBahan, meta.materials])
   const siap = bahan.some((b) => b.material_id && Number(b.quantity) > 0)
     && (keperluan === 'uji' || !!spk)
 
@@ -690,10 +697,19 @@ function PemakaianForm({ onClose, onSaved }: { onClose: () => void; onSaved: () 
             placeholder={keperluan === 'uji' ? 'mis. uji mesin setelah ganti conveyor' : 'opsional'} />
         </div>
 
-        <p className="rounded-lg bg-gray-50 px-3 py-2 text-sm text-gray-700 dark:bg-gray-900 dark:text-gray-200">
-          Keluar <span className="font-semibold">{kg(totalBahan)}</span>
-          {totalWaste > 0 && <> · waste kembali <span className="font-semibold">{kg(totalWaste)}</span> · selisih <span className="font-semibold">{kg(totalBahan - totalWaste)}</span></>}
-        </p>
+        <div className="rounded-lg bg-gray-50 px-3 py-2 text-sm text-gray-700 dark:bg-gray-900 dark:text-gray-200">
+          <p>
+            Keluar <span className="font-semibold">{kg(totalBahan)}</span>
+            {totalWaste > 0 && <> · waste kembali <span className="font-semibold">{kg(totalWaste)}</span> · selisih <span className="font-semibold">{kg(totalBahan - totalWaste)}</span></>}
+          </p>
+          {/* Komposisi campurannya, terbaca sambil mengetik - rayon berapa persen,
+              polyester berapa persen dari total pemakaian. */}
+          {komposisi.length > 1 && (
+            <p className="mt-1 text-xs text-gray-600 dark:text-gray-300">
+              Komposisi: {komposisi.map((k) => `${k.nama} ${k.pct}%`).join(' · ')}
+            </p>
+          )}
+        </div>
 
         <div className="flex flex-wrap justify-end gap-2">
           <button type="button" className="btn-secondary" onClick={onClose}>Batal</button>

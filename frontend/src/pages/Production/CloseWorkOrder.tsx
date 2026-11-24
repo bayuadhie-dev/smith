@@ -289,7 +289,12 @@ export default function CloseWorkOrder() {
                   {spunlace.materials.map((m: any, i: number) => (
                     <li key={i} className="flex justify-between gap-4">
                       <span className="truncate">{m.name}</span>
-                      <span className="whitespace-nowrap">{Number(m.qty).toLocaleString('id-ID')} {m.uom}</span>
+                      <span className="whitespace-nowrap">
+                        {Number(m.qty).toLocaleString('id-ID')} {m.uom}
+                        {/* Komposisi campurannya: rayon berapa persen, polyester
+                            berapa persen. Hanya untuk bahan bersatuan kg. */}
+                        {m.pct != null && <span className="ml-2 text-gray-500 dark:text-gray-400">{m.pct}%</span>}
+                      </span>
                     </li>
                   ))}
                 </ul>
