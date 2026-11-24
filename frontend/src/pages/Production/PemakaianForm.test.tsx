@@ -69,6 +69,15 @@ describe('modal Pemakaian Bahan Spunlace', () => {
     expect(body.items).toEqual([{ material_id: 7, quantity: 120 }])
   })
 
+  it('isian angkanya tidak melebar keluar kotaknya', () => {
+    // Tanpa kelas lebar, <input> memakai lebar bawaannya dan menembus tepi
+    // modal - terlihat sebagai kolom kg yang terpotong dan modal yang bisa
+    // digeser ke samping.
+    buka()
+    const kg = screen.getByPlaceholderText('kg')
+    expect(kg.className).toContain('w-full')
+  })
+
   it('keperluan uji membuka isian roll beserta meternya', async () => {
     buka()
     await screen.findByPlaceholderText('kg')

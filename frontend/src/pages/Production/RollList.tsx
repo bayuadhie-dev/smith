@@ -662,7 +662,9 @@ function BarisBahan({ daftar, nilai, set, label }: any) {
             {/* NumberInput mengirim event seperti input biasa (e.target.value),
                 bukan nilainya langsung. Dipakai sebagai nilai, isiannya terisi
                 "[object Object]" dan jumlahnya tidak pernah sampai ke server. */}
-            <NumberInput value={b.quantity} placeholder="kg"
+            {/* Tanpa kelas lebar, <input> memakai lebar bawaannya (~239px) dan
+                menembus tepi modal - w-32 di pembungkusnya tidak menahannya. */}
+            <NumberInput className="input w-full text-right" value={b.quantity} placeholder="kg"
               onChange={(e: any) => ubah(i, { quantity: e.target.value })} />
           </div>
           <button type="button" className="pb-2 text-xs text-red-600 hover:underline dark:text-red-400"
@@ -860,32 +862,32 @@ export function PemakaianForm({ onClose, onSaved }: { onClose: () => void; onSav
                         </div>
                         <div>
                           <label className="mb-1 block text-xs font-medium">Panjang (m)</label>
-                          <NumberInput value={x.length_m} onChange={(e: any) => ubah('length_m', e.target.value)} />
+                          <NumberInput className="input w-full text-right" value={x.length_m} onChange={(e: any) => ubah('length_m', e.target.value)} />
                         </div>
                         <div>
                           <label className="mb-1 block text-xs font-medium">Lebar (cm)</label>
-                          <NumberInput value={x.width_cm} onChange={(e: any) => ubah('width_cm', e.target.value)} />
+                          <NumberInput className="input w-full text-right" value={x.width_cm} onChange={(e: any) => ubah('width_cm', e.target.value)} />
                         </div>
                         <div>
                           <label className="mb-1 block text-xs font-medium">Gramasi (g/m&sup2;)</label>
-                          <NumberInput value={x.gramasi_gsm} onChange={(e: any) => ubah('gramasi_gsm', e.target.value)} />
+                          <NumberInput className="input w-full text-right" value={x.gramasi_gsm} onChange={(e: any) => ubah('gramasi_gsm', e.target.value)} />
                         </div>
                         <div>
                           <label className="mb-1 block text-xs font-medium">Thickness (milimicron)</label>
-                          <NumberInput value={x.thickness_micron} onChange={(e: any) => ubah('thickness_micron', e.target.value)} />
+                          <NumberInput className="input w-full text-right" value={x.thickness_micron} onChange={(e: any) => ubah('thickness_micron', e.target.value)} />
                         </div>
                         <div>
                           <label className="mb-1 block text-xs font-medium">Speed (m/menit)</label>
-                          <NumberInput value={x.speed_m_per_min} onChange={(e: any) => ubah('speed_m_per_min', e.target.value)} />
+                          <NumberInput className="input w-full text-right" value={x.speed_m_per_min} onChange={(e: any) => ubah('speed_m_per_min', e.target.value)} />
                         </div>
                         <div>
                           <label className="mb-1 block text-xs font-medium">Waktu/roll (menit)</label>
-                          <NumberInput value={x.minutes_per_roll} onChange={(e: any) => ubah('minutes_per_roll', e.target.value)}
+                          <NumberInput className="input w-full text-right" value={x.minutes_per_roll} onChange={(e: any) => ubah('minutes_per_roll', e.target.value)}
                             placeholder={usulMenit ? angka(usulMenit) : ''} />
                         </div>
                         <div>
                           <label className="mb-1 block text-xs font-medium">Berat bersih (kg)</label>
-                          <NumberInput value={x.net_weight_kg} onChange={(e: any) => ubah('net_weight_kg', e.target.value)}
+                          <NumberInput className="input w-full text-right" value={x.net_weight_kg} onChange={(e: any) => ubah('net_weight_kg', e.target.value)}
                             placeholder={usulBerat ? angka(usulBerat) : ''} />
                         </div>
                       </div>
