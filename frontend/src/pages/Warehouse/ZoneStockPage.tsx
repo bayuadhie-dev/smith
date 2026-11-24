@@ -6,6 +6,8 @@ import { showError } from '../../components/ui'
 
 import { DetailSkeleton } from '../../components/ui/Skeleton'
 import ItemStockModal from '../../components/Warehouse/ItemStockModal'
+import { PILIHAN_KELOMPOK, namaKategoriBarang, namaKelompokBarang } from './kategoriBarang'
+import { useUrlFilter } from '../../hooks/useUrlState'
 const TYPE: Record<string, string> = {
   goods_receipt: 'Penerimaan Barang', transfer_out: 'Pemindahan keluar', transfer_in: 'Terima Barang', transfer: 'Pemindahan', material_issue: 'Permintaan Barang',
   adjustment: 'Penyesuaian', stock_in: 'Stok masuk', stock_out: 'Stok keluar',
@@ -14,10 +16,26 @@ const TYPE: Record<string, string> = {
 export default function ZoneStockPage() {
   const { id } = useParams()
   const [d, setD] = useState<any>(null)
+  const [memuat, setMemuat] = useState(true)
   const [detail, setDetail] = useState<{ kind: 'material' | 'product'; id: number; name: string } | null>(null)
+  const [kelompok, setKelompok] = useUrlFilter<string>('kelompok', '')
+  // Barang yang belum pernah masuk gudang ini tidak punya baris stok, jadi
+  // daftarnya hanya memuat yang kebetulan ada isinya. Untuk memeriksa
+  // "bahan kimia kita apa saja di gudang ini", yang nol justru yang dicari.
+  const [nolParam, setNolParam] = useUrlFilter<string>('nol', '')
+  const tampilkanNol = nolParam === '1'
+
   useEffect(() => {
-    axiosInstance.get(`/api/stock-transfers/zone-stock/${id}`).then((r) => setD(r.data)).catch(() => showError('Data gudang gagal dimuat'))
-  }, [id])
+    setMemuat(true)
+    const p = new URLSearchParams()
+    if (kelompok) p.set('category_group', kelompok)
+    if (tampilkanNol) p.set('include_empty', '1')
+    axiosInstance.get(`/api/stock-transfers/zone-stock/${id}?${p}`)
+      .then((r) => setD(r.data))
+      .catch(() => showError('Data gudang gagal dimuat'))
+      .finally(() => setMemuat(false))
+  }, [id, kelompok, tampilkanNol])
+
   if (!d) return <div className="p-6"><DetailSkeleton /></div>
   const th = 'px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400'
   const n = (v: number) => v.toLocaleString('id-ID', { maximumFractionDigits: 4 })
@@ -38,10 +56,24 @@ export default function ZoneStockPage() {
         </div>
       </Panel>
       <Panel title="Barang di gudang ini">
-        {d.items.length === 0 ? <p className="text-sm text-gray-500 dark:text-gray-400">Tidak ada stok.</p> : (
+        <div className="mb-3 flex flex-wrap items-center gap-4">
+          <div>
+            <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Kelompok barang</label>
+            <select className="input" value={kelompok} onChange={(e) => setKelompok(e.target.value)}>
+              <option value="">Semua kelompok</option>
+              {PILIHAN_KELOMPOK.map((k) => <option key={k.value} value={k.value}>{k.label}</option>)}
+            </select>
+          </div>
+          <label className="flex cursor-pointer items-center gap-2 pt-4 text-sm text-gray-700 dark:text-gray-200">
+            <input type="checkbox" checked={tampilkanNol} onChange={(e) => setNolParam(e.target.checked ? '1' : '')} />
+            Tampilkan barang yang stoknya nol
+          </label>
+          {memuat && <span className="pt-4 text-sm text-gray-500">memuat...</span>}
+        </div>
+        {d.items.length === 0 ? <p className="text-sm text-gray-500 dark:text-gray-400">{tampilkanNol ? 'Tidak ada barang di kelompok ini.' : 'Tidak ada stok. Centang "Tampilkan barang yang stoknya nol" untuk melihat seluruh barang kelompok ini.'}</p> : (
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200 text-sm dark:divide-gray-700">
-              <thead><tr><th className={th}>Kode</th><th className={th}>Nama</th><th className={`${th} text-right`}>Stok</th><th className={`${th} text-right`}>Tersedia</th></tr></thead>
+              <thead><tr><th className={th}>Kode</th><th className={th}>Nama</th><th className={th}>Kelompok</th><th className={`${th} text-right`}>Stok</th><th className={`${th} text-right`}>Tersedia</th></tr></thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                 {d.items.map((i: any) => (
                   <tr
@@ -52,7 +84,12 @@ export default function ZoneStockPage() {
                   >
                     <td className="px-3 py-2">{i.code}</td>
                     <td className="px-3 py-2 text-emerald-700 hover:underline dark:text-emerald-300">{i.name}</td>
-                    <td className="px-3 py-2 text-right tabular-nums">{n(i.on_hand)} {i.uom}</td><td className="px-3 py-2 text-right tabular-nums">{n(i.available)}</td>
+                    <td className="px-3 py-2 text-xs text-gray-500 dark:text-gray-400">
+                      {namaKelompokBarang(i.category, i.material_type)}
+                      <span className="block">{namaKategoriBarang(i.category)}</span>
+                    </td>
+                    <td className={`px-3 py-2 text-right tabular-nums ${i.on_hand ? '' : 'text-gray-400 dark:text-gray-500'}`}>{n(i.on_hand)} {i.uom}</td>
+                    <td className={`px-3 py-2 text-right tabular-nums ${i.available ? '' : 'text-gray-400 dark:text-gray-500'}`}>{n(i.available)}</td>
                   </tr>
                 ))}
               </tbody>

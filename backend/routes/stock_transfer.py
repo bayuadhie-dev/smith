@@ -427,6 +427,53 @@ def item_stock():
                     'summary': ringkas, 'movements': moves}), 200
 
 
+# Isi Gudang boleh menampilkan barang yang stoknya nol, dan itu artinya menarik
+# master barang. Tanpa batas, "Semua kelompok" akan menyeret seluruh master ke
+# satu halaman.
+MAX_BARANG_TANPA_STOK = 2000
+
+
+def _barang_kelompok(kelompok):
+    """Seluruh barang aktif di satu kelompok, untuk ditampilkan dengan stok nol.
+
+    Kelompok bahan (bahan kimia, bahan kemas, bahan baku) isinya material saja;
+    produk hanya ikut kalau kelompoknya tidak dibatasi atau 'lainnya'.
+    """
+    from routes.warehouse import JENIS_BARANG, _syarat_kelompok
+
+    keluar = []
+    syarat = _syarat_kelompok(kelompok) if kelompok else None
+    if kelompok and kelompok not in JENIS_BARANG and kelompok != 'lainnya':
+        # Kelompok lama yang hanya dikenali lewat kategori (kain, aksesoris).
+        syarat = _syarat_kelompok(kelompok)
+    q = Material.query.filter(Material.is_active.is_(True))
+    if syarat is not None:
+        q = q.filter(syarat)
+    keluar.extend(q.limit(MAX_BARANG_TANPA_STOK).all())
+
+    if not kelompok or kelompok == 'lainnya':
+        sisa = MAX_BARANG_TANPA_STOK - len(keluar)
+        if sisa > 0:
+            keluar.extend(Product.query.filter(Product.is_active.is_(True)).limit(sisa).all())
+    return keluar
+
+
+def _cocok_kelompok(it, kelompok):
+    """Penyaring kelompok untuk barang yang sudah punya stok, sepadan dengan
+    `_syarat_kelompok()` di routes/warehouse.py (kategori menang atas jenis)."""
+    from routes.warehouse import JENIS_BARANG, KATEGORI_LAMA
+
+    kat = (it.get('category') or '').lower()
+    for nama, daftar in KATEGORI_LAMA.items():
+        if kat in daftar:
+            return nama == kelompok
+    jenis = (it.get('material_type') or '').lower()
+    for nama, daftar in JENIS_BARANG.items():
+        if jenis in daftar:
+            return nama == kelompok
+    return kelompok == 'lainnya'
+
+
 @stock_transfer_bp.route('/zone-stock/<int:zone_id>', methods=['GET'])
 @jwt_required()
 @require_permission('warehouse.view')
@@ -437,6 +484,9 @@ def zone_stock(zone_id):
     zone = db.session.get(WarehouseZone, zone_id)
     if not zone:
         return jsonify({'error': 'Gudang tidak ditemukan'}), 404
+    kelompok = request.args.get('category_group') or ''
+    semua = (request.args.get('include_empty', '').lower() in ('1', 'true', 'yes'))
+
     locs = WarehouseLocation.query.filter_by(zone_id=zone_id).all()
     loc_ids = [l.id for l in locs]
     rows = Inventory.query.filter(Inventory.location_id.in_(loc_ids or [0]), Inventory.quantity_on_hand != 0).all()
@@ -447,10 +497,34 @@ def zone_stock(zone_id):
         it['on_hand'] += float(r.quantity_on_hand)
         it['available'] += float(r.quantity_available)
         per_loc[r.location_id] = per_loc.get(r.location_id, 0.0) + float(r.quantity_on_hand)
-    for it in items.values():
-        obj = db.session.get(Material, it['item_id']) if it['kind'] == 'material' else db.session.get(Product, it['item_id'])
+
+    # Barang yang belum pernah masuk gudang ini tidak punya baris stok sama
+    # sekali, jadi daftarnya cuma memuat yang kebetulan ada isinya. Untuk
+    # mengecek "bahan kimia kita apa saja di gudang ini", yang nol justru yang
+    # dicari - itulah yang belum pernah diterima.
+    if semua:
+        for it in _barang_kelompok(kelompok):
+            items.setdefault(('m' if isinstance(it, Material) else 'p', it.id),
+                             {'kind': 'material' if isinstance(it, Material) else 'product',
+                              'item_id': it.id, 'on_hand': 0.0, 'available': 0.0})
+
+    # Nama barang diambil sekali untuk semuanya, bukan satu query per baris.
+    mids = [k[1] for k in items if k[0] == 'm']
+    pids = [k[1] for k in items if k[0] == 'p']
+    master = {}
+    if mids:
+        master.update({('m', m.id): m for m in Material.query.filter(Material.id.in_(mids)).all()})
+    if pids:
+        master.update({('p', p.id): p for p in Product.query.filter(Product.id.in_(pids)).all()})
+    for key, it in items.items():
+        obj = master.get(key)
         it['code'], it['name'] = getattr(obj, 'code', None), getattr(obj, 'name', None)
         it['uom'] = getattr(obj, 'primary_uom', None) or getattr(obj, 'unit_of_measure', None)
+        it['category'] = getattr(obj, 'category', None)
+        it['material_type'] = getattr(obj, 'material_type', None)
+
+    if kelompok:
+        items = {k: it for k, it in items.items() if _cocok_kelompok(it, kelompok)}
     mq = InventoryTransaction.query.filter(or_(InventoryTransaction.to_location_id.in_(loc_ids or [0]), InventoryTransaction.from_location_id.in_(loc_ids or [0])))
     names = {l.id: l.location_code for l in locs}
     moves = []
@@ -461,7 +535,7 @@ def zone_stock(zone_id):
                       'location': names.get(m.to_location_id) or names.get(m.from_location_id)})
     return jsonify({'zone': {'id': zone.id, 'code': zone.code, 'name': zone.name, 'zone_type': zone.zone_type, 'is_active': zone.is_active},
                     'locations': [{'id': l.id, 'location_code': l.location_code, 'on_hand': per_loc.get(l.id, 0.0), 'is_active': l.is_active} for l in locs],
-                    'items': sorted(items.values(), key=lambda x: -x['on_hand']), 'movements': moves}), 200
+                    'items': sorted(items.values(), key=lambda x: (-x['on_hand'], (x['name'] or '').lower())), 'movements': moves}), 200
 
 
 @stock_transfer_bp.route('/receipts', methods=['GET'])
