@@ -220,20 +220,33 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
           </div>
         </div>
 
+        {/* Debit dan kredit hanya wajib sama kalau yang dilihat SELURUH buku besar.
+            Begitu disaring ke satu akun, hampir semua akun akan berbeda - itu saldo
+            akunnya, bukan pembukuan yang timpang. Dulu kartu ini tetap berteriak
+            "Out of Balance" merah di layar penyaringan satu akun (dilaporkan Finance
+            2026-11-24, saat menelusuri Hutang Pembelian Belum Ditagih). */}
         <div className="card p-6">
           <div className="flex items-center">
             <div className={`p-3 rounded-lg ${
-              getTotalDebits() === getTotalCredits() ? 'bg-green-500' : 'bg-red-500'
+              filters.account_id || getTotalDebits() === getTotalCredits() ? 'bg-green-500' : 'bg-red-500'
             }`}>
               <BookOpenIcon className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Keseimbangan</p>
-              <p className={`text-2xl font-bold ${
-                getTotalDebits() === getTotalCredits() ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-              }`}>
-                {getTotalDebits() === getTotalCredits() ? 'Balanced' : 'Out of Balance'}
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                {filters.account_id ? 'Saldo akun ini' : 'Keseimbangan'}
               </p>
+              {filters.account_id ? (
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {formatRupiah(getTotalDebits() - getTotalCredits())}
+                </p>
+              ) : (
+                <p className={`text-2xl font-bold ${
+                  getTotalDebits() === getTotalCredits() ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                }`}>
+                  {getTotalDebits() === getTotalCredits() ? 'Seimbang' : 'Tidak seimbang'}
+                </p>
+              )}
             </div>
           </div>
         </div>
