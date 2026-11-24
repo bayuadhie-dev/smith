@@ -449,9 +449,17 @@ def _barang_sejenis(jenis):
     # dicocokkan tanpa peduli besar-kecil huruf - kalau tidak, Gudang Bahan Baku
     # di sana tidak memunculkan apa pun.
     jenis = jenis.lower()
-    model = Product if jenis in ('finished_goods', 'wip', 'premix', 'waste') else Material
-    return model.query.filter(func.lower(model.material_type) == jenis,
-                              model.is_active.is_(True)).limit(MAX_BARANG_TANPA_STOK).all()
+    # Dua-duanya ditanya, bukan menebak tabel dari nama jenisnya: 'waste' ada di
+    # produk (43 barang jadi yang direject) MAUPUN material (waste ex slitting,
+    # waste packaging). Menebak satu tabel membuang separuh daftarnya.
+    keluar = []
+    for model in (Product, Material):
+        sisa = MAX_BARANG_TANPA_STOK - len(keluar)
+        if sisa <= 0:
+            break
+        keluar.extend(model.query.filter(func.lower(model.material_type) == jenis,
+                                         model.is_active.is_(True)).limit(sisa).all())
+    return keluar
 
 
 @stock_transfer_bp.route('/zone-stock/<int:zone_id>', methods=['GET'])

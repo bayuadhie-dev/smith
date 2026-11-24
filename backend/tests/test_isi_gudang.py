@@ -116,6 +116,33 @@ class TestDaftarBarangPerGudang:
         assert d['zone']['material_type'] == 'chemical_materials'
 
 
+class TestWaste:
+    """Gudang Waste berisi produk reject MAUPUN material sisa (waste ex slitting,
+    waste packaging). Kalau tabelnya ditebak dari nama jenis, separuh daftarnya
+    hilang."""
+
+    @pytest.fixture
+    def gudang_waste(self, db_session):
+        z = WarehouseZone(code='WH-REJECT', name='Gudang Waste', material_type='waste', is_active=True)
+        db_session.add(z)
+        db_session.commit()
+        return z
+
+    def test_produk_dan_material_waste_dua_duanya_tampil(self, client, auth_headers, db_session, gudang_waste):
+        db_session.add_all([
+            Product(code='7000000016', name='WASTE WETKINS BABY BLUE 50S',
+                    material_type='waste', primary_uom='PCS', is_active=True),
+            Material(code='7000000001', name='WASTE EX SLITTING', category='BAHAN PEMBANTU',
+                     material_type='waste', primary_uom='KG', is_active=True),
+            Material(code='2010101001', name='KARTON BOX', category='BAHAN PEMBANTU',
+                     material_type='packaging_materials', primary_uom='PCS', is_active=True),
+        ])
+        db_session.commit()
+
+        d = _isi(client, auth_headers, gudang_waste.id, include_empty='1')
+        assert sorted(i['code'] for i in d['items']) == ['7000000001', '7000000016']
+
+
 class TestHurufBesarKecil:
     """Falmaco menulis sebagian material_type huruf besar ('RAW_MATERIALS').
     Kalau dicocokkan apa adanya, Gudang Bahan Baku di sana tidak memunculkan
