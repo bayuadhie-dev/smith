@@ -232,7 +232,12 @@ def get_locations():
                 'available': (float(l.capacity) - terpakai.get(l.id, 0.0)) if float(l.capacity or 0) > 0 else None,
                 'current_utilization': (round(terpakai.get(l.id, 0.0) / float(l.capacity) * 100, 1)
                                         if float(l.capacity or 0) > 0 else None),
-                'is_available': l.is_available
+                'is_available': l.is_available,
+                # Halaman master lokasi memajang status dari is_active. Dulu tidak
+                # pernah dikirim, jadi ke-16 lokasi Fengsheng terbaca "Nonaktif"
+                # padahal 11 di antaranya aktif (dilaporkan 2026-11-24).
+                'is_active': l.is_active,
+                'zone_is_active': l.zone.is_active,
             } for l in locations.items],
             'total': locations.total,
             'pages': locations.pages,
