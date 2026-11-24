@@ -19,6 +19,7 @@ import {
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
 import { confirmDialog } from '../../components/ui';
 import { useUrlFilter } from '../../hooks/useUrlState'
+import ImportExcelModal from '../../components/ImportExcelModal'
 
 export default function EmployeeList() {
   const [searchQuery, setSearchQuery] = useUrlFilter<string>('cari', '')
@@ -27,6 +28,9 @@ export default function EmployeeList() {
   const [statusFilter, setStatusFilter] = useUrlFilter<string>('status', '')
   const [employmentTypeFilter, setEmploymentTypeFilter] = useUrlFilter<string>('kontrak', '')
   const [showFilters, setShowFilters] = useState(false)
+
+  const [showImport, setShowImport] = useState(false)
+  const [exporting, setExporting] = useState(false)
 
   const { data, isLoading, refetch } = useGetEmployeesQuery({})
   const { data: departments } = useGetDepartmentsQuery({})
@@ -60,6 +64,28 @@ export default function EmployeeList() {
   }
 
   const hasActiveFilters = searchQuery || departmentFilter || positionFilter || statusFilter || employmentTypeFilter
+
+  // Ekspor diunduh langsung dari sini - HR tidak perlu pindah halaman untuk
+  // sesuatu yang hasilnya cuma satu berkas.
+  const exportExcel = async () => {
+    setExporting(true)
+    try {
+      const res = await axiosInstance.get('/api/imports/employee/export', { responseType: 'blob' })
+      const url = window.URL.createObjectURL(res.data)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'daftar_karyawan.xlsx'
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      window.URL.revokeObjectURL(url)
+      toast.success('Daftar karyawan diunduh')
+    } catch {
+      toast.error('Gagal mengekspor daftar karyawan')
+    } finally {
+      setExporting(false)
+    }
+  }
 
   const handleDelete = async (id: number, name: string) => {
     if (!(await confirmDialog(`Yakin hapus karyawan "${name}"?`))) return
@@ -131,14 +157,14 @@ export default function EmployeeList() {
           <Link to="/app/hr/fingerprint-mapping" className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
             Hubungkan ID mesin
           </Link>
-          <Link to="/app/imports?kind=employee" className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
+          <button type="button" onClick={() => setShowImport(true)} className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
             <ArrowUpTrayIcon className="h-4 w-4" />
             Impor Excel
-          </Link>
-          <Link to="/app/imports?kind=employee&mode=export" className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
+          </button>
+          <button type="button" onClick={exportExcel} disabled={exporting} className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
             <ArrowDownTrayIcon className="h-4 w-4" />
-            Ekspor Excel
-          </Link>
+            {exporting ? 'Menyiapkan...' : 'Ekspor Excel'}
+          </button>
           <Link to="/app/hr/employees/new" className="btn-primary inline-flex items-center gap-2">
             <PlusIcon className="h-5 w-5" />
             Tambah Karyawan
@@ -351,6 +377,14 @@ export default function EmployeeList() {
           )}
         </div>
       )}
+
+      <ImportExcelModal
+        kind="employee"
+        satuan="karyawan"
+        open={showImport}
+        onClose={() => setShowImport(false)}
+        onSaved={refetch}
+      />
     </div>
   )
 }
