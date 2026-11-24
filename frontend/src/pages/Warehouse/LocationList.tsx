@@ -288,11 +288,11 @@ const LocationList: React.FC = () => {
               {/* Capacity Info */}
               <div className="space-y-2 mb-4">
                 <div className="flex items-center justify-between">
-                  <span className="fn-label">Jenis barang</span>
-                  {/* Jenis barang yang ada isinya, bukan banyaknya baris stok -
-                      satu barang bisa punya beberapa batch. */}
+                  <span className="fn-label">Jumlah item</span>
+                  {/* Barang yang berbeda, bukan banyaknya baris stok - satu barang
+                      bisa punya beberapa baris karena batch-nya beda. */}
                   <span className={`text-sm font-medium ${location.item_count ? '' : 'text-gray-400 dark:text-gray-500'}`}>
-                    {location.item_count ?? 0} jenis
+                    {location.item_count ?? 0} item
                   </span>
                 </div>
                 <div className="flex items-center justify-between">

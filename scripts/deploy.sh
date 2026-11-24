@@ -104,6 +104,11 @@ deploy_one() {
 
   # Frontend: build lalu terbitkan ke /var/www/erp. Kalau build gagal,
   # salinan lama tetap tersaji - tidak ada waktu mati.
+  #
+  # Sengaja TANPA --delete: tiap build mengganti nama berkas potongan kode, dan
+  # menghapus yang lama membuat tab yang sudah terbuka 404 saat pindah halaman
+  # ("Oops! Terjadi Kesalahan" di banyak halaman, dilaporkan 2026-11-24).
+  # Yang benar-benar tua dibersihkan belakangan.
   if [[ "$BUILD_HOSTS" == *"$name"* ]]; then
     if [[ "$MODE" == "dev" ]]; then
       "${ssh[@]}" "erp-mode dev" >/dev/null && ylw "[$name] frontend dikembalikan ke mode dev (Vite :3000)."
@@ -111,7 +116,9 @@ deploy_one() {
       local bout
       bout=$("${ssh[@]}" "set -o pipefail; cd ~/$REMOTE_DIR/frontend && npx vite build 2>&1 | tail -3") \
         || { red "[$name] build frontend GAGAL - versi lama tetap tersaji:"; echo "$bout"; return 1; }
-      "${ssh[@]}" "rsync -a --delete --exclude='*.map' ~/$REMOTE_DIR/frontend/dist/ /var/www/erp/ && erp-mode build" >/dev/null \
+      "${ssh[@]}" "rsync -a --exclude='*.map' ~/$REMOTE_DIR/frontend/dist/ /var/www/erp/ \
+         && find /var/www/erp/assets -type f -mtime +3 -delete \
+         && erp-mode build" >/dev/null \
         || { red "[$name] gagal menerbitkan hasil build"; return 1; }
       local cek
       cek=$("${ssh[@]}" "curl -s -o /dev/null -w '%{http_code}' -m 10 https://erp.fsnindonesia.com/" || true)
