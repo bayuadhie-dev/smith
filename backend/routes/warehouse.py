@@ -255,6 +255,40 @@ def get_locations():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+def _barang_belum_masuk(location, sudah_ada):
+    """Barang yang SEHARUSNYA di lokasi ini tapi belum pernah masuk, dengan stok 0.
+
+    Rincian lokasi dulu hanya memuat baris stok, jadi lokasi yang belum pernah
+    diisi tampil "Tidak ada inventory di lokasi ini" - benar, tapi tidak
+    menjawab "jadi isinya nanti apa saja". Kategorinya diambil dari gudangnya
+    (`warehouse_zones.material_type`), bukan pilihan bebas, supaya daftarnya
+    tidak mencampur kategori yang sudah dipisah antar gudang.
+
+    Hanya dikirim kalau diminta (`?include_empty=1`).
+    """
+    if request.args.get('include_empty', '').lower() not in ('1', 'true', 'yes'):
+        return []
+    from routes.stock_transfer import _barang_sejenis
+
+    jenis = (location.zone.material_type if location.zone else None) or 'all'
+    sudah = {(i['item_type'], i['product_id'] or i['material_id']) for i in sudah_ada}
+    keluar = []
+    for it in _barang_sejenis(jenis):
+        kind = 'product' if it.__class__.__name__ == 'Product' else 'material'
+        if (kind, it.id) in sudah:
+            continue
+        keluar.append({
+            'id': None, 'item_type': kind, 'item_name': it.name, 'item_code': it.code,
+            'product_id': it.id if kind == 'product' else None,
+            'material_id': it.id if kind == 'material' else None,
+            'batch_number': None, 'lot_number': None,
+            'quantity_on_hand': 0.0, 'quantity_reserved': 0.0, 'quantity_available': 0.0,
+            'stock_status': None, 'uom': getattr(it, 'primary_uom', None),
+            'belum_pernah_masuk': True,
+        })
+    return keluar
+
+
 @warehouse_bp.route('/locations/<int:id>', methods=['GET'])
 @jwt_required()
 @require_permission('warehouse.view')
@@ -359,7 +393,7 @@ def get_location_detail(id):
                 'created_at': location.created_at.isoformat() if location.created_at else None,
                 'updated_at': location.updated_at.isoformat() if location.updated_at else None
             },
-            'inventory_items': items,
+            'inventory_items': items + _barang_belum_masuk(location, items),
             'recent_movements': movements
         }), 200
     except Exception as e:

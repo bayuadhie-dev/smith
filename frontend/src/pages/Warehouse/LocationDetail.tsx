@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ItemStockModal from '../../components/Warehouse/ItemStockModal';
-import { useUrlState } from '../../hooks/useUrlState';
+import { useUrlFilter, useUrlState } from '../../hooks/useUrlState';
 import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getApiURL } from '../../utils/apiConfig'
@@ -95,16 +95,21 @@ const LocationDetail: React.FC = () => {
   const [detail, setDetail] = useState<{ kind: 'material' | 'product'; id: number; name: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useUrlState<'inventory' | 'movements'>('tab', 'inventory', ['inventory', 'movements']);
+  // Lokasi yang belum pernah diisi tampil "Tidak ada inventory di lokasi ini" -
+  // benar, tapi tidak menjawab "jadi isinya nanti apa saja". Dengan ini barang
+  // sekategori gudangnya ikut tampil dengan stok nol.
+  const [nolParam, setNolParam] = useUrlFilter<string>('nol', '');
+  const tampilkanNol = nolParam === '1';
   useBreadcrumbTrail(activeTab === 'inventory' ? [] : [{ label: 'Riwayat Pergerakan' }]);
 
   useEffect(() => {
     fetchLocationDetail();
-  }, [id]);
+  }, [id, tampilkanNol]);
 
   const fetchLocationDetail = async () => {
     setLoading(true);
     try {
-      const response = await fetch(getApiURL(`/api/warehouse/locations/${id}`), {
+      const response = await fetch(getApiURL(`/api/warehouse/locations/${id}${tampilkanNol ? '?include_empty=1' : ''}`), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -152,7 +157,10 @@ const LocationDetail: React.FC = () => {
       if (it.stock_status && !cur.statuses.includes(it.stock_status)) cur.statuses.push(it.stock_status)
       if (it.created_at && (!cur.first_in || it.created_at < cur.first_in)) cur.first_in = it.created_at
     })
-    return Array.from(map.values())
+    // Yang ada isinya didahulukan; barang berstok nol menyusul di bawah.
+    return Array.from(map.entries())
+      .map(([key, v]) => ({ ...v, key }))
+      .sort((a, b) => (b.quantity_on_hand || 0) - (a.quantity_on_hand || 0))
   }, [inventoryItems])
 
   const getUtilizationPercent = () => {
@@ -353,10 +361,14 @@ const LocationDetail: React.FC = () => {
         <div className="p-4">
           {activeTab === 'inventory' && (
             <>
+              <label className="mb-3 inline-flex cursor-pointer items-center gap-2 rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
+                <input type="checkbox" checked={tampilkanNol} onChange={(e) => setNolParam(e.target.checked ? '1' : '')} />
+                Tampilkan barang yang stoknya nol
+              </label>
               {groupedItems.length === 0 ? (
                 <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                   <CubeIcon className="mx-auto h-10 w-10 text-gray-300 mb-3" />
-                  <p>Tidak ada inventory di lokasi ini</p>
+                  <p>{tampilkanNol ? 'Tidak ada barang untuk kategori gudang ini.' : 'Belum ada stok di lokasi ini. Centang "Tampilkan barang yang stoknya nol" untuk melihat barang yang seharusnya di sini.'}</p>
                 </div>
               ) : (
                 <div className="overflow-x-auto">
@@ -376,7 +388,7 @@ const LocationDetail: React.FC = () => {
                     <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                       {groupedItems.map((item) => (
                         <tr
-                          key={item.id}
+                          key={item.key}
                           onClick={() => (item.material_id || item.product_id) && setDetail({ kind: item.material_id ? 'material' : 'product', id: (item.material_id || item.product_id) as number, name: item.item_name })}
                           className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
                           title="Klik untuk melihat rincian stok per batch dan mutasinya"
