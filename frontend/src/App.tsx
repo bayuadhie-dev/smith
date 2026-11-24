@@ -10,33 +10,10 @@ import { PermissionProvider } from './contexts/PermissionContext'
 import { ToastProvider, ErrorBoundary, ConfirmDialogProvider } from './components/ui'
 import SessionTimeoutModal from './components/SessionTimeoutModal'
 import Layout from './components/Layout/Layout'
-
-/**
- * Tiap deploy, nama berkas potongan kode (chunk) berubah dan yang lama dihapus
- * dari server. Tab yang sudah terbuka sejak sebelum deploy masih memegang
- * daftar nama yang lama, jadi begitu pindah halaman impor-nya 404 dan React
- * melempar - yang terlihat oleh pemakai sebagai "Oops! Terjadi Kesalahan" di
- * banyak halaman sekaligus, padahal aplikasinya sehat.
- *
- * Muat ulang sekali saja: index.html yang baru menunjuk nama yang benar.
- * Penanda di sessionStorage menjaga supaya tidak berputar kalau penyebabnya
- * ternyata bukan itu.
- */
-const KUNCI_MUAT_ULANG = 'chunk-dimuat-ulang'
-
-const muat = <T,>(impor: () => Promise<T>): Promise<T> =>
-  impor().then((m) => {
-    sessionStorage.removeItem(KUNCI_MUAT_ULANG)
-    return m
-  }).catch((e) => {
-    if (sessionStorage.getItem(KUNCI_MUAT_ULANG)) throw e
-    sessionStorage.setItem(KUNCI_MUAT_ULANG, '1')
-    window.location.reload()
-    return new Promise<T>(() => {})      // tertahan: halaman sedang dimuat ulang
-  })
-
+import { muat } from './utils/muatChunk'
 import { registerAppRoutes } from './workspace/routeRegistry'
 import RoleBasedRedirect from './components/RoleBasedRedirect'
+
 const Login = lazy(() => muat(() => import('./pages/Auth/Login')))
 const Register = lazy(() => muat(() => import('./pages/Auth/Register')))
 const ForgotPassword = lazy(() => muat(() => import('./pages/Auth/ForgotPassword')))
