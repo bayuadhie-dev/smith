@@ -3,6 +3,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from utils.auth_decorators import require_permission
 from models import db, Material, Inventory, InventoryMovement
 from sqlalchemy import func, desc, and_, or_
+from sqlalchemy.orm import selectinload
 from datetime import datetime, date, timedelta
 import json
 
@@ -107,10 +108,25 @@ def get_materials():
             )
         
         # Pagination
+        query = query.options(selectinload(Material.supplier))
         materials = query.order_by(Material.code).paginate(
             page=page, per_page=per_page, error_out=False
         )
-        
+
+        # Stok barang yang tampil di halaman ini, satu query untuk semuanya.
+        # Barang yang belum pernah ada penerimaan tidak punya baris stok sama
+        # sekali - itu bukan "tidak diketahui", itu nol, jadi dijawab 0 supaya
+        # daftar ini juga menjawab "ada berapa", bukan cuma "ada apa saja".
+        id_halaman = [m.id for m in materials.items]
+        stok = {}
+        if id_halaman:
+            stok = {mid: (float(on or 0), float(res or 0)) for mid, on, res in db.session.query(
+                Inventory.material_id,
+                func.coalesce(func.sum(Inventory.quantity_on_hand), 0),
+                func.coalesce(func.sum(Inventory.quantity_reserved), 0),
+            ).filter(Inventory.material_id.in_(id_halaman), Inventory.is_active.is_(True)
+                     ).group_by(Inventory.material_id).all()}
+
         return jsonify({
             'materials': [{
                 'id': m.id,
@@ -127,6 +143,9 @@ def get_materials():
                 'ppn_code': m.ppn_code,
                 'barcode': m.barcode, 'brand': m.brand,
                 'erp_approval': m.erp_approval,
+                'current_stock': stok.get(m.id, (0.0, 0.0))[0],
+                'reserved_stock': stok.get(m.id, (0.0, 0.0))[1],
+                'min_stock_level': float(m.min_stock_level) if m.min_stock_level else 0,
                 'created_at': m.created_at.isoformat() if m.created_at else None
             } for m in materials.items],
             'pagination': {

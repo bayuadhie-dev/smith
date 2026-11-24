@@ -73,6 +73,11 @@ export default function InventoryListEnhanced({ mode = 'per-gudang' }: Inventory
   const [stockStatus, setStockStatus] = useUrlFilter<string>('status', '')
   const [categoryGroup, setCategoryGroup] = useState<string>('')
   const [showFilters, setShowFilters] = useState(false)
+  // Baris berstok nol disembunyikan supaya daftar ini menjawab "apa yang ada
+  // di gudang". Tapi kadang justru yang nol itu yang dicari - batch yang sudah
+  // habis, atau barang yang belum pernah ada penerimaannya.
+  const [kosongParam, setKosongParam] = useUrlFilter<string>('kosong', '')
+  const tampilkanKosong = kosongParam === '1'
 
   // Summary
   const [summary, setSummary] = useState({
@@ -88,7 +93,7 @@ export default function InventoryListEnhanced({ mode = 'per-gudang' }: Inventory
 
   useEffect(() => {
     fetchInventory()
-  }, [currentPage, search, itemType, zoneId, stockStatus, categoryGroup])
+  }, [currentPage, search, itemType, zoneId, stockStatus, categoryGroup, tampilkanKosong])
 
   const fetchZones = async () => {
     try {
@@ -112,6 +117,7 @@ export default function InventoryListEnhanced({ mode = 'per-gudang' }: Inventory
       if (zoneId) params.append('zone_id', zoneId)
       if (stockStatus) params.append('stock_status', stockStatus)
       if (categoryGroup) params.append('category_group', categoryGroup)
+      if (tampilkanKosong) params.append('include_empty', '1')
 
       const response = await axiosInstance.get(`/api/warehouse/inventory?${params}`)
       setInventory(response.data.inventory || [])
@@ -346,6 +352,12 @@ export default function InventoryListEnhanced({ mode = 'per-gudang' }: Inventory
                 <option value="">Semua Kategori</option>
                 {PILIHAN_KELOMPOK.map((k) => <option key={k.value} value={k.value}>{k.label}</option>)}
               </select>
+            </div>
+            <div className="flex items-end">
+              <label className="flex cursor-pointer items-center gap-2 pb-2 text-sm text-gray-700 dark:text-gray-200">
+                <input type="checkbox" checked={tampilkanKosong} onChange={(e) => { setCurrentPage(1); setKosongParam(e.target.checked ? '1' : '') }} />
+                Tampilkan yang stoknya nol
+              </label>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Zona Gudang</label>
