@@ -48,16 +48,40 @@ export default function AttachmentsPanel({ entityType, entityId }: { entityType:
   )
 }
 
+/** Kenapa satu berkas gagal diunggah, dalam kalimat yang bisa ditindaklanjuti.
+ *
+ * Penolakan karena ukuran datang dari nginx, bukan dari Flask, jadi badannya
+ * HTML - `data.error` kosong dan pesannya dulu jatuh ke "coba unggah ulang",
+ * yang membuat orang mengulang hal yang sama berkali-kali (dilaporkan Finance
+ * 2026-11-24: tiga kali coba, tiga kali gagal, tanpa tahu sebabnya).
+ */
+export function pesanGagalUnggah(e: any): string {
+  const status = e?.response?.status
+  if (status === 413) return 'ukurannya melebihi batas unggah'
+  const pesan = e?.response?.data?.error
+  if (typeof pesan === 'string' && pesan) return pesan
+  if (!e?.response) return 'sambungan ke server terputus'
+  if (status === 401 || status === 403) return 'sesi sudah habis, masuk lagi lalu unggah dari halaman detail'
+  return `ditolak server (kode ${status})`
+}
+
 export async function uploadAttachments(entityType: string, entityId: number | string | undefined, files: File[]) {
   if (!entityId || !files.length) return
-  try {
-    for (const f of files) {
+  // Satu berkas gagal tidak boleh menghentikan sisanya - dulu seluruh perulangan
+  // ada di dalam satu try, jadi berkas sesudah yang gagal tidak pernah dicoba
+  // padahal pesannya bilang "sebagian".
+  const gagal: string[] = []
+  for (const f of files) {
+    try {
       const fd = new FormData()
       fd.append('entity_type', entityType); fd.append('entity_id', String(entityId)); fd.append('file', f)
       await axiosInstance.post('/api/attachments', fd, { headers: { 'Content-Type': 'multipart/form-data' } })
+    } catch (e: any) {
+      gagal.push(`${f.name} - ${pesanGagalUnggah(e)}`)
     }
-  } catch (e: any) {
-    toast.error('Dokumen tersimpan, tapi sebagian lampiran gagal diunggah: ' + (e?.response?.data?.error || 'coba unggah ulang dari halaman detail'))
+  }
+  if (gagal.length) {
+    toast.error(`Dokumen tersimpan, tapi ${gagal.length} dari ${files.length} lampiran gagal diunggah. ${gagal.join('; ')}. Lampirannya bisa diunggah lagi dari halaman detail.`)
   }
 }
 
