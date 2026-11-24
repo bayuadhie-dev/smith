@@ -1,9 +1,14 @@
-"""Halaman Isi Gudang: daftar barang per gudang menurut kelompoknya.
+"""Halaman Isi Gudang: daftar barang satu gudang, menurut kategori gudang itu.
 
 Daftarnya dulu dibangun dari baris stok, jadi hanya memuat barang yang kebetulan
 ada isinya. Untuk menjawab "bahan kimia kita apa saja di gudang ini", yang nol
 justru yang dicari - itulah yang belum pernah diterima. Di Fengsheng 75 dari 76
 bahan kimia tidak punya baris stok sama sekali.
+
+Kategorinya datang dari `warehouse_zones.material_type`, BUKAN pilihan bebas
+pemakai: Gudang Chemical memang untuk bahan kimia dan Gudang Bahan Kemas untuk
+bahan kemas. Menampilkan 76 bahan kimia di Gudang Bahan Kemas itu mencampur lagi
+yang sudah susah payah dipisahkan.
 """
 import pytest
 
@@ -14,7 +19,8 @@ from models.warehouse import Inventory, WarehouseLocation, WarehouseZone
 
 @pytest.fixture
 def gudang(db_session):
-    z = WarehouseZone(code='WH-CMW', name='Gudang Chemical', material_type='mixed', is_active=True)
+    """Gudang Chemical - kategorinya bahan kimia, bukan serbaguna."""
+    z = WarehouseZone(code='WH-CMW', name='Gudang Chemical', material_type='chemical_materials', is_active=True)
     db_session.add(z)
     db_session.flush()
     loc = WarehouseLocation(location_code='WH-CMW-01', zone_id=z.id, rack='R1', level='1',
@@ -57,30 +63,88 @@ class TestDaftarBarangPerGudang:
 
     def test_barang_tanpa_stok_ikut_tampil_kalau_diminta(self, client, auth_headers, gudang, isi_gudang):
         d = _isi(client, auth_headers, gudang[0].id, include_empty='1')
-        assert sorted(i['code'] for i in d['items']) == ['BB-NOL', 'KIM-ADA', 'KIM-NOL']
+        # BB-NOL bahan baku, bukan urusan Gudang Chemical - lihat tes berikutnya.
+        assert sorted(i['code'] for i in d['items']) == ['KIM-ADA', 'KIM-NOL']
         nol = next(i for i in d['items'] if i['code'] == 'KIM-NOL')
         assert nol['on_hand'] == 0 and nol['available'] == 0
         assert nol['uom'] == 'KG'      # satuannya tetap terbaca, bukan kosong
 
-    def test_disaring_per_kelompok(self, client, auth_headers, gudang, isi_gudang):
-        d = _isi(client, auth_headers, gudang[0].id, include_empty='1', category_group='chemical')
+    def test_hanya_kategori_gudangnya_yang_ditarik(self, client, auth_headers, gudang, isi_gudang):
+        """Gudang Chemical hanya memunculkan bahan kimia. Bahan baku tidak ikut,
+        meski sama-sama belum pernah masuk ke sini."""
+        d = _isi(client, auth_headers, gudang[0].id, include_empty='1')
         assert sorted(i['code'] for i in d['items']) == ['KIM-ADA', 'KIM-NOL']
 
-    def test_kelompok_juga_menyaring_yang_sudah_ada_stoknya(self, client, auth_headers, gudang, isi_gudang):
-        """Tanpa include_empty pun kelompoknya harus dihormati."""
-        d = _isi(client, auth_headers, gudang[0].id, category_group='bahan_baku')
-        assert d['items'] == []
+    def test_kategori_tidak_bisa_dipaksa_dari_luar(self, client, auth_headers, db_session, gudang, isi_gudang):
+        """Gudang yang sudah punya kategori mengabaikan parameter kelompok -
+        kalau tidak, Gudang Chemical bisa disuruh memajang seluruh bahan kemas."""
+        _bahan(db_session, 'PM-NOL', 'KARTON BOX', 'BAHAN PEMBANTU', 'packaging_materials')
+        d = _isi(client, auth_headers, gudang[0].id, include_empty='1', group='packaging_materials')
+        assert 'PM-NOL' not in [i['code'] for i in d['items']]
+        assert sorted(i['code'] for i in d['items']) == ['KIM-ADA', 'KIM-NOL']
 
-    def test_yang_ada_stoknya_tetap_di_atas(self, client, auth_headers, gudang, isi_gudang):
-        d = _isi(client, auth_headers, gudang[0].id, include_empty='1', category_group='chemical')
-        assert d['items'][0]['code'] == 'KIM-ADA'
-
-    def test_produk_tidak_ikut_di_kelompok_bahan(self, client, auth_headers, db_session, gudang, isi_gudang):
-        db_session.add(Product(code='FG-001', name='Tisu Basah', material_type='finished_goods',
-                               primary_uom='PCS', is_active=True))
+    def test_gudang_serbaguna_baru_boleh_dipilihkan(self, client, auth_headers, db_session, isi_gudang):
+        """Area Produksi dan Gudang Waste memang tidak punya kategori tetap."""
+        z = WarehouseZone(code='PROD', name='Area Produksi', material_type='all', is_active=True)
+        db_session.add(z)
         db_session.commit()
-        d = _isi(client, auth_headers, gudang[0].id, include_empty='1', category_group='chemical')
-        assert 'FG-001' not in [i['code'] for i in d['items']]
+        d = _isi(client, auth_headers, z.id, include_empty='1', group='chemical_materials')
+        assert sorted(i['code'] for i in d['items']) == ['KIM-ADA', 'KIM-NOL']
+        kosong = _isi(client, auth_headers, z.id, include_empty='1')
+        assert kosong['items'] == []
+
+    def test_barang_salah_gudang_ditandai_bukan_disembunyikan(self, client, auth_headers, db_session, gudang):
+        """Bahan kemas yang nyata-nyata ada di Gudang Chemical tetap ditampilkan -
+        itu kenyataan di lapangan - tapi diberi tanda supaya salah taruh kelihatan."""
+        _, loc = gudang
+        asing = _bahan(db_session, 'PM-ADA', 'KARTON BOX', 'BAHAN PEMBANTU', 'packaging_materials')
+        db_session.add(Inventory(material_id=asing.id, location_id=loc.id, quantity_on_hand=5,
+                                 quantity_available=5, is_active=True))
+        db_session.commit()
+
+        d = _isi(client, auth_headers, gudang[0].id)
+        baris = {i['code']: i for i in d['items']}
+        assert baris['PM-ADA']['luar_kelompok'] is True
+
+    def test_barang_sekategori_tidak_ditandai(self, client, auth_headers, gudang, isi_gudang):
+        d = _isi(client, auth_headers, gudang[0].id)
+        assert d['items'][0]['luar_kelompok'] is False
+
+    def test_kategori_gudang_ikut_dikirim(self, client, auth_headers, gudang, isi_gudang):
+        """Dipakai halaman untuk menulis "Gudang ini untuk bahan kimia"."""
+        d = _isi(client, auth_headers, gudang[0].id)
+        assert d['zone']['material_type'] == 'chemical_materials'
+
+
+class TestHurufBesarKecil:
+    """Falmaco menulis sebagian material_type huruf besar ('RAW_MATERIALS').
+    Kalau dicocokkan apa adanya, Gudang Bahan Baku di sana tidak memunculkan
+    apa pun, dan bahan bakunya malah ditandai beda kategori di gudangnya sendiri."""
+
+    @pytest.fixture
+    def gudang_bb(self, db_session):
+        z = WarehouseZone(code='WH-RM', name='Gudang Bahan Baku', material_type='raw_materials', is_active=True)
+        db_session.add(z)
+        db_session.flush()
+        loc = WarehouseLocation(location_code='WH-RM-01', zone_id=z.id, rack='R1', level='1',
+                                position='A', capacity_uom='KG', is_active=True)
+        db_session.add(loc)
+        db_session.commit()
+        return z, loc
+
+    def test_jenis_huruf_besar_tetap_terjaring(self, client, auth_headers, db_session, gudang_bb):
+        _bahan(db_session, 'BB-HURUF', 'VISCOSE RAYON', 'BAHAN BAKU', 'RAW_MATERIALS')
+        d = _isi(client, auth_headers, gudang_bb[0].id, include_empty='1')
+        assert [i['code'] for i in d['items']] == ['BB-HURUF']
+
+    def test_tidak_ditandai_beda_kategori_di_gudangnya_sendiri(self, client, auth_headers, db_session, gudang_bb):
+        z, loc = gudang_bb
+        m = _bahan(db_session, 'BB-HURUF', 'VISCOSE RAYON', 'BAHAN BAKU', 'RAW_MATERIALS')
+        db_session.add(Inventory(material_id=m.id, location_id=loc.id, quantity_on_hand=10,
+                                 quantity_available=10, is_active=True))
+        db_session.commit()
+        d = _isi(client, auth_headers, z.id)
+        assert d['items'][0]['luar_kelompok'] is False
 
 
 class TestTidakNPlusSatu:
