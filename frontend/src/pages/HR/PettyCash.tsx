@@ -1027,12 +1027,16 @@ function Mutasi() {
       .finally(() => setLoading(false))
   }, [])
 
-  const KIND: Record<string, string> = { opening: 'Saldo awal', transfer: 'Transfer masuk', expense: 'Pengeluaran' }
+  const KIND: Record<string, string> = {
+    opening: 'Saldo awal', transfer: 'Transfer', expense: 'Nota kas kecil',
+    payment: 'Pembayaran kas/bank', journal: 'Jurnal',
+  }
 
   return (
     <Panel title="Buku kas kecil">
       <p className="mb-3 text-sm text-gray-600 dark:text-gray-300">
-        Uang masuk dicatat Finance lewat Transfer Kas/Bank, uang keluar dari nota yang dicatat di sini. Halaman ini hanya untuk dilihat.
+        Seluruh mutasi akun kas dana ini menurut pembukuan &mdash; transfer masuk dari Finance, nota yang dicatat di sini,
+        maupun pembayaran kas/bank yang keluar dari akun yang sama. Saldonya selalu sama dengan buku besar. Halaman ini hanya untuk dilihat.
       </p>
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">

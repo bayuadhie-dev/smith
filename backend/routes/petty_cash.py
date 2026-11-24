@@ -93,6 +93,98 @@ def _transfer_in_amount(t):
     return masuk
 
 
+JENIS_MUTASI = {
+    'bank_transfer': 'transfer',
+    'petty_cash': 'expense',
+    'payment': 'payment',
+    'petty_cash_cancel': 'expense',
+}
+
+
+def buku_akun(fund):
+    """Mutasi akun kas dana ini apa adanya dari buku besar.
+
+    Dulu halaman ini hanya menjumlahkan transfer masuk dan nota kas kecil, jadi
+    uang yang keluar lewat jalan lain tidak terlihat sama sekali. Di Fengsheng
+    pemakaian 13-21 Nov 2026 dicatat Finance sebagai satu Pembayaran Kas/Bank
+    (PAY-202611-00019, Rp 878.600) - buku besarnya benar, tapi halaman kas kecil
+    tetap menampilkan saldo 1.878.600 padahal akuntansinya 1.000.000.
+
+    Buku besar adalah satu-satunya tempat yang melihat semua jalan masuk-keluar,
+    jadi dari situlah angkanya diambil sekarang.
+    """
+    from models.finance import AccountingEntry
+
+    if not fund.cash_account_id:
+        return []
+    return (AccountingEntry.query
+            .filter(AccountingEntry.account_id == fund.cash_account_id,
+                    AccountingEntry.status == 'posted')
+            .order_by(AccountingEntry.entry_date, AccountingEntry.id)
+            .all())
+
+
+def nota_belum_terjurnal(fund):
+    """Nota yang uangnya sudah keluar tapi belum menyentuh buku besar.
+
+    Terjadi kalau akun beban kategorinya belum disetel - notanya tetap dicatat
+    (uangnya memang sudah keluar), hanya jurnalnya tertunda. Kalau baris ini
+    tidak ikut dihitung, saldo kas kecil terlihat lebih besar dari yang ada.
+    """
+    return (PettyCashTransaction.query
+            .filter(PettyCashTransaction.fund_id == fund.id,
+                    PettyCashTransaction.status == 'paid',
+                    PettyCashTransaction.journal_number.is_(None))
+            .order_by(PettyCashTransaction.request_date, PettyCashTransaction.id)
+            .all())
+
+
+def _mutasi_dari_buku(fund):
+    """Baris mutasi + saldo berjalan untuk tab Buku kas kecil."""
+    rows = []
+    if fund.opening_balance and float(fund.opening_balance) != 0:
+        rows.append(((), {'date': None, 'kind': 'opening', 'number': '-', 'description': 'Saldo awal',
+                          'in_amount': _f(fund.opening_balance), 'out_amount': 0.0, 'url': None}))
+    for n, e in enumerate(buku_akun(fund)):
+        tanggal = e.entry_date.isoformat() if e.entry_date else ''
+        rows.append(((tanggal, 0, n), {
+            'date': tanggal or None,
+            'kind': JENIS_MUTASI.get(e.reference_type or '', 'journal'),
+            'number': e.reference_number or e.entry_number,
+            'description': e.description or '-',
+            'in_amount': round(float(e.debit_amount or 0), 2),
+            'out_amount': round(float(e.credit_amount or 0), 2),
+            'url': _tautan_mutasi(e.reference_type),
+        }))
+    for n, t in enumerate(nota_belum_terjurnal(fund)):
+        tanggal = t.request_date.isoformat()
+        rows.append(((tanggal, 1, n), {
+            'date': tanggal, 'kind': 'expense', 'number': t.number,
+            'description': f'{t.category}: {t.purpose} ({t.requester_name}) - belum terjurnal',
+            'in_amount': 0.0, 'out_amount': _f(t.amount), 'url': None, 'unposted': True,
+        }))
+    rows.sort(key=lambda x: x[0])
+    keluar = [r for _, r in rows]
+    saldo = 0.0
+    for r in keluar:
+        saldo += r['in_amount'] - r['out_amount']
+        r['balance'] = round(saldo, 2)
+    return keluar
+
+
+def _tautan_mutasi(reference_type):
+    return {'bank_transfer': '/app/finance/bank-transfers',
+            'payment': '/app/finance/payments'}.get(reference_type or '')
+
+
+def saldo_buku(fund):
+    """Saldo kas kecil menurut buku besar, ditambah saldo awal dana."""
+    total = Decimal(str(fund.opening_balance or 0))
+    for e in buku_akun(fund):
+        total += Decimal(str(e.debit_amount or 0)) - Decimal(str(e.credit_amount or 0))
+    return total
+
+
 def summary(fund):
     from models.bank_transfer import BankTransfer
 
@@ -122,7 +214,18 @@ def summary(fund):
         PettyCashTransaction.fund_id == fund.id, PettyCashTransaction.status == 'paid',
         PettyCashTransaction.replenishment_id.is_(None)))
 
-    balance = Decimal(str(fund.opening_balance or 0)) + masuk_transfer + received - paid
+    # Akun kas sudah dipilih -> buku besarnya yang dipegang, karena di situlah
+    # semua jalan masuk dan keluar bertemu. Belum dipilih -> hitungan lama, supaya
+    # dana yang belum disambungkan ke akun tetap jalan.
+    pakai_buku = bool(fund.cash_account_id)
+    if pakai_buku:
+        belum = sum((Decimal(str(t.amount)) for t in nota_belum_terjurnal(fund)), Decimal(0))
+        balance = saldo_buku(fund) - belum
+        masuk_buku = sum((Decimal(str(e.debit_amount or 0)) for e in buku_akun(fund)), Decimal(0))
+        keluar_buku = sum((Decimal(str(e.credit_amount or 0)) for e in buku_akun(fund)), Decimal(0)) + belum
+    else:
+        balance = Decimal(str(fund.opening_balance or 0)) + masuk_transfer + received - paid
+        masuk_buku, keluar_buku = masuk_transfer + received, paid
     today = date.today()
     month_end = today.day >= monthrange(today.year, today.month)[1] - 2
     reason = None
@@ -133,8 +236,9 @@ def summary(fund):
     suggested = max(Decimal(0), Decimal(fund.fixed_amount) - balance - open_req)
     return {
         'balance': _f(balance), 'fixed_amount': _f(fund.fixed_amount), 'per_txn_limit': _f(fund.per_txn_limit),
-        'min_balance': _f(fund.min_balance), 'opening_balance': _f(fund.opening_balance), 'total_paid': _f(paid),
-        'total_received': _f(masuk_transfer + received), 'total_transfer_in': _f(masuk_transfer),
+        'min_balance': _f(fund.min_balance), 'opening_balance': _f(fund.opening_balance),
+        'total_paid': _f(keluar_buku), 'total_received': _f(masuk_buku), 'total_transfer_in': _f(masuk_transfer),
+        'paid_from_notes': _f(paid), 'from_ledger': pakai_buku,
         'waiting_approval': _f(waiting_pm), 'waiting_payment': _f(waiting_pay), 'open_replenishment_amount': _f(open_req),
         'open_replenishment_id': open_rep.id if open_rep else None,
         'unreplenished_paid': _f(unreplenished), 'suggested_replenishment': _f(suggested),
@@ -748,9 +852,16 @@ def set_category_accounts():
 @jwt_required()
 @require_permission('petty_cash.view')
 def list_mutations():
-    """Buku kas: uang masuk (transfer dari Finance) dan uang keluar (nota tercatat),
-    beserta saldo berjalan. Hanya untuk dilihat."""
+    """Buku kas kecil: seluruh mutasi akun kasnya menurut buku besar, dengan saldo
+    berjalan. Hanya untuk dilihat.
+
+    Dana yang akun kasnya belum dipilih memakai hitungan lama (transfer masuk +
+    nota keluar) supaya tetap ada yang bisa dilihat.
+    """
     fund = _fund()
+    if fund.cash_account_id:
+        return jsonify({'mutations': _mutasi_dari_buku(fund), 'summary': summary(fund)})
+
     rows = []
     if fund.opening_balance and float(fund.opening_balance) != 0:
         rows.append({'date': None, 'kind': 'opening', 'number': '-', 'description': 'Saldo awal',

@@ -1,3 +1,5 @@
+from datetime import date
+
 from models.petty_cash import PettyCashFund
 
 
@@ -242,6 +244,7 @@ def test_transfer_bank_mengisi_kas_kecil_dan_menutup_pengajuan(client, auth_head
 
 
 def test_mutasi_menampilkan_masuk_keluar_dan_saldo_berjalan(client, auth_headers, db_session):
+    """Buku kas kecil mengikuti buku besar akun kasnya, termasuk urutannya."""
     a = _akun(db_session)
     f = _fund(db_session, mode='paper', opening=0)
     f.cash_account_id, f.expense_account_id = a['kas'].id, a['umum'].id
@@ -256,9 +259,62 @@ def test_mutasi_menampilkan_masuk_keluar_dan_saldo_berjalan(client, auth_headers
         ('transfer', 1000000.0, 0.0, 1000000.0),
         ('expense', 0.0, 250000.0, 750000.0),
     ]
-    # di tanggal yang sama, uang masuk tetap didahulukan
+    # urutannya urutan pembukuan: tanggal, lalu urutan pencatatan di hari itu
     client.post('/api/finance/bank-transfers', headers=auth_headers, json={
         'transfer_date': '2026-11-13', 'from_account_id': a['bca'].id, 'to_account_id': a['kas'].id, 'amount': 500000})
     m2 = client.get('/api/petty-cash/mutations', headers=auth_headers).get_json()['mutations']
-    assert [x['kind'] for x in m2] == ['transfer', 'transfer', 'expense']
+    assert [x['kind'] for x in m2] == ['transfer', 'expense', 'transfer']
     assert m2[-1]['balance'] == 1250000.0
+
+
+def test_uang_keluar_lewat_pembayaran_kas_bank_ikut_terlihat(client, auth_headers, db_session):
+    """Keluhan Finance Fengsheng 2026-11-24: pemakaian kas kecil 13-21 Nov dicatat
+    sebagai satu Pembayaran Kas/Bank (klaim), bukan nota per lembar. Buku besarnya
+    benar, tapi halaman kas kecil dulu hanya membaca transfer + nota - jadi saldonya
+    tertinggal 878.600 lebih besar dari akuntansi."""
+    from models.finance import AccountingEntry
+
+    a = _akun(db_session)
+    f = _fund(db_session, mode='paper', opening=0)
+    f.cash_account_id, f.expense_account_id = a['kas'].id, a['umum'].id
+    db_session.commit()
+    client.post('/api/finance/bank-transfers', headers=auth_headers, json={
+        'transfer_date': '2026-11-13', 'from_account_id': a['bca'].id, 'to_account_id': a['kas'].id,
+        'amount': 1000000, 'petty_cash_fund_id': f.id})
+
+    # klaim pemakaian dicatat di luar modul kas kecil, langsung ke akun kasnya
+    for akun, debit, kredit in ((a['konsumsi'], 878600, 0), (a['kas'], 0, 878600)):
+        db_session.add(AccountingEntry(
+            entry_number=f'JE-UJI-{akun.account_code}', entry_date=date(2026, 11, 21), entry_type='payment',
+            reference_type='payment', reference_number='PAY-UJI-00019', account_id=akun.id,
+            account_code=akun.account_code, account_name=akun.account_name,
+            debit_amount=debit, credit_amount=kredit, status='posted',
+            description='Pembayaran - PAY-UJI-00019'))
+    db_session.commit()
+
+    d = client.get('/api/petty-cash/mutations', headers=auth_headers).get_json()
+    assert [(x['kind'], x['number'], x['out_amount']) for x in d['mutations'] if x['out_amount']] == [
+        ('payment', 'PAY-UJI-00019', 878600.0)]
+    assert d['mutations'][-1]['balance'] == 121400.0
+    assert d['summary']['balance'] == 121400.0        # bukan 1.000.000 seperti hitungan lama
+    assert d['summary']['total_paid'] == 878600.0
+
+
+def test_nota_yang_belum_terjurnal_tetap_mengurangi_saldo(client, auth_headers, db_session):
+    """Akun beban kategorinya belum disetel -> notanya tidak bisa dijurnal. Uangnya
+    tetap sudah keluar, jadi tidak boleh hilang dari saldo hanya karena buku besar
+    belum menerimanya."""
+    a = _akun(db_session)
+    f = _fund(db_session, mode='paper', opening=0)
+    f.cash_account_id, f.expense_account_id = a['kas'].id, None      # tanpa akun beban
+    db_session.commit()
+    client.post('/api/finance/bank-transfers', headers=auth_headers, json={
+        'transfer_date': '2026-11-13', 'from_account_id': a['bca'].id, 'to_account_id': a['kas'].id,
+        'amount': 1000000, 'petty_cash_fund_id': f.id})
+    client.post('/api/petty-cash/transactions', headers=auth_headers, json=_body(receipt_number='NJ1', amount=300000))
+
+    d = client.get('/api/petty-cash/mutations', headers=auth_headers).get_json()
+    baris = [x for x in d['mutations'] if x['out_amount']]
+    assert len(baris) == 1 and baris[0]['unposted'] is True
+    assert 'belum terjurnal' in baris[0]['description']
+    assert d['summary']['balance'] == 700000.0
