@@ -337,6 +337,47 @@ def get_roll(rid):
     return jsonify(data)
 
 
+def _ada(v):
+    """Isian yang benar-benar diisi - string kosong dari form dihitung kosong."""
+    return v is not None and str(v).strip() != ''
+
+
+def _setelan_mesin(data):
+    """Setelan mesin di lembar harian spunlace: gramasi, ketebalan, kecepatan,
+    lama satu roll. Semuanya opsional - roll lama tidak punya angka ini.
+
+    `minutes_per_roll` dihitung sendiri dari panjang dibagi kecepatan kalau
+    operator tidak mengisinya; yang diketik tetap menang.
+    """
+    keluar = {}
+    for k in ('length_m', 'width_cm', 'gramasi_gsm', 'thickness_micron',
+              'speed_m_per_min', 'minutes_per_roll'):
+        nilai = _f(data[k]) if _ada(data.get(k)) else None
+        if nilai is not None and nilai < 0:
+            raise RollError(f'{k.replace("_", " ")} tidak boleh negatif')
+        keluar[k] = nilai
+    if keluar['minutes_per_roll'] is None and keluar['length_m'] and keluar['speed_m_per_min']:
+        keluar['minutes_per_roll'] = round(keluar['length_m'] / keluar['speed_m_per_min'], 2)
+    return keluar
+
+
+def _berat_dari_gramasi(gsm, lebar_cm, panjang_m):
+    """Berat kain dari setelan mesin: gramasi (g/m2) x lebar (m) x panjang (m).
+
+    Dipakai kalau operator tidak menimbang - pada uji jalan mesin yang dicatat
+    memang panjang dan setelannya, bukan hasil timbangan.
+    """
+    if not (gsm and lebar_cm and panjang_m):
+        return 0.0
+    return round(gsm * (lebar_cm / 100.0) * panjang_m / 1000.0, 2)
+
+
+def _berat_kotor(net, product):
+    """Berat kotor = berat kain + berat cone dari spesifikasi kainnya."""
+    cone = float(getattr(product, 'cone_weight_kg', 0) or 0)
+    return round(net + cone, 2) if net else 0.0
+
+
 def _validate(data, exclude_id=None):
     nomor = data.get('roll_number')
     try:
@@ -350,10 +391,13 @@ def _validate(data, exclude_id=None):
     if not product:
         raise RollError('Pilih jenis kain atau produknya')
 
-    gross = _f(data.get('gross_weight_kg'))
-    net = _f(data.get('net_weight_kg'))
+    setelan = _setelan_mesin(data)
+    net = _f(data.get('net_weight_kg')) if _ada(data.get('net_weight_kg')) else _berat_dari_gramasi(
+        setelan['gramasi_gsm'], setelan['width_cm'], setelan['length_m'])
+    gross = _f(data.get('gross_weight_kg')) if _ada(data.get('gross_weight_kg')) else _berat_kotor(net, product)
     if gross <= 0 or net <= 0:
-        raise RollError('Berat kotor dan berat bersih harus lebih dari 0')
+        raise RollError('Berat roll belum bisa ditentukan - isi beratnya, '
+                        'atau lengkapi gramasi, lebar dan panjangnya')
     if net > gross:
         raise RollError('Berat bersih tidak boleh lebih besar dari berat kotor')
 
@@ -367,7 +411,7 @@ def _validate(data, exclude_id=None):
         raise RollError('Tanggal produksi tidak valid')
 
     return {'roll_number': nomor, 'product': product, 'gross': gross, 'net': net, 'grade': grade,
-            'tanggal': tanggal, 'uji': bool(data.get('is_trial')),
+            'tanggal': tanggal, 'uji': bool(data.get('is_trial')), 'setelan': setelan,
             'wo': _validate_spk(data.get('work_order_id'), bool(data.get('is_trial')))}
 
 
@@ -393,6 +437,35 @@ def _validate_spk(wo_id, uji=False):
     return wo
 
 
+def _simpan_roll_baru(data, v, kembar, user_id):
+    """Simpan satu main roll beserta stoknya. Dipakai halaman Catat Roll maupun
+    roll hasil uji yang dicatat dari modal Pemakaian Bahan - satu jalan saja,
+    supaya nomor batch, stok kain, dan realisasi SPK tidak pernah beda caranya."""
+    roll = ProductionRoll(
+        roll_number=v['roll_number'],
+        cycle=(kembar.cycle + 1) if kembar else 1,
+        roll_type='main',
+        product_id=v['product'].id,
+        work_order_id=v['wo'].id if v['wo'] else None,
+        is_trial=v['uji'],
+        machine_id=data.get('machine_id') or None,
+        produced_at=v['tanggal'],
+        shift=(data.get('shift') or '').strip()[:20] or None,
+        gross_weight_kg=v['gross'],
+        net_weight_kg=v['net'],
+        grade=v['grade'],
+        notes=(data.get('notes') or '').strip() or None,
+        created_by=user_id,
+        **v['setelan'],
+    )
+    roll.batch_number = _nomor_batch(roll.roll_number, roll.cycle)
+    db.session.add(roll)
+    db.session.flush()
+    _masukkan_stok(roll, user_id)
+    _sinkron_realisasi(roll.work_order_id)
+    return roll
+
+
 @production_roll_bp.route('', methods=['POST'])
 @production_roll_bp.route('/', methods=['POST'])
 @jwt_required()
@@ -411,29 +484,7 @@ def create_roll():
             'Pastikan ini roll baru dari putaran berikutnya.',
             409, {'duplicate_of': kembar.to_dict(), 'needs_confirmation': True})
 
-    roll = ProductionRoll(
-        roll_number=v['roll_number'],
-        cycle=(kembar.cycle + 1) if kembar else 1,
-        roll_type='main',
-        product_id=v['product'].id,
-        work_order_id=v['wo'].id if v['wo'] else None,
-        is_trial=v['uji'],
-        machine_id=data.get('machine_id') or None,
-        produced_at=v['tanggal'],
-        shift=(data.get('shift') or '').strip()[:20] or None,
-        gross_weight_kg=v['gross'],
-        net_weight_kg=v['net'],
-        length_m=_f(data['length_m']) if data.get('length_m') else None,
-        width_cm=_f(data['width_cm']) if data.get('width_cm') else None,
-        grade=v['grade'],
-        notes=(data.get('notes') or '').strip() or None,
-        created_by=int(get_jwt_identity()),
-    )
-    roll.batch_number = _nomor_batch(roll.roll_number, roll.cycle)
-    db.session.add(roll)
-    db.session.flush()
-    _masukkan_stok(roll, int(get_jwt_identity()))
-    _sinkron_realisasi(roll.work_order_id)
+    roll = _simpan_roll_baru(data, v, kembar, int(get_jwt_identity()))
     db.session.commit()
     return jsonify(roll.to_dict()), 201
 
@@ -479,9 +530,9 @@ def update_roll(rid):
     roll.is_trial = v['uji']
     if 'machine_id' in data:
         roll.machine_id = data['machine_id'] or None
-    for k in ('length_m', 'width_cm'):
-        if k in data:
-            setattr(roll, k, _f(data[k]) if data[k] else None)
+    for k, nilai in v['setelan'].items():
+        if k in data or nilai is not None:
+            setattr(roll, k, nilai)
     if 'shift' in data:
         roll.shift = (data['shift'] or '').strip()[:20] or None
     if 'notes' in data:
@@ -817,9 +868,13 @@ def catat_pemakaian_bahan():
     masuknya, dan satu isian "keperluan":
 
     - `produksi` : menjadi roll, ikut hitungan susut di Tutup SPK.
-    - `uji`      : uji jalan mesin, TIDAK menjadi roll. Jumlahnya tidak sedikit,
-                   jadi kalau ikut dihitung susutnya melonjak tanpa ada yang
-                   salah. Dicatat terpisah dan dikecualikan dari susut.
+    - `uji`      : uji jalan mesin. Jumlahnya tidak sedikit, jadi kalau ikut
+                   dihitung susutnya melonjak tanpa ada yang salah. Dicatat
+                   terpisah dan dikecualikan dari susut.
+
+    Uji jalan mesin sering tetap menghasilkan kain yang bisa dijual. Rollnya
+    dicatat di isian yang sama (`rolls`) supaya operator tidak perlu membuka
+    halaman Catat Roll sendiri - lembar hariannya memang satu kertas.
     """
     from models.material_issue import MaterialIssue, MaterialIssueItem
     from models.product import Material
@@ -896,10 +951,49 @@ def catat_pemakaian_bahan():
         raise RollError('Bahan tidak jadi keluar - periksa stok yang tersedia')
 
     waste = _waste_masuk_stok(mi, data.get('waste') or [], user_id)
+    rolls = _roll_hasil_uji(data.get('rolls') or [], keperluan, tanggal, data.get('machine_id'), user_id)
     db.session.commit()
 
     return jsonify({'id': mi.id, 'issue_number': mi.issue_number, 'keperluan': keperluan,
-                    'items': keluar, 'detail': rincian, 'waste': waste}), 201
+                    'items': keluar, 'detail': rincian, 'waste': waste,
+                    'rolls': [r.to_dict() for r in rolls]}), 201
+
+
+def _roll_hasil_uji(baris, keperluan, tanggal, machine_id, user_id):
+    """Roll yang lahir dari uji jalan mesin, dicatat dari modal Pemakaian Bahan.
+
+    Uji mesin memang belum punya job order, jadi rollnya ditandai `is_trial` dan
+    tidak menambah realisasi SPK mana pun - tapi stok kainnya tetap masuk dan
+    tetap bisa dijual, persis seperti roll yang dicatat dari halaman Catat Roll.
+
+    Roll produksi sengaja TIDAK dibuat di sini: roll produksi menunjuk SPK dan
+    punya pemeriksaan nomor bentrok yang perlu dijawab operator satu per satu.
+    """
+    if not baris:
+        return []
+    if keperluan != 'uji':
+        raise RollError('Roll hanya bisa dicatat di sini untuk uji jalan mesin. '
+                        'Roll produksi dicatat lewat tombol Catat Roll beserta SPK-nya')
+
+    keluar = []
+    for n, b in enumerate(baris, start=1):
+        isi = {**b, 'is_trial': True, 'work_order_id': None,
+               'produced_at': b.get('produced_at') or tanggal.isoformat(),
+               'machine_id': b.get('machine_id') or machine_id}
+        try:
+            v = _validate(isi)
+        except RollError as e:
+            raise RollError(f'Roll baris {n}: {e.message}', e.status, e.extra)
+        kembar = _bentrok(v['product'].id, v['roll_number'])
+        if kembar and not b.get('confirm_duplicate'):
+            raise RollError(
+                f"Roll nomor {v['roll_number']} untuk {v['product'].name} masih ada di stok "
+                f"(dicatat {kembar.produced_at:%d %b %Y}, {float(kembar.net_weight_kg):,.0f} kg). "
+                'Pastikan ini roll baru dari putaran berikutnya.',
+                409, {'duplicate_of': kembar.to_dict(), 'needs_confirmation': True,
+                      'roll_index': n - 1})
+        keluar.append(_simpan_roll_baru(isi, v, kembar, user_id))
+    return keluar
 
 
 def _waste_dokumen(mi_id):
@@ -913,6 +1007,24 @@ def _waste_dokumen(mi_id):
         keluar.append({'name': m.name if m else None, 'uom': t.uom,
                        'qty': round(float(t.quantity or 0), 2)})
     return keluar
+
+
+def _roll_dokumen(mi):
+    """Roll uji yang dicatat pada hari dan mesin yang sama dengan dokumen ini.
+
+    Roll uji tidak menyimpan tautan ke dokumen pemakaiannya (memang tidak punya
+    SPK yang menghubungkan keduanya), jadi yang dipakai tanggalnya - sama seperti
+    cara bahan uji dicocokkan ke harinya di kartu neraca.
+    """
+    if mi.issue_type != JENIS_UJI or not mi.issue_date:
+        return []
+    q = ProductionRoll.query.filter(ProductionRoll.is_trial.is_(True),
+                                    ProductionRoll.produced_at == mi.issue_date.date(),
+                                    ProductionRoll.status != 'cancelled')
+    return [{'id': r.id, 'number': r.display_number, 'product_name': r.product.name if r.product else None,
+             'net_weight_kg': float(r.net_weight_kg or 0), 'grade': r.grade,
+             'length_m': float(r.length_m) if r.length_m is not None else None}
+            for r in q.order_by(ProductionRoll.roll_number).all()]
 
 
 @production_roll_bp.route('/material-usage', methods=['GET'])
@@ -945,6 +1057,7 @@ def daftar_pemakaian_bahan():
                                   'qty': round(float(i.issued_quantity or 0) - float(i.returned_quantity or 0), 2)}
                                  for i in mi.items]),
             'waste': _waste_dokumen(mi.id),
+            'rolls': _roll_dokumen(mi),
         })
     return jsonify({'usages': keluar})
 

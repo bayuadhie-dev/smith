@@ -29,6 +29,10 @@ interface Roll {
   net_weight_kg: number
   length_m: number | null
   width_cm: number | null
+  gramasi_gsm?: number | null
+  thickness_micron?: number | null
+  speed_m_per_min?: number | null
+  minutes_per_roll?: number | null
   grade: string
   status: string
   notes: string | null
@@ -41,6 +45,19 @@ const API = '/api/production/rolls'
 const kg = (n: number | null | undefined) => `${Number(n || 0).toLocaleString('id-ID', { maximumFractionDigits: 2 })} kg`
 const tanggal = (s: string) => new Date(s).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
 const ymd = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+
+// Berat kain bisa diturunkan dari setelan mesinnya: gramasi (g/m2) x lebar (m)
+// x panjang (m). Dipakai sebagai usulan, bukan pengganti timbangan - yang
+// diketik operator selalu menang.
+const beratDariGramasi = (gsm: any, lebarCm: any, panjangM: any) => {
+  const g = Number(gsm) || 0, l = Number(lebarCm) || 0, p = Number(panjangM) || 0
+  return g && l && p ? Math.round((g * (l / 100) * p) / 10) / 100 : 0
+}
+const menitDariSpeed = (panjangM: any, speed: any) => {
+  const p = Number(panjangM) || 0, v = Number(speed) || 0
+  return p && v ? Math.round((p / v) * 100) / 100 : 0
+}
+const angka = (n: number) => n.toLocaleString('id-ID', { maximumFractionDigits: 2 })
 
 const GRADE_CLASS: Record<string, string> = {
   A: 'bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300',
@@ -60,6 +77,10 @@ const COLUMNS: ListColumn<Roll>[] = [
   { key: 'net_weight_kg', label: 'Berat Bersih (kg)', type: 'number', value: (r) => r.net_weight_kg },
   { key: 'length_m', label: 'Panjang (m)', type: 'number', value: (r) => r.length_m ?? '' },
   { key: 'width_cm', label: 'Lebar (cm)', type: 'number', value: (r) => r.width_cm ?? '' },
+  { key: 'gramasi_gsm', label: 'Gramasi (g/m2)', type: 'number', value: (r) => r.gramasi_gsm ?? '' },
+  { key: 'thickness_micron', label: 'Thickness (mikron)', type: 'number', value: (r) => r.thickness_micron ?? '' },
+  { key: 'speed_m_per_min', label: 'Speed (m/menit)', type: 'number', value: (r) => r.speed_m_per_min ?? '' },
+  { key: 'minutes_per_roll', label: 'Waktu/Roll (menit)', type: 'number', value: (r) => r.minutes_per_roll ?? '' },
   { key: 'batch_number', label: 'No. Batch Stok', value: (r) => r.batch_number || '' },
   { key: 'stock_remaining_kg', label: 'Sisa di Stok (kg)', type: 'number', value: (r) => r.stock_remaining_kg ?? '' },
   { key: 'grade', label: 'Grade', value: (r) => r.grade },
@@ -257,6 +278,10 @@ function RollForm({ roll, onClose, onSaved }: { roll: Roll | null; onClose: () =
     net_weight_kg: roll ? String(roll.net_weight_kg) : '',
     length_m: roll?.length_m ? String(roll.length_m) : '',
     width_cm: roll?.width_cm ? String(roll.width_cm) : '',
+    gramasi_gsm: roll?.gramasi_gsm ? String(roll.gramasi_gsm) : '',
+    thickness_micron: roll?.thickness_micron ? String(roll.thickness_micron) : '',
+    speed_m_per_min: roll?.speed_m_per_min ? String(roll.speed_m_per_min) : '',
+    minutes_per_roll: roll?.minutes_per_roll ? String(roll.minutes_per_roll) : '',
     grade: roll?.grade || 'A',
     notes: roll?.notes || '',
   })
@@ -274,6 +299,8 @@ function RollForm({ roll, onClose, onSaved }: { roll: Roll | null; onClose: () =
   }, [roll])
 
   const cone = useMemo(() => produk.find((p: any) => p.id === Number(f.product_id))?.cone_weight_kg, [produk, f.product_id])
+  const usulBerat = useMemo(() => beratDariGramasi(f.gramasi_gsm, f.width_cm, f.length_m), [f.gramasi_gsm, f.width_cm, f.length_m])
+  const usulMenit = useMemo(() => menitDariSpeed(f.length_m, f.speed_m_per_min), [f.length_m, f.speed_m_per_min])
 
   const simpan = async (confirmDuplicate = false) => {
     const body = {
@@ -288,6 +315,10 @@ function RollForm({ roll, onClose, onSaved }: { roll: Roll | null; onClose: () =
       net_weight_kg: Number(f.net_weight_kg),
       length_m: f.length_m ? Number(f.length_m) : undefined,
       width_cm: f.width_cm ? Number(f.width_cm) : undefined,
+      gramasi_gsm: f.gramasi_gsm ? Number(f.gramasi_gsm) : undefined,
+      thickness_micron: f.thickness_micron ? Number(f.thickness_micron) : undefined,
+      speed_m_per_min: f.speed_m_per_min ? Number(f.speed_m_per_min) : undefined,
+      minutes_per_roll: f.minutes_per_roll ? Number(f.minutes_per_roll) : undefined,
       grade: f.grade,
       notes: f.notes || undefined,
       confirm_duplicate: confirmDuplicate || undefined,
@@ -372,6 +403,13 @@ function RollForm({ roll, onClose, onSaved }: { roll: Roll | null; onClose: () =
         <div>
           <label className="mb-1 block text-sm font-medium">Berat bersih (kg) *</label>
           <NumberInput className="input-field text-right" value={f.net_weight_kg} onChange={(e: any) => set('net_weight_kg', e.target.value)} />
+          {!f.net_weight_kg && usulBerat > 0 && (
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              Gramasi x lebar x panjang = {angka(usulBerat)} kg{' '}
+              <button type="button" className="font-medium text-primary-700 hover:underline dark:text-primary-300"
+                      onClick={() => set('net_weight_kg', String(usulBerat))}>pakai</button>
+            </p>
+          )}
         </div>
         <div>
           <label className="mb-1 block text-sm font-medium">Panjang (m)</label>
@@ -380,6 +418,29 @@ function RollForm({ roll, onClose, onSaved }: { roll: Roll | null; onClose: () =
         <div>
           <label className="mb-1 block text-sm font-medium">Lebar (cm)</label>
           <NumberInput className="input-field text-right" value={f.width_cm} onChange={(e: any) => set('width_cm', e.target.value)} />
+        </div>
+        <div>
+          <label className="mb-1 block text-sm font-medium">Gramasi (g/m&sup2;)</label>
+          <NumberInput className="input-field text-right" value={f.gramasi_gsm} onChange={(e: any) => set('gramasi_gsm', e.target.value)} />
+        </div>
+        <div>
+          <label className="mb-1 block text-sm font-medium">Thickness (milimicron)</label>
+          <NumberInput className="input-field text-right" value={f.thickness_micron} onChange={(e: any) => set('thickness_micron', e.target.value)} />
+        </div>
+        <div>
+          <label className="mb-1 block text-sm font-medium">Speed (meter/menit)</label>
+          <NumberInput className="input-field text-right" value={f.speed_m_per_min} onChange={(e: any) => set('speed_m_per_min', e.target.value)} />
+        </div>
+        <div>
+          <label className="mb-1 block text-sm font-medium">Waktu per roll (menit)</label>
+          <NumberInput className="input-field text-right" value={f.minutes_per_roll} onChange={(e: any) => set('minutes_per_roll', e.target.value)} />
+          {!f.minutes_per_roll && usulMenit > 0 && (
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              Panjang : speed = {angka(usulMenit)} menit{' '}
+              <button type="button" className="font-medium text-primary-700 hover:underline dark:text-primary-300"
+                      onClick={() => set('minutes_per_roll', String(usulMenit))}>pakai</button>
+            </p>
+          )}
         </div>
         <div>
           <label className="mb-1 block text-sm font-medium">Grade *</label>
@@ -576,7 +637,64 @@ function SlitForm({ roll, onClose, onSaved }: { roll: Roll; onClose: () => void;
  * Yang dibuat di belakang layar tetap BON Permintaan Bahan, jadi stok berkurang
  * FIFO dan jurnalnya sama dengan BON biasa - ini pintu masuk, bukan jalur kedua.
  */
-function PemakaianForm({ onClose, onSaved }: { onClose: () => void; onSaved: () => void }) {
+/** Baris bahan/waste di modal Pemakaian Bahan.
+ *
+ * Harus di luar komponen induknya. Waktu ditulis sebagai fungsi di dalam
+ * PemakaianForm, React melihat JENIS komponen yang baru setiap kali induknya
+ * render - jadi tiap ketikan membongkar dan memasang ulang isiannya, kursornya
+ * lepas, dan ketikan berikutnya jatuh ke elemen yang sudah dibuang.
+ */
+function BarisBahan({ daftar, nilai, set, label }: any) {
+  const ubah = (i: number, isi: any) =>
+    set((p: any) => p.map((x: any, k: number) => (k === i ? { ...x, ...isi } : x)))
+  return (
+    <div className="space-y-2">
+      {nilai.map((b: any, i: number) => (
+        <div key={i} className="flex flex-wrap items-end gap-2">
+          <div className="min-w-[14rem] flex-1">
+            <select className="input w-full" value={b.material_id}
+              onChange={(e) => ubah(i, { material_id: e.target.value })}>
+              <option value="">Pilih {label}</option>
+              {(daftar || []).map((m: any) => <option key={m.id} value={m.id}>{m.name}</option>)}
+            </select>
+          </div>
+          <div className="w-32">
+            {/* NumberInput mengirim event seperti input biasa (e.target.value),
+                bukan nilainya langsung. Dipakai sebagai nilai, isiannya terisi
+                "[object Object]" dan jumlahnya tidak pernah sampai ke server. */}
+            <NumberInput value={b.quantity} placeholder="kg"
+              onChange={(e: any) => ubah(i, { quantity: e.target.value })} />
+          </div>
+          <button type="button" className="pb-2 text-xs text-red-600 hover:underline dark:text-red-400"
+            onClick={() => set((p: any) => p.filter((_: any, k: number) => k !== i))}>Hapus</button>
+        </div>
+      ))}
+      <button type="button" className="text-xs font-medium text-primary-700 hover:underline dark:text-primary-300"
+        onClick={() => set((p: any) => [...p, { material_id: '', quantity: '' }])}>+ Tambah {label}</button>
+    </div>
+  )
+}
+
+/** Satu roll hasil uji jalan mesin, diisi di modal Pemakaian Bahan. */
+interface RollUji {
+  roll_number: string
+  product_id: number | string | null
+  grade: string
+  length_m: string
+  width_cm: string
+  gramasi_gsm: string
+  thickness_micron: string
+  speed_m_per_min: string
+  minutes_per_roll: string
+  net_weight_kg: string
+}
+
+const rollUjiBaru = (): RollUji => ({
+  roll_number: '', product_id: null, grade: 'A', length_m: '', width_cm: '',
+  gramasi_gsm: '', thickness_micron: '', speed_m_per_min: '', minutes_per_roll: '', net_weight_kg: '',
+})
+
+export function PemakaianForm({ onClose, onSaved }: { onClose: () => void; onSaved: () => void }) {
   const [meta, setMeta] = useState<any>({ materials: [], waste_materials: [], work_orders: [] })
   const [busy, setBusy] = useState(false)
   const [keperluan, setKeperluan] = useState<'produksi' | 'uji'>('produksi')
@@ -585,8 +703,17 @@ function PemakaianForm({ onClose, onSaved }: { onClose: () => void; onSaved: () 
   const [catatan, setCatatan] = useState('')
   const [bahan, setBahan] = useState<{ material_id: string; quantity: string }[]>([{ material_id: '', quantity: '' }])
   const [waste, setWaste] = useState<{ material_id: string; quantity: string }[]>([])
+  const [rolls, setRolls] = useState<RollUji[]>([])
+  const [produk, setProduk] = useState<any[]>([])
+  const [peringatan, setPeringatan] = useState<string | null>(null)
 
   useEffect(() => { axiosInstance.get(`${API}/meta`).then((r) => setMeta(r.data || {})).catch(() => {}) }, [])
+  useEffect(() => {
+    if (!rolls.length || produk.length) return
+    axiosInstance.get('/api/products?status=active&per_page=2000')
+      .then((r) => setProduk(r.data?.products || r.data?.items || []))
+      .catch(() => toast.error('Gagal memuat daftar kain'))
+  }, [rolls.length, produk.length])
 
   const totalBahan = bahan.reduce((a, b) => a + (Number(b.quantity) || 0), 0)
   const totalWaste = waste.reduce((a, b) => a + (Number(b.quantity) || 0), 0)
@@ -597,13 +724,17 @@ function PemakaianForm({ onClose, onSaved }: { onClose: () => void; onSaved: () 
       .filter((b) => b.material_id && Number(b.quantity) > 0)
       .map((b) => ({ nama: nama(b.material_id), pct: Math.round((Number(b.quantity) / totalBahan) * 1000) / 10 }))
   }, [bahan, totalBahan, meta.materials])
+  // Baris roll yang benar-benar diisi. Baris kosong tidak dikirim supaya operator
+  // bisa menambah baris lebih dulu tanpa dipaksa mengisinya.
+  const rollSiap = rolls.filter((x) => x.roll_number && x.product_id)
+  const rollKurang = rolls.some((x) => (x.roll_number || x.product_id) && !(x.roll_number && x.product_id))
   const siap = bahan.some((b) => b.material_id && Number(b.quantity) > 0)
-    && (keperluan === 'uji' || !!spk)
+    && (keperluan === 'uji' || !!spk) && !rollKurang
 
-  const simpan = async () => {
+  const simpan = async (confirmDuplicate = false) => {
     setBusy(true)
     try {
-      await axiosInstance.post(`${API}/material-usage`, {
+      const r = await axiosInstance.post(`${API}/material-usage`, {
         keperluan,
         used_at: tanggal,
         work_order_id: spk || null,
@@ -612,41 +743,32 @@ function PemakaianForm({ onClose, onSaved }: { onClose: () => void; onSaved: () 
           .map((b) => ({ material_id: Number(b.material_id), quantity: Number(b.quantity) })),
         waste: waste.filter((b) => b.material_id && Number(b.quantity) > 0)
           .map((b) => ({ material_id: Number(b.material_id), quantity: Number(b.quantity) })),
+        rolls: rollSiap.map((x) => ({
+          roll_number: Number(x.roll_number),
+          product_id: Number(x.product_id),
+          grade: x.grade,
+          length_m: x.length_m || undefined,
+          width_cm: x.width_cm || undefined,
+          gramasi_gsm: x.gramasi_gsm || undefined,
+          thickness_micron: x.thickness_micron || undefined,
+          speed_m_per_min: x.speed_m_per_min || undefined,
+          minutes_per_roll: x.minutes_per_roll || undefined,
+          net_weight_kg: x.net_weight_kg || undefined,
+          confirm_duplicate: confirmDuplicate || undefined,
+        })),
       })
-      toast.success('Pemakaian bahan tercatat, stok sudah berkurang')
+      const jadi = (r.data?.rolls || []).length
+      toast.success(jadi ? `Pemakaian tercatat, ${jadi} roll uji masuk stok` : 'Pemakaian bahan tercatat, stok sudah berkurang')
       onSaved()
       onClose()
     } catch (e: any) {
-      toast.error(e?.response?.data?.error || 'Gagal mencatat pemakaian bahan')
+      const data = e?.response?.data
+      if (data?.needs_confirmation) setPeringatan(data.error)
+      else toast.error(data?.error || 'Gagal mencatat pemakaian bahan')
     } finally {
       setBusy(false)
     }
   }
-
-  const Baris = ({ daftar, nilai, set, label }: any) => (
-    <div className="space-y-2">
-      {nilai.map((b: any, i: number) => (
-        <div key={i} className="flex flex-wrap items-end gap-2">
-          <div className="min-w-[14rem] flex-1">
-            <select className="input w-full" value={b.material_id}
-              onChange={(e) => set((p: any) => p.map((x: any, k: number) => k === i ? { ...x, material_id: e.target.value } : x))}>
-              <option value="">Pilih {label}</option>
-              {(daftar || []).map((m: any) => <option key={m.id} value={m.id}>{m.name}</option>)}
-            </select>
-          </div>
-          <div className="w-32">
-            <NumberInput value={b.quantity}
-              onChange={(v: any) => set((p: any) => p.map((x: any, k: number) => k === i ? { ...x, quantity: v } : x))}
-              placeholder="kg" />
-          </div>
-          <button type="button" className="pb-2 text-xs text-red-600 hover:underline dark:text-red-400"
-            onClick={() => set((p: any) => p.filter((_: any, k: number) => k !== i))}>Hapus</button>
-        </div>
-      ))}
-      <button type="button" className="text-xs font-medium text-primary-700 hover:underline dark:text-primary-300"
-        onClick={() => set((p: any) => [...p, { material_id: '', quantity: '' }])}>+ Tambah {label}</button>
-    </div>
-  )
 
   return (
     <AccessibleModal isOpen onClose={onClose} title="Pemakaian Bahan Spunlace" size="full">
@@ -659,9 +781,9 @@ function PemakaianForm({ onClose, onSaved }: { onClose: () => void; onSaved: () 
           <div>
             <label className="fn-label mb-1 block">Keperluan</label>
             <select className="input w-full" value={keperluan}
-              onChange={(e) => setKeperluan(e.target.value as 'produksi' | 'uji')}>
+              onChange={(e) => { setKeperluan(e.target.value as 'produksi' | 'uji'); if (e.target.value !== 'uji') setRolls([]) }}>
               <option value="produksi">Produksi (jadi roll)</option>
-              <option value="uji">Uji jalan mesin (tidak jadi roll)</option>
+              <option value="uji">Uji jalan mesin (boleh jadi roll)</option>
             </select>
           </div>
           <div>
@@ -677,7 +799,7 @@ function PemakaianForm({ onClose, onSaved }: { onClose: () => void; onSaved: () 
 
         <div>
           <p className="fn-label mb-2">Bahan keluar dari gudang</p>
-          <Baris daftar={meta.materials} nilai={bahan} set={setBahan} label="bahan" />
+          <BarisBahan daftar={meta.materials} nilai={bahan} set={setBahan} label="bahan" />
         </div>
 
         <div>
@@ -688,8 +810,106 @@ function PemakaianForm({ onClose, onSaved }: { onClose: () => void; onSaved: () 
           {waste.length === 0 ? (
             <button type="button" className="text-xs font-medium text-primary-700 hover:underline dark:text-primary-300"
               onClick={() => setWaste([{ material_id: '', quantity: '' }])}>+ Tambah waste</button>
-          ) : <Baris daftar={meta.waste_materials} nilai={waste} set={setWaste} label="waste" />}
+          ) : <BarisBahan daftar={meta.waste_materials} nilai={waste} set={setWaste} label="waste" />}
         </div>
+
+        {/* Uji jalan mesin sering tetap menghasilkan kain yang bisa dijual. Rollnya
+            diisi di sini juga - lembar harian spunlace memang satu kertas, bukan
+            dua halaman terpisah. Roll produksi tetap lewat tombol Catat Roll
+            karena harus menunjuk SPK. */}
+        {keperluan === 'uji' && (
+          <div>
+            <p className="fn-label mb-2">Roll hasil uji jalan mesin</p>
+            <p className="mb-2 text-xs text-gray-500 dark:text-gray-400">
+              Kalau ujinya menghasilkan roll, catat di sini. Rollnya masuk stok Gudang Kain dan bisa dijual
+              seperti roll lain, tanpa menambah realisasi SPK mana pun.
+            </p>
+            {rolls.length === 0 ? (
+              <button type="button" className="text-xs font-medium text-primary-700 hover:underline dark:text-primary-300"
+                onClick={() => setRolls([rollUjiBaru()])}>+ Tambah roll</button>
+            ) : (
+              <div className="space-y-3">
+                {rolls.map((x, i) => {
+                  const usulBerat = beratDariGramasi(x.gramasi_gsm, x.width_cm, x.length_m)
+                  const usulMenit = menitDariSpeed(x.length_m, x.speed_m_per_min)
+                  const ubah = (k: keyof RollUji, v: any) => {
+                    setPeringatan(null)
+                    setRolls((p) => p.map((y, n) => (n === i ? { ...y, [k]: v } : y)))
+                  }
+                  return (
+                    <div key={i} className="rounded-lg border border-gray-200 p-3 dark:border-gray-700">
+                      <div className="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-5">
+                        <div>
+                          <label className="mb-1 block text-xs font-medium">No. roll *</label>
+                          <input className="input w-full" inputMode="numeric" value={x.roll_number}
+                            onChange={(e) => ubah('roll_number', e.target.value.replace(/\D/g, ''))} placeholder="1 - 10000" />
+                        </div>
+                        <div className="col-span-2">
+                          <label className="mb-1 block text-xs font-medium">Jenis kain *</label>
+                          <SearchableSelect
+                            options={produk.map((p: any) => ({ id: p.id, code: p.code, name: p.name }))}
+                            value={x.product_id} onChange={(v) => ubah('product_id', v)} placeholder="Pilih kain" />
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-xs font-medium">Status</label>
+                          <select className="input w-full" value={x.grade} onChange={(e) => ubah('grade', e.target.value)}>
+                            {(meta.grades || [{ value: 'A', label: 'A' }, { value: 'B', label: 'B' }]).map((g: any) => (
+                              <option key={g.value} value={g.value}>{g.label}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-xs font-medium">Panjang (m)</label>
+                          <NumberInput value={x.length_m} onChange={(e: any) => ubah('length_m', e.target.value)} />
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-xs font-medium">Lebar (cm)</label>
+                          <NumberInput value={x.width_cm} onChange={(e: any) => ubah('width_cm', e.target.value)} />
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-xs font-medium">Gramasi (g/m&sup2;)</label>
+                          <NumberInput value={x.gramasi_gsm} onChange={(e: any) => ubah('gramasi_gsm', e.target.value)} />
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-xs font-medium">Thickness (milimicron)</label>
+                          <NumberInput value={x.thickness_micron} onChange={(e: any) => ubah('thickness_micron', e.target.value)} />
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-xs font-medium">Speed (m/menit)</label>
+                          <NumberInput value={x.speed_m_per_min} onChange={(e: any) => ubah('speed_m_per_min', e.target.value)} />
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-xs font-medium">Waktu/roll (menit)</label>
+                          <NumberInput value={x.minutes_per_roll} onChange={(e: any) => ubah('minutes_per_roll', e.target.value)}
+                            placeholder={usulMenit ? angka(usulMenit) : ''} />
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-xs font-medium">Berat bersih (kg)</label>
+                          <NumberInput value={x.net_weight_kg} onChange={(e: any) => ubah('net_weight_kg', e.target.value)}
+                            placeholder={usulBerat ? angka(usulBerat) : ''} />
+                        </div>
+                      </div>
+                      <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          {x.net_weight_kg
+                            ? `Masuk stok ${angka(Number(x.net_weight_kg))} kg`
+                            : usulBerat
+                              ? `Berat belum diisi - dihitung dari gramasi x lebar x panjang: ${angka(usulBerat)} kg`
+                              : 'Isi beratnya, atau lengkapi gramasi, lebar dan panjangnya supaya beratnya bisa dihitung'}
+                          {usulMenit > 0 && !x.minutes_per_roll && ` - waktu dari panjang : speed ${angka(usulMenit)} menit`}
+                        </p>
+                        <button type="button" className="text-xs text-red-600 hover:underline dark:text-red-400"
+                          onClick={() => setRolls((p) => p.filter((_, n) => n !== i))}>Hapus roll</button>
+                      </div>
+                    </div>
+                  )
+                })}
+                <button type="button" className="text-xs font-medium text-primary-700 hover:underline dark:text-primary-300"
+                  onClick={() => setRolls((p) => [...p, rollUjiBaru()])}>+ Tambah roll</button>
+              </div>
+            )}
+          </div>
+        )}
 
         <div>
           <label className="fn-label mb-1 block">Catatan</label>
@@ -711,9 +931,23 @@ function PemakaianForm({ onClose, onSaved }: { onClose: () => void; onSaved: () 
           )}
         </div>
 
-        <div className="flex flex-wrap justify-end gap-2">
+        {peringatan && (
+          <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-900/20">
+            <p className="font-semibold text-amber-800 dark:text-amber-200">Nomor roll bentrok</p>
+            <p className="mt-1 text-sm text-amber-800/90 dark:text-amber-200/90">{peringatan}</p>
+            <button type="button" onClick={() => simpan(true)} disabled={busy}
+              className="btn-primary mt-3 disabled:opacity-50">Ya, simpan sebagai roll baru</button>
+          </div>
+        )}
+
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          {rollKurang && (
+            <p className="mr-auto text-xs text-amber-700 dark:text-amber-300">
+              Ada baris roll yang nomor atau jenis kainnya belum diisi.
+            </p>
+          )}
           <button type="button" className="btn-secondary" onClick={onClose}>Batal</button>
-          <button type="button" className="btn-primary disabled:opacity-50" disabled={busy || !siap} onClick={simpan}>
+          <button type="button" className="btn-primary disabled:opacity-50" disabled={busy || !siap} onClick={() => simpan(false)}>
             {busy ? 'Menyimpan...' : 'Simpan Pemakaian'}
           </button>
         </div>

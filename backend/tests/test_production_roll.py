@@ -712,3 +712,151 @@ def test_komposisi_abaikan_satuan_selain_kg(client, auth_headers, kain, db_sessi
     pct = {b['name']: b['pct'] for b in d['materials']}
     assert pct['RAYON A2'] == 100.0      # 100 kg dari 100 kg
     assert pct['STICKER'] is None        # pcs tidak ikut dipersentasekan
+
+
+# ---- Roll hasil uji dicatat dari modal Pemakaian Bahan ---------------------
+# Produksi 2026-11-24: "untuk pemakaian uji yg menghasilkan roll harus bisa
+# input meter, inputannya juga di modal pop up itu aja" - lembar harian mereka
+# satu kertas, pemakaian fiber dan daftar roll ada di situ semua.
+
+def _roll_uji(kain, **kw):
+    b = {'roll_number': 701, 'product_id': kain.id, 'grade': 'A',
+         'length_m': 2000, 'width_cm': 200, 'gramasi_gsm': 40,
+         'thickness_micron': 350, 'speed_m_per_min': 80}
+    b.update(kw)
+    return b
+
+
+def test_roll_uji_bisa_dicatat_dari_modal_pemakaian(client, auth_headers, kain, db_session,
+                                                    fiber, lokasi_gudang_baku):
+    _stok_fiber(db_session, fiber, 500, lokasi_gudang_baku)
+    r = _pakai(client, auth_headers, keperluan='uji',
+               items=[{'material_id': fiber.id, 'quantity': 200}],
+               rolls=[_roll_uji(kain)])
+    assert r.status_code == 201, r.get_json()
+
+    roll = ProductionRoll.query.filter_by(roll_number=701).one()
+    assert roll.is_trial is True and roll.work_order_id is None
+    assert roll.roll_type == 'main' and roll.status == 'available'
+    assert r.get_json()['rolls'][0]['id'] == roll.id
+
+
+def test_berat_roll_uji_dihitung_dari_gramasi_kalau_tidak_ditimbang(client, auth_headers, kain,
+                                                                    db_session, fiber, lokasi_gudang_baku):
+    """Uji mesin mencatat panjang dan setelannya, bukan hasil timbangan.
+
+    40 g/m2 x 2,00 m x 2000 m = 160.000 g = 160 kg.
+    """
+    _stok_fiber(db_session, fiber, 500, lokasi_gudang_baku)
+    r = _pakai(client, auth_headers, keperluan='uji',
+               items=[{'material_id': fiber.id, 'quantity': 200}], rolls=[_roll_uji(kain)])
+    assert r.status_code == 201, r.get_json()
+
+    roll = ProductionRoll.query.filter_by(roll_number=701).one()
+    assert float(roll.net_weight_kg) == 160
+    assert float(roll.gross_weight_kg) == 160          # kain ini tidak punya berat cone
+
+
+def test_berat_yang_diketik_mengalahkan_hitungan_gramasi(client, auth_headers, kain, db_session,
+                                                         fiber, lokasi_gudang_baku):
+    _stok_fiber(db_session, fiber, 500, lokasi_gudang_baku)
+    r = _pakai(client, auth_headers, keperluan='uji',
+               items=[{'material_id': fiber.id, 'quantity': 200}],
+               rolls=[_roll_uji(kain, net_weight_kg=155, gross_weight_kg=158)])
+    assert r.status_code == 201
+    roll = ProductionRoll.query.filter_by(roll_number=701).one()
+    assert float(roll.net_weight_kg) == 155 and float(roll.gross_weight_kg) == 158
+
+
+def test_roll_tanpa_berat_dan_tanpa_gramasi_ditolak(client, auth_headers, kain, db_session,
+                                                    fiber, lokasi_gudang_baku):
+    """Tanpa salah satunya berat roll tidak bisa ditentukan - dan tanpa berat,
+    stok kainnya tidak punya angka. Ditolak sebelum apa pun tersimpan."""
+    _stok_fiber(db_session, fiber, 500, lokasi_gudang_baku)
+    r = _pakai(client, auth_headers, keperluan='uji',
+               items=[{'material_id': fiber.id, 'quantity': 200}],
+               rolls=[_roll_uji(kain, gramasi_gsm=None)])
+    assert r.status_code == 400
+    assert 'gramasi' in r.get_json()['error'].lower()
+    assert ProductionRoll.query.filter_by(roll_number=701).first() is None
+
+    from models.material_issue import MaterialIssue
+    from models.warehouse import Inventory
+    assert MaterialIssue.query.count() == 0                      # pemakaiannya ikut batal
+    sisa = db_session.query(db.func.sum(Inventory.quantity_on_hand)).filter(
+        Inventory.material_id == fiber.id).scalar()
+    assert float(sisa) == 500                                    # stok fiber utuh
+
+
+def test_setelan_mesin_tersimpan_dan_waktu_dihitung_dari_speed(client, auth_headers, kain,
+                                                               db_session, fiber, lokasi_gudang_baku):
+    _stok_fiber(db_session, fiber, 500, lokasi_gudang_baku)
+    _pakai(client, auth_headers, keperluan='uji',
+           items=[{'material_id': fiber.id, 'quantity': 200}], rolls=[_roll_uji(kain)])
+
+    roll = ProductionRoll.query.filter_by(roll_number=701).one()
+    assert float(roll.gramasi_gsm) == 40 and float(roll.thickness_micron) == 350
+    assert float(roll.speed_m_per_min) == 80
+    assert float(roll.minutes_per_roll) == 25          # 2000 m : 80 m/menit
+
+
+def test_waktu_per_roll_yang_diketik_tidak_ditimpa(client, auth_headers, kain, db_session,
+                                                   fiber, lokasi_gudang_baku):
+    _stok_fiber(db_session, fiber, 500, lokasi_gudang_baku)
+    _pakai(client, auth_headers, keperluan='uji',
+           items=[{'material_id': fiber.id, 'quantity': 200}],
+           rolls=[_roll_uji(kain, minutes_per_roll=31.5)])
+    assert float(ProductionRoll.query.filter_by(roll_number=701).one().minutes_per_roll) == 31.5
+
+
+def test_roll_uji_dari_modal_masuk_stok_kain(client, auth_headers, kain, db_session,
+                                             fiber, lokasi_gudang_baku):
+    _gudang_kain(db_session)
+    _stok_fiber(db_session, fiber, 500, lokasi_gudang_baku)
+    _pakai(client, auth_headers, keperluan='uji',
+           items=[{'material_id': fiber.id, 'quantity': 200}], rolls=[_roll_uji(kain)])
+
+    from models.warehouse import Inventory
+    stok = Inventory.query.filter_by(product_id=kain.id, batch_number='701').first()
+    assert stok is not None and float(stok.quantity_on_hand) == 160
+
+
+def test_roll_produksi_tidak_boleh_lewat_modal_pemakaian(client, auth_headers, kain, db_session,
+                                                         fiber, lokasi_gudang_baku):
+    """Roll produksi menunjuk SPK dan punya pemeriksaan nomor bentrok sendiri -
+    pintunya tetap tombol Catat Roll, bukan modal pemakaian bahan."""
+    _stok_fiber(db_session, fiber, 500, lokasi_gudang_baku)
+    r = _pakai(client, auth_headers, keperluan='produksi', work_order_id=_njo().id,
+               items=[{'material_id': fiber.id, 'quantity': 200}], rolls=[_roll_uji(kain)])
+    assert r.status_code == 400
+    assert 'Catat Roll' in r.get_json()['error']
+    assert ProductionRoll.query.filter_by(roll_number=701).first() is None
+
+
+def test_nomor_roll_uji_bentrok_minta_konfirmasi_dulu(client, auth_headers, kain, db_session,
+                                                      fiber, lokasi_gudang_baku):
+    _stok_fiber(db_session, fiber, 900, lokasi_gudang_baku)
+    _post(client, auth_headers, kain, roll_number=701)            # roll lama bernomor sama
+
+    r = _pakai(client, auth_headers, keperluan='uji',
+               items=[{'material_id': fiber.id, 'quantity': 100}], rolls=[_roll_uji(kain)])
+    assert r.status_code == 409 and r.get_json()['needs_confirmation'] is True
+    assert ProductionRoll.query.filter_by(roll_number=701).count() == 1
+
+    lanjut = _pakai(client, auth_headers, keperluan='uji',
+                    items=[{'material_id': fiber.id, 'quantity': 100}],
+                    rolls=[_roll_uji(kain, confirm_duplicate=True)])
+    assert lanjut.status_code == 201
+    rolls = ProductionRoll.query.filter_by(roll_number=701).order_by(ProductionRoll.id).all()
+    assert len(rolls) == 2 and rolls[1].cycle == 2
+
+
+def test_roll_uji_muncul_di_daftar_pemakaian(client, auth_headers, kain, db_session,
+                                             fiber, lokasi_gudang_baku):
+    _stok_fiber(db_session, fiber, 500, lokasi_gudang_baku)
+    _pakai(client, auth_headers, keperluan='uji',
+           items=[{'material_id': fiber.id, 'quantity': 200}], rolls=[_roll_uji(kain)])
+
+    d = client.get('/api/production/rolls/material-usage', headers=auth_headers).get_json()
+    assert d['usages'][0]['rolls'][0]['number'] == '701'
+    assert d['usages'][0]['rolls'][0]['length_m'] == 2000

@@ -40,6 +40,13 @@ class ProductionRoll(db.Model):
     net_weight_kg = db.Column(db.Numeric(12, 2), nullable=False)         # berat kain, diisi sendiri (bukan hitungan sistem)
     length_m = db.Column(db.Numeric(12, 2), nullable=True)
     width_cm = db.Column(db.Numeric(10, 2), nullable=True)
+    # Setelan mesin saat roll ini jalan. Diminta produksi 2026-11-24: lembar
+    # harian spunlace mencatat gramasi, ketebalan, kecepatan dan lama satu roll
+    # di baris yang sama dengan nomor rollnya, bukan di catatan terpisah.
+    gramasi_gsm = db.Column(db.Numeric(10, 2), nullable=True)        # g/m2
+    thickness_micron = db.Column(db.Numeric(10, 2), nullable=True)   # milimicron
+    speed_m_per_min = db.Column(db.Numeric(10, 2), nullable=True)    # meter per menit
+    minutes_per_roll = db.Column(db.Numeric(10, 2), nullable=True)   # lama satu roll, menit
     grade = db.Column(db.String(1), nullable=False, default='A')         # A bagus, B perlu sortir, C reject
 
     batch_number = db.Column(db.String(50), nullable=True)   # nomor batch roll ini di stok
@@ -85,6 +92,10 @@ class ProductionRoll(db.Model):
             'net_weight_kg': float(self.net_weight_kg or 0),
             'length_m': float(self.length_m) if self.length_m is not None else None,
             'width_cm': float(self.width_cm) if self.width_cm is not None else None,
+            'gramasi_gsm': float(self.gramasi_gsm) if self.gramasi_gsm is not None else None,
+            'thickness_micron': float(self.thickness_micron) if self.thickness_micron is not None else None,
+            'speed_m_per_min': float(self.speed_m_per_min) if self.speed_m_per_min is not None else None,
+            'minutes_per_roll': float(self.minutes_per_roll) if self.minutes_per_roll is not None else None,
             'grade': self.grade,
             'batch_number': self.batch_number,
             'status': self.status,
