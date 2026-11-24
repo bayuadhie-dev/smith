@@ -53,6 +53,7 @@ export default function GRNForm() {
   const [params] = useSearchParams()
   const tab = useContext(TabContext)
   const [orders, setOrders] = useState<any[]>([])
+  const [poPenuh, setPoPenuh] = useState(false)
   const [locations, setLocations] = useState<any[]>([])
   const [po, setPo] = useState<any>(null)
   const [poId, setPoId] = useDraftState<number | null>('poId', params.get('po_id') ? Number(params.get('po_id')) : null, !isEdit)
@@ -100,12 +101,23 @@ export default function GRNForm() {
     axiosInstance.get('/api/purchasing/grn/next-number').then((r) => setNextNumber(r.data?.next_number || '')).catch(() => setNextNumber(''))
   }, [isEdit])
 
-  // PO yang bisa diterima: hanya milik pemasok terpilih dan masih punya sisa penerimaan.
+  // PO yang bisa diterima: milik pemasok terpilih dan masih punya sisa penerimaan.
+  //
+  // Pemasok kadang mengirim melebihi pesanan - serat datang per gulung, beratnya
+  // tidak pernah bulat. Begitu sebuah PO diterima penuh, statusnya jadi
+  // 'received' dan dia hilang dari daftar ini, jadi kiriman susulannya tidak bisa
+  // dicatat atas PO itu sama sekali (dikeluhkan gudang 2026-11-24: "kalau PO-nya
+  // sudah habis, berarti nggak bisa buat penerimaan"). Centang di bawah daftar
+  // memunculkannya kembali tanpa membuat daftar sehari-hari jadi panjang.
   useEffect(() => {
     if (isEdit) return
     if (!supplierId) { setOrders([]); return }
     setLoadError('')
-    axiosInstance.get('/api/purchasing/purchase-orders', { params: { status: 'approved,partial', supplier_id: supplierId, receivable: 1, per_page: 200 } })
+    axiosInstance.get('/api/purchasing/purchase-orders', {
+      params: poPenuh
+        ? { status: 'approved,partial,received', supplier_id: supplierId, per_page: 200 }
+        : { status: 'approved,partial', supplier_id: supplierId, receivable: 1, per_page: 200 },
+    })
       .then((r) => setOrders(r.data.purchase_orders || []))
       .catch((e) => {
         setOrders([])
@@ -114,7 +126,7 @@ export default function GRNForm() {
           : (e?.response?.data?.error || 'Gagal memuat daftar PO')
         setLoadError(msg); showError(msg)
       })
-  }, [supplierId, isEdit])
+  }, [supplierId, isEdit, poPenuh])
 
   // Datang dari PO (?po_id=): pemasok ikut terisi otomatis.
   useEffect(() => {
@@ -438,12 +450,21 @@ export default function GRNForm() {
               <div className="input-field bg-gray-50 dark:bg-gray-900">{po?.po_number || (poId ? `PO #${poId}` : 'Tanpa PO')}</div>
             ) : (
               <SearchableSelect
-                options={orders.map((o) => ({ id: o.id, name: `${o.po_number} (${o.status === 'partial' ? 'sebagian' : 'disetujui'})` }))}
+                options={orders.map((o) => ({
+                  id: o.id,
+                  name: `${o.po_number} (${o.status === 'partial' ? 'sebagian' : o.status === 'received' ? 'sudah penuh' : 'disetujui'})`,
+                }))}
                 value={poId}
                 onChange={(v) => { setNotesTouched(false); setPoId(v ? Number(v) : null) }}
                 placeholder={supplierId ? (orders.length ? 'Pilih PO pemasok ini' : 'Tidak ada PO yang bisa diterima') : 'Pilih pemasok dulu'}
                 className="w-full"
               />
+            )}
+            {!isEdit && supplierId && (
+              <label className="mt-2 flex cursor-pointer items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
+                <input type="checkbox" checked={poPenuh} onChange={(e) => { setPoPenuh(e.target.checked); setPoId(null) }} />
+                Tampilkan juga PO yang sudah diterima penuh (untuk kiriman lebih)
+              </label>
             )}
             {!isEdit && <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{loadError || 'Kosongkan bila barang datang tanpa PO, lalu tambahkan barang di bawah.'}</p>}
           </div>

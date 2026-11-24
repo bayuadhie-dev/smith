@@ -41,6 +41,27 @@ const addDays = (iso: string, days: number) => {
   return d.toISOString().slice(0, 10)
 }
 
+/** Jumlah yang diusulkan untuk ditagih pada satu baris PO.
+ *
+ * Yang ditagih adalah BARANG YANG DATANG, bukan sisa pesanan. Kalau pemasok
+ * mengirim lebih dari yang dipesan - di PT Shinwa 2026-11-24 PO 8.000 kg
+ * datang 8.108,56 kg - isian lama memajang sisa PO-nya, jadi faktur yang
+ * dibuat kurang dari barang yang benar-benar diterima dan selisihnya menggantung
+ * di GR/IR. Kelebihannya tetap ditandai di layar dan jadi selisih pada
+ * pencocokan tiga arah, bukan disembunyikan.
+ *
+ * Jasa/biaya tidak punya penerimaan barang, jadi tetap memakai sisa pesanan.
+ */
+export function jumlahDitagih(
+  item: { quantity: number | string; quantity_received?: number | string | null; is_non_inventory?: boolean },
+  sudahDitagihLain: number,
+): number {
+  const dipesan = Number(item.quantity) || 0
+  if (item.is_non_inventory) return Math.max(0, dipesan - sudahDitagihLain)
+  const datang = Number(item.quantity_received || 0)
+  return Math.max(0, datang - sudahDitagihLain)
+}
+
 export default function PurchaseInvoiceForm() {
   const navigate = useNavigate()
   const [attFiles, setAttFiles] = useState<File[]>([])
@@ -180,7 +201,7 @@ export default function PurchaseInvoiceForm() {
           const mine = own[it.id]
           const invoicedOthers = Number(it.quantity_invoiced || 0) - (mine ? Number(mine.quantity) : 0)
           const outstanding = Math.max(0, Number(it.quantity) - invoicedOthers)
-          const toInvoice = mine ? Number(mine.quantity) : (it.is_non_inventory ? outstanding : Math.min(outstanding, Math.max(0, Number(it.quantity_received || 0) - invoicedOthers)))
+          const toInvoice = mine ? Number(mine.quantity) : jumlahDitagih(it, invoicedOthers)
           const price = inclusive ? Math.round((Number(it.unit_price) / (1 + rate / 100)) * 100) / 100 : Number(it.unit_price)
           return {
             po_item_id: it.id,
