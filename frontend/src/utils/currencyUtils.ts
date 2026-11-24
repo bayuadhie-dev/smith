@@ -40,12 +40,24 @@ export const formatRupiah = (
     }
   }
 
-  // Standard formatting
+  // Angka yang PUNYA sen selalu ditampilkan lengkap, meski penelepon tidak
+  // memintanya. Sebelumnya bawaannya 0 desimal, jadi harga satuan PO
+  // Rp 337.125,50 tampil "Rp 337.126" - Finance membaca itu sebagai harga yang
+  // tersimpan, menyusun ulang totalnya dari angka bulat itu, lalu selisih
+  // Rp 38,85 dengan ERP (dilaporkan 2026-11-24). Datanya sendiri selalu benar;
+  // yang menyesatkan tampilannya.
+  //
+  // Yang bulat tetap tampil bulat supaya layar tidak penuh ",00" di mana-mana.
+  // Ambangnya setengah sen: sisa pembagian sekecil 0,000001 dari hitungan
+  // floating point bukan sen sungguhan dan tidak boleh memunculkan desimal.
+  const punyaSen = Math.abs(amount - Math.round(amount)) >= 0.005;
+  const pakaiDesimal = showDecimals || punyaSen;
+
   const formatter = new Intl.NumberFormat('id-ID', {
     style: 'currency',
     currency: 'IDR',
-    minimumFractionDigits: showDecimals ? 2 : 0,
-    maximumFractionDigits: showDecimals ? 2 : 0,
+    minimumFractionDigits: pakaiDesimal ? 2 : 0,
+    maximumFractionDigits: pakaiDesimal ? 2 : 0,
   });
 
   let formatted = formatter.format(amount);
