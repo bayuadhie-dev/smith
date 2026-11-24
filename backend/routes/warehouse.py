@@ -15,6 +15,67 @@ import json
 
 warehouse_bp = Blueprint('warehouse', __name__)
 
+
+# Kelompok barang untuk penyaring "Kategori" di Ringkasan Stok per Gudang.
+#
+# Dulu ini hanya mencocokkan `Material.category` dengan kode kecil-kecil
+# peninggalan Falmaco ('chemical', 'parfum', 'spunbond', ...). Masterdata
+# Fengsheng datang dari Accurate dengan kategori huruf besar ('BAHAN KIMIA',
+# 'BAHAN BAKU', 'BAHAN PEMBANTU'), jadi tidak ada satu pun yang cocok: memilih
+# "Bahan Kimia" di Fengsheng mengembalikan 0 baris padahal stoknya ada, dan
+# semua barang jatuh ke "Lainnya" (dilaporkan 2026-11-24).
+#
+# Urutannya: KATEGORI dulu, `material_type` hanya sebagai cadangan saat
+# kategorinya bukan salah satu kode lama. Bukan OR biasa - di Falmaco
+# `material_type` tidak bisa dipercaya (65 barang berkategori 'stc' bertipe
+# 'packaging_materials', dan 'RAW_MATERIALS' huruf besar dipakai sebagai
+# penampung umum), jadi OR biasa akan membuat barang Falmaco muncul di dua
+# kelompok sekaligus.
+KATEGORI_LAMA = {
+    'kain': ['main_roll', 'jumbo_roll', 'spunbond', 'meltblown', 'kain', 'nonwoven'],
+    'packaging': ['packaging', 'carton_box', 'inner_box', 'jerigen', 'botol'],
+    'aksesoris': ['stc', 'fliptop', 'plastik'],
+    'chemical': ['parfum', 'chemical'],
+    'bahan_baku': [],
+}
+JENIS_BARANG = {
+    'packaging': ['packaging_materials'],
+    'chemical': ['chemical_materials'],
+    'bahan_baku': ['raw_materials'],
+}
+_SEMUA_KATEGORI_LAMA = [c for daftar in KATEGORI_LAMA.values() for c in daftar]
+
+
+def _kategori_tak_dikenal():
+    """Barang yang kategorinya bukan kode lama - di sinilah material_type boleh bicara."""
+    return db.or_(Material.category.is_(None),
+                  func.lower(Material.category).notin_(_SEMUA_KATEGORI_LAMA))
+
+
+def _syarat_kelompok(kelompok):
+    """Syarat SQL untuk satu kelompok barang, atau None kalau namanya tidak dikenal."""
+    if kelompok == 'lainnya':
+        # Sisa: barang jadi (produk) dan material yang tidak masuk kelompok mana pun.
+        semua_jenis = [t for daftar in JENIS_BARANG.values() for t in daftar]
+        return db.or_(
+            Inventory.product_id.isnot(None),
+            db.and_(
+                _kategori_tak_dikenal(),
+                db.or_(Material.material_type.is_(None),
+                       func.lower(Material.material_type).notin_(semua_jenis)),
+            ),
+        )
+    if kelompok not in KATEGORI_LAMA:
+        return None
+    syarat = []
+    if KATEGORI_LAMA[kelompok]:
+        syarat.append(func.lower(Material.category).in_(KATEGORI_LAMA[kelompok]))
+    if JENIS_BARANG.get(kelompok):
+        syarat.append(db.and_(_kategori_tak_dikenal(),
+                              func.lower(Material.material_type).in_(JENIS_BARANG[kelompok])))
+    return db.or_(*syarat) if len(syarat) > 1 else syarat[0]
+
+
 @warehouse_bp.route('/zones', methods=['GET'])
 @jwt_required()
 @require_permission('warehouse.view')
@@ -439,33 +500,13 @@ def get_inventory():
         
         # Filter by category group
         if category_group:
-            # Category mappings
-            kain_categories = ['main_roll', 'jumbo_roll', 'spunbond', 'meltblown', 'kain', 'nonwoven']
-            packaging_categories = ['packaging', 'carton_box', 'inner_box', 'jerigen', 'botol']
-            aksesoris_categories = ['stc', 'fliptop', 'plastik']
-            chemical_categories = ['parfum', 'chemical']
-            
             # Join Material if not already joined
             if not search:
                 query = query.outerjoin(Material, Inventory.material_id == Material.id)
-            
-            if category_group == 'kain':
-                query = query.filter(Material.category.in_(kain_categories))
-            elif category_group == 'packaging':
-                query = query.filter(Material.category.in_(packaging_categories))
-            elif category_group == 'aksesoris':
-                query = query.filter(Material.category.in_(aksesoris_categories))
-            elif category_group == 'chemical':
-                query = query.filter(Material.category.in_(chemical_categories))
-            elif category_group == 'lainnya':
-                all_known = kain_categories + packaging_categories + aksesoris_categories + chemical_categories
-                query = query.filter(
-                    db.or_(
-                        Material.category.notin_(all_known),
-                        Material.category.is_(None),
-                        Inventory.product_id.isnot(None)  # Products go to "lainnya"
-                    )
-                )
+
+            syarat = _syarat_kelompok(category_group)
+            if syarat is not None:
+                query = query.filter(syarat)
         
         inventory = query.order_by(Inventory.updated_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
         

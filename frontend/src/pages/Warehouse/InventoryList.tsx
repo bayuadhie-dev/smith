@@ -6,56 +6,12 @@ import Layers from 'lucide-react/dist/esm/icons/layers'
 import Box from 'lucide-react/dist/esm/icons/box'
 
 import { TableSkeleton } from '../../components/ui/Skeleton';
+import { namaKategoriBarang, namaKelompokBarang, warnaKelompokBarang } from './kategoriBarang'
 export default function InventoryList() {
     const { t } = useLanguage();
 
 const { data: inventory, isLoading } = useGetInventoryQuery({})
   const { data: dashboard } = useGetWarehouseDashboardQuery({})
-
-  // Category group mapping
-  const getCategoryGroup = (category: string): string => {
-    const packagingCategories = ['packaging', 'carton_box', 'inner_box', 'jerigen', 'botol'];
-    const aksesorisCategories = ['stc', 'fliptop', 'plastik'];
-    const chemicalCategories = ['parfum', 'chemical'];
-    
-    const catLower = (category || '').toLowerCase();
-    if (packagingCategories.includes(catLower)) return 'Packaging';
-    if (aksesorisCategories.includes(catLower)) return 'Aksesoris';
-    if (chemicalCategories.includes(catLower)) return 'Chemical';
-    return 'Lainnya';
-  };
-
-  const getCategoryColor = (category: string) => {
-    const group = getCategoryGroup(category);
-    switch (group) {
-      case 'Packaging':
-        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
-      case 'Aksesoris':
-        return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300';
-      case 'Chemical':
-        return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300';
-      default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100';
-    }
-  };
-
-  const getCategoryLabel = (category: string) => {
-    const labels: { [key: string]: string } = {
-      packaging: 'Packaging',
-      carton_box: 'Carton Box',
-      inner_box: 'Inner Box',
-      jerigen: 'Jerigen',
-      botol: 'Botol',
-      stc: 'STC',
-      fliptop: 'Fliptop',
-      plastik: 'Plastik',
-      parfum: 'Parfum',
-      chemical: 'Chemical',
-      nonwoven: 'Nonwoven',
-      tissue: 'Tissue'
-    };
-    return labels[category?.toLowerCase()] || category || '-';
-  };
 
   return (
     <div className="space-y-6">
@@ -143,10 +99,10 @@ const { data: inventory, isLoading } = useGetInventoryQuery({})
                     <td>
                       {item.category ? (
                         <div className="flex flex-col gap-1">
-                          <span className={`inline-flex px-2 py-0.5 text-xs font-semibold rounded-full ${getCategoryColor(item.category)}`}>
-                            {getCategoryGroup(item.category)}
+                          <span className={`inline-flex px-2 py-0.5 text-xs font-semibold rounded-full ${warnaKelompokBarang(item.category, item.material_type)}`}>
+                            {namaKelompokBarang(item.category, item.material_type)}
                           </span>
-                          <span className="text-xs text-gray-500 dark:text-gray-400">{getCategoryLabel(item.category)}</span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400">{namaKategoriBarang(item.category)}</span>
                         </div>
                       ) : (
                         <span className="text-gray-400">-</span>
