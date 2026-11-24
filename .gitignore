@@ -335,3 +335,4 @@ ml_data/
 !frontend/src/lib/**
 !frontend/src/pages/Public/
 !frontend/src/pages/Public/**
+.deck-bc/

@@ -22,6 +22,10 @@ coverage/
 __pycache__
 *.pyc
 
-# Env files (sensitive!)
+# Env files (sensitive! and per-machine - never sync, see
+# project_fsnindonesia_domain_vps_setup.md for the incident this caused)
 .env
 .env.local
+.env.development
+.env.production
+.env.*
