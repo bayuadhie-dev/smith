@@ -27,8 +27,8 @@ interface Material {
   unit_of_measure: string;
   primary_uom: string;
   cost_per_unit: number;
-  current_stock: number;
-  reserved_stock: number;
+  current_stock: number | null;
+  reserved_stock: number | null;
   min_stock_level: number;
   supplier: string;
   is_active: boolean;
@@ -275,16 +275,22 @@ const MaterialsList: React.FC = () => {
                     {material.unit_of_measure}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                    {/* Nol ditulis apa adanya dengan warna redup - barang yang
-                        belum pernah diterima memang nol, bukan tidak diketahui. */}
-                    <span className={material.current_stock > 0
-                      ? (material.min_stock_level > 0 && material.current_stock < material.min_stock_level
-                        ? 'font-medium text-amber-600 dark:text-amber-400'
-                        : 'font-medium text-gray-900 dark:text-white')
-                      : 'text-gray-400 dark:text-gray-500'}>
-                      {(material.current_stock ?? 0).toLocaleString('id-ID', { maximumFractionDigits: 2 })}
-                    </span>
-                    {material.reserved_stock > 0 && (
+                    {/* Nol ditulis apa adanya dengan warna redup - barang yang belum
+                        pernah diterima memang nol, bukan tidak diketahui. Tapi kalau
+                        backend tidak mengirim angkanya sama sekali, jangan menulis 0:
+                        itu mengarang. Tanda hubung, supaya ketahuan. */}
+                    {material.current_stock == null ? (
+                      <span className="text-gray-400 dark:text-gray-500" title="Stok tidak dikirim server">-</span>
+                    ) : (
+                      <span className={material.current_stock > 0
+                        ? (material.min_stock_level > 0 && material.current_stock < material.min_stock_level
+                          ? 'font-medium text-amber-600 dark:text-amber-400'
+                          : 'font-medium text-gray-900 dark:text-white')
+                        : 'text-gray-400 dark:text-gray-500'}>
+                        {material.current_stock.toLocaleString('id-ID', { maximumFractionDigits: 2 })}
+                      </span>
+                    )}
+                    {!!material.reserved_stock && material.reserved_stock > 0 && (
                       <div className="text-xs text-gray-500 dark:text-gray-400">
                         {material.reserved_stock.toLocaleString('id-ID', { maximumFractionDigits: 2 })} dipesan
                       </div>
