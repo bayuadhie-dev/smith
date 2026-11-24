@@ -478,3 +478,145 @@ def test_bahan_satu_hari_dibagi_ke_dua_njo_menurut_berat_roll(client, auth_heade
     assert round(satu['fiber_kg'] + dua['fiber_kg'], 2) == 120   # tidak ada bahan yang hilang/dobel
     assert satu['pembagian'][0]['bagian_pct'] == 75 and dua['pembagian'][0]['bagian_pct'] == 25
     assert satu['susut_kg'] == 0 and dua['susut_kg'] == 0
+
+
+# ---------------------------------------------------------------- Pemakaian bahan
+# Dari produksi 2026-11-24: bahan spunlace kadang TIDAK menjadi roll - dipakai
+# untuk uji jalan mesin, dan jumlahnya tidak sedikit. Bahan yang dipakai juga
+# tidak lenyap: sebagiannya jadi waste yang dipakai lagi (campuran bantal).
+
+def _stok_fiber(db_session, material, qty, lokasi_gudang_baku):
+    from models.warehouse import Inventory
+    inv = Inventory(material_id=material.id, location_id=lokasi_gudang_baku.id,
+                    batch_number='FB-1', quantity_on_hand=qty, quantity_available=qty,
+                    stock_status='available', is_active=True)
+    db_session.add(inv)
+    db_session.commit()
+    return inv
+
+
+@pytest.fixture
+def lokasi_gudang_baku(db_session):
+    from models.warehouse import WarehouseLocation, WarehouseZone
+    z = WarehouseZone.query.filter_by(material_type='raw_materials').first()
+    if not z:
+        z = WarehouseZone(code='WH-RM-T', name='Gudang Bahan Baku', material_type='raw_materials',
+                          zone_type='storage', is_active=True)
+        db_session.add(z)
+        db_session.flush()
+    loc = WarehouseLocation.query.filter_by(zone_id=z.id).first()
+    if not loc:
+        loc = WarehouseLocation(location_code='WH-RM-T-01', zone_id=z.id, rack='R1', level='1',
+                                position='A', capacity_uom='KG', is_active=True)
+        db_session.add(loc)
+    db_session.commit()
+    return loc
+
+
+@pytest.fixture
+def waste_material(db_session):
+    from models.product import Material
+    m = Material(code='WASTE-U', name='WASTE EX SLITTING', material_type='waste',
+                 category='BAHAN PEMBANTU', primary_uom='KG')
+    db_session.add(m)
+    db_session.commit()
+    return m
+
+
+def _pakai(client, headers, **body):
+    return client.post('/api/production/rolls/material-usage', headers=headers, json=body)
+
+
+def test_pemakaian_bahan_mengurangi_stok_fiber(client, auth_headers, db_session, fiber, lokasi_gudang_baku):
+    _stok_fiber(db_session, fiber, 500, lokasi_gudang_baku)
+
+    r = _pakai(client, auth_headers, keperluan='uji',
+               items=[{'material_id': fiber.id, 'quantity': 120}])
+    assert r.status_code == 201, r.get_json()
+
+    from models.warehouse import Inventory
+    sisa = db_session.query(db.func.sum(Inventory.quantity_on_hand)).filter(
+        Inventory.material_id == fiber.id).scalar()
+    assert float(sisa) == 380
+
+
+def test_uji_jalan_mesin_boleh_tanpa_spk(client, auth_headers, db_session, fiber, lokasi_gudang_baku):
+    """Uji mesin memang belum ada job order yang jalan."""
+    _stok_fiber(db_session, fiber, 500, lokasi_gudang_baku)
+    r = _pakai(client, auth_headers, keperluan='uji', items=[{'material_id': fiber.id, 'quantity': 50}])
+    assert r.status_code == 201
+
+
+def test_pemakaian_produksi_wajib_menyebut_spk(client, auth_headers, db_session, fiber, lokasi_gudang_baku):
+    _stok_fiber(db_session, fiber, 500, lokasi_gudang_baku)
+    r = _pakai(client, auth_headers, keperluan='produksi', items=[{'material_id': fiber.id, 'quantity': 50}])
+    assert r.status_code == 400
+    assert 'SPK' in r.get_json()['error']
+
+
+def test_bahan_uji_tidak_ikut_dihitung_susut(client, auth_headers, kain, db_session, test_user,
+                                             fiber, lokasi_gudang_baku):
+    """Inti keluhannya: uji mesin memakai bahan tidak sedikit. Kalau ikut
+    dihitung, susutnya melonjak dan berteriak "tinggi" padahal produksinya
+    baik-baik saja."""
+    _post(client, auth_headers, kain, roll_number=71, gross_weight_kg=100, net_weight_kg=93)
+    _bon(db_session, test_user, _njo().id, fiber, 100, date.today())
+
+    sebelum = client.get(f'/api/production/rolls/spk/{_njo().id}/summary',
+                         headers=auth_headers).get_json()
+    assert sebelum['susut_status'] == 'wajar' and sebelum['fiber_kg'] == 100
+
+    _stok_fiber(db_session, fiber, 500, lokasi_gudang_baku)
+    _pakai(client, auth_headers, keperluan='uji', work_order_id=_njo().id,
+           items=[{'material_id': fiber.id, 'quantity': 200}])
+
+    d = client.get(f'/api/production/rolls/spk/{_njo().id}/summary', headers=auth_headers).get_json()
+    assert d['fiber_kg'] == 100                 # tidak berubah
+    assert d['susut_status'] == 'wajar'         # tidak jadi 'tinggi'
+    assert d['fiber_uji_kg'] == 200             # tetap kelihatan, terpisah
+
+
+def test_waste_hasil_pemakaian_masuk_stok_lagi(client, auth_headers, db_session, fiber,
+                                               waste_material, lokasi_gudang_baku):
+    """Bahan yang dipakai tidak lenyap - sebagiannya jadi waste yang dipakai
+    lagi untuk campuran bantal."""
+    _stok_fiber(db_session, fiber, 500, lokasi_gudang_baku)
+
+    r = _pakai(client, auth_headers, keperluan='uji',
+               items=[{'material_id': fiber.id, 'quantity': 300}],
+               waste=[{'material_id': waste_material.id, 'quantity': 250}])
+    assert r.status_code == 201, r.get_json()
+    assert r.get_json()['waste'][0]['qty'] == 250
+
+    from models.warehouse import Inventory
+    masuk = db_session.query(db.func.sum(Inventory.quantity_on_hand)).filter(
+        Inventory.material_id == waste_material.id).scalar()
+    assert float(masuk) == 250
+
+
+def test_waste_yang_kembali_bukan_susut(client, auth_headers, kain, db_session, test_user,
+                                        fiber, waste_material, lokasi_gudang_baku):
+    """100 kg keluar, 93 kg jadi roll, 5 kg waste kembali -> susut 2 kg, bukan 7."""
+    _post(client, auth_headers, kain, roll_number=72, gross_weight_kg=100, net_weight_kg=93)
+    _stok_fiber(db_session, fiber, 500, lokasi_gudang_baku)
+
+    _pakai(client, auth_headers, keperluan='produksi', work_order_id=_njo().id,
+           items=[{'material_id': fiber.id, 'quantity': 100}],
+           waste=[{'material_id': waste_material.id, 'quantity': 5}])
+
+    d = client.get(f'/api/production/rolls/spk/{_njo().id}/summary', headers=auth_headers).get_json()
+    assert d['fiber_kg'] == 100
+    assert d['waste_kembali_kg'] == 5
+    assert d['susut_kg'] == 2
+
+
+def test_stok_kurang_ditolak_tanpa_menyimpan_apa_pun(client, auth_headers, db_session, fiber,
+                                                     lokasi_gudang_baku):
+    from models.material_issue import MaterialIssue
+    _stok_fiber(db_session, fiber, 10, lokasi_gudang_baku)
+    sebelum = MaterialIssue.query.count()
+
+    r = _pakai(client, auth_headers, keperluan='uji',
+               items=[{'material_id': fiber.id, 'quantity': 999}])
+    assert r.status_code == 400
+    assert MaterialIssue.query.count() == sebelum

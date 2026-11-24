@@ -351,65 +351,34 @@ def create_material_issue_from_wo(work_order_id):
 @require_permission('materials.edit')
 def approve_material_issue(id):
     """Approve material issue — reserves materials using FIFO with row-level locking."""
+    from utils.material_issue_helper import StokKurang, pesan_bahan
     try:
-        from utils.fifo_helper import fifo_reserve_stock
-        
         user_id = int(get_jwt_identity())
-        
         mi = db.session.get(MaterialIssue, id)
         if not mi:
             return error_response('Material issue not found'), 404
-        
         if mi.status != 'pending':
             return error_response(f'Cannot approve issue with status: {mi.status}'), 400
-        
-        # Reserve materials using FIFO (oldest batch first) with locking
-        reservation_details = []
-        for item in mi.items:
-            if not item.material_id:
-                continue
-            
-            reserve_qty = float(item.required_quantity) - float(item.issued_quantity or 0)
-            if reserve_qty <= 0:
-                continue
-            
-            result = fifo_reserve_stock(
-                material_id=item.material_id,
-                quantity_needed=reserve_qty
-            )
-            
-            if not result['success']:
-                db.session.rollback()
-                return error_response(
-                    f'Insufficient stock for {item.material.name if item.material else "material"}. '
-                    f'{result["error"]}'
-                ), 400
-            
-            # Update item with reservation info (first batch location/batch_number)
-            if result['reservations']:
-                item.warehouse_location_id = result['reservations'][0]['location_id']
-                item.batch_number = result['reservations'][0]['batch_number']
-            
-            reservation_details.append({
-                'material_id': item.material_id,
-                'material_name': item.material.name if item.material else None,
-                'quantity_reserved': result['reserved'],
-                'batches': len(result['reservations'])
-            })
-        
+
+        try:
+            reservation_details = pesan_bahan(mi)
+        except StokKurang as e:
+            db.session.rollback()
+            return error_response(str(e)), 400
+
         mi.status = 'approved'
         mi.approved_by = user_id
         mi.approved_date = get_local_now()
-        
         db.session.commit()
-        
+
         return success_response('Material issue approved and materials reserved (FIFO)', {
             'reservations': reservation_details
         }), 200
-        
+
     except Exception as e:
         db.session.rollback()
         return error_response(str(e)), 500
+
 
 @material_issue_bp.route('/material-issues/<int:id>/issue', methods=['PUT'])
 @jwt_required()
@@ -417,19 +386,17 @@ def approve_material_issue(id):
 def issue_materials(id):
     """Issue materials — deduct from reserved inventory using FIFO with row-level locking.
     Materials must be approved (reserved) first. Deducts from quantity_reserved bucket."""
+    from utils.material_issue_helper import keluarkan_bahan
     try:
-        from utils.fifo_helper import fifo_deduct_stock
-        
         user_id = int(get_jwt_identity())
         data = request.get_json() or {}
-        
+
         mi = db.session.get(MaterialIssue, id)
         if not mi:
             return error_response('Material issue not found'), 404
-        
         if mi.status not in ['approved', 'partial']:
             return error_response(f'Cannot issue materials with status: {mi.status}'), 400
-        
+
         # Check opname lock for all materials in this issue
         from utils.opname_lock import check_opname_lock
         for item in mi.items:
@@ -437,154 +404,20 @@ def issue_materials(id):
                 lock = check_opname_lock(material_id=item.material_id)
                 if lock['locked']:
                     return error_response(lock['message']), 423
-        
-        items_to_issue = data.get('items', [])
-        
-        # If no specific items, issue all pending items
-        if not items_to_issue:
-            items_to_issue = [{'item_id': item.id, 'quantity': float(item.pending_quantity)} 
-                            for item in mi.items if item.pending_quantity > 0]
-        
-        issued_count = 0
-        fifo_details = []
-        
-        for issue_data in items_to_issue:
-            item = db.session.get(MaterialIssueItem, issue_data['item_id'])
-            if not item or item.material_issue_id != id:
-                continue
-            
-            issue_qty = float(issue_data.get('quantity', item.pending_quantity))
-            
-            if issue_qty <= 0 or issue_qty > float(item.pending_quantity):
-                continue
-            
-            # FIFO deduction from RESERVED stock (locked rows, race-condition safe)
-            wo_number = mi.work_order.wo_number if mi.work_order else ''
-            result = fifo_deduct_stock(
-                material_id=item.material_id,
-                quantity_needed=issue_qty,
-                reference_number=mi.issue_number,
-                reference_type='material_issue',
-                reference_id=mi.id,
-                notes=f'Issued for Work Order {wo_number}',
-                user_id=user_id,
-                from_reserved=True
-            )
-            
-            if not result['success']:
-                fifo_details.append({
-                    'material_id': item.material_id,
-                    'material_name': item.material.name if item.material else None,
-                    'error': result['error']
-                })
-                continue
-            
-            # Update item with issued quantity and cost
-            item.issued_quantity = float(item.issued_quantity or 0) + result['deducted']
-            item.unit_cost = result['weighted_avg_cost']
-            item.total_cost = result['total_cost']
-            
-            # Set batch_number to the first (oldest) batch used
-            if result['movements']:
-                item.batch_number = result['movements'][0]['batch_number']
-                item.warehouse_location_id = result['movements'][0]['location_id']
-            
-            if item.is_fully_issued:
-                item.status = 'issued'
-            else:
-                item.status = 'partial'
-            
-            issued_count += 1
-            # Strip '_transaction' (the raw InventoryTransaction ORM row,
-            # only meant for internal callers patching it post-GL-posting -
-            # see fifo_helper.py's comment on that key) before it leaks into
-            # this JSON response, which crashed with "Object of type
-            # InventoryTransaction is not JSON serializable".
-            batch_details = [
-                {k: v for k, v in m.items() if k != '_transaction'}
-                for m in result['movements']
-            ]
-            fifo_details.append({
-                'material_id': item.material_id,
-                'material_name': item.material.name if item.material else None,
-                'quantity_issued': result['deducted'],
-                'batches_used': len(result['movements']),
-                'weighted_avg_cost': result['weighted_avg_cost'],
-                'total_cost': result['total_cost'],
-                'batch_details': batch_details
-            })
-        
-        # Update material issue status
-        all_issued = all(item.is_fully_issued for item in mi.items)
-        any_issued = any(item.issued_quantity > 0 for item in mi.items)
 
-        if all_issued:
-            mi.status = 'issued'
-            mi.issued_date = get_local_now()
-        elif any_issued:
-            mi.status = 'partial'
-
-        mi.issued_by = user_id
-
-        # GL posting (fix_report_3.md, 2026-10-02): this endpoint physically
-        # pulls raw material out of the warehouse (FIFO-deducts real
-        # Inventory above) but, until now, never recorded that movement in
-        # the books at all - raw material consumed into production simply
-        # vanished from Persediaan Bahan Baku with no corresponding entry
-        # anywhere. Posts once per call, summing only the items actually
-        # deducted THIS call (fifo_details with a real total_cost, i.e. the
-        # success entries, not the 'error' ones) - naturally idempotent
-        # across repeated partial-issue calls on the same MaterialIssue
-        # since each call only journals what it itself just moved.
-        # Dr Persediaan Barang Dalam Proses (WIP) / Cr Persediaan Bahan Baku.
-        # Skipped (not an error) when a material's cost basis is 0 - same
-        # "don't post a fake Rp0 journal" convention already used elsewhere
-        # for zero-cost materials (see scripts/list_zero_cost_materials.py).
-        total_material_cost = sum(
-            float(d.get('total_cost') or 0) for d in fifo_details if 'total_cost' in d
-        )
-        if total_material_cost > 0:
-            from models.finance import GlobalAccountDefault
-            from models.approval_workflow import PendingJournalEntry
-            from utils.finance_helpers import resolve_account, post_pending_journal
-
-            wip_default = GlobalAccountDefault.query.filter_by(transaction_key='wip_persediaan').first()
-            try:
-                persediaan_account_id = resolve_account('akun_persediaan_id', product_id=None, category_id=None)
-            except ValueError:
-                persediaan_account_id = None
-
-            if wip_default and persediaan_account_id:
-                pending = PendingJournalEntry(
-                    workflow_id=None,
-                    entry_date=get_local_now().date(),
-                    description=f'Pemakaian bahan baku - {mi.issue_number}',
-                    reference=mi.issue_number,
-                    lines=[
-                        {'account_id': wip_default.account_id, 'debit': total_material_cost, 'credit': 0,
-                         'description': f'Bahan baku masuk WIP - {mi.issue_number}'},
-                        {'account_id': persediaan_account_id, 'debit': 0, 'credit': total_material_cost,
-                         'description': f'Pemakaian persediaan bahan baku - {mi.issue_number}'},
-                    ],
-                    total_debit=total_material_cost,
-                    total_credit=total_material_cost,
-                    created_by=user_id,
-                )
-                db.session.add(pending)
-                db.session.flush()
-                post_pending_journal(pending.id, posted_by_user_id=user_id, reference_type='material_issue', reference_id=mi.id)
-
+        issued_count, fifo_details = keluarkan_bahan(mi, user_id, data.get('items', []))
         db.session.commit()
-        
+
         return success_response('Materials issued successfully (FIFO)', {
             'issued_items': issued_count,
             'status': mi.status,
             'fifo_details': fifo_details
         }), 200
-        
+
     except Exception as e:
         db.session.rollback()
         return error_response(str(e)), 500
+
 
 @material_issue_bp.route('/material-issues/retry-insufficient', methods=['POST'])
 @jwt_required()

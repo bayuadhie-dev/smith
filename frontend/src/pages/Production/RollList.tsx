@@ -70,6 +70,7 @@ export default function RollList() {
   const [rows, setRows] = useState<Roll[]>([])
   const [loading, setLoading] = useState(true)
   const [form, setForm] = useState<Roll | 'new' | null>(null)
+  const [pemakaian, setPemakaian] = useState(false)
   const [potong, setPotong] = useState<Roll | null>(null)
   const [ringkas, setRingkas] = useState<any>(null)
 
@@ -117,6 +118,9 @@ export default function RollList() {
         <div className="flex flex-wrap gap-2">
           <button type="button" onClick={load} className="btn-secondary">
             <ArrowPathIcon className="mr-1.5 h-4 w-4" aria-hidden="true" /> Perbarui
+          </button>
+          <button type="button" onClick={() => setPemakaian(true)} className="btn-secondary">
+            Pemakaian Bahan
           </button>
           <button type="button" onClick={() => setForm('new')} className="btn-primary">
             <PlusIcon className="mr-1.5 h-5 w-5" aria-hidden="true" /> Catat Roll
@@ -211,6 +215,10 @@ export default function RollList() {
           onClose={() => setPotong(null)}
           onSaved={() => { setPotong(null); load() }}
         />
+      )}
+
+      {pemakaian && (
+        <PemakaianForm onClose={() => setPemakaian(false)} onSaved={load} />
       )}
 
       {form && (
@@ -535,6 +543,147 @@ function SlitForm({ roll, onClose, onSaved }: { roll: Roll; onClose: () => void;
           <button type="button" className="btn-secondary" onClick={onClose}>Batal</button>
           <button type="button" className="btn-primary disabled:opacity-50" disabled={busy || lebih} onClick={simpan}>
             {busy ? 'Menyimpan...' : 'Simpan Sliting'}
+          </button>
+        </div>
+      </div>
+    </AccessibleModal>
+  )
+}
+
+/**
+ * Pemakaian bahan baku spunlace.
+ *
+ * Dari produksi 2026-11-24: bahan tidak selalu menjadi roll - ada yang dipakai
+ * untuk uji jalan mesin, dan jumlahnya tidak sedikit. Bahan yang dipakai juga
+ * tidak lenyap: sebagiannya jadi waste yang dikembalikan ke gudang dan dipakai
+ * lagi (campuran bantal). Keduanya dicatat di sini, dalam satu dokumen.
+ *
+ * Yang dibuat di belakang layar tetap BON Permintaan Bahan, jadi stok berkurang
+ * FIFO dan jurnalnya sama dengan BON biasa - ini pintu masuk, bukan jalur kedua.
+ */
+function PemakaianForm({ onClose, onSaved }: { onClose: () => void; onSaved: () => void }) {
+  const [meta, setMeta] = useState<any>({ materials: [], waste_materials: [], work_orders: [] })
+  const [busy, setBusy] = useState(false)
+  const [keperluan, setKeperluan] = useState<'produksi' | 'uji'>('produksi')
+  const [tanggal, setTanggal] = useState(ymd(new Date()))
+  const [spk, setSpk] = useState('')
+  const [catatan, setCatatan] = useState('')
+  const [bahan, setBahan] = useState<{ material_id: string; quantity: string }[]>([{ material_id: '', quantity: '' }])
+  const [waste, setWaste] = useState<{ material_id: string; quantity: string }[]>([])
+
+  useEffect(() => { axiosInstance.get(`${API}/meta`).then((r) => setMeta(r.data || {})).catch(() => {}) }, [])
+
+  const totalBahan = bahan.reduce((a, b) => a + (Number(b.quantity) || 0), 0)
+  const totalWaste = waste.reduce((a, b) => a + (Number(b.quantity) || 0), 0)
+  const siap = bahan.some((b) => b.material_id && Number(b.quantity) > 0)
+    && (keperluan === 'uji' || !!spk)
+
+  const simpan = async () => {
+    setBusy(true)
+    try {
+      await axiosInstance.post(`${API}/material-usage`, {
+        keperluan,
+        used_at: tanggal,
+        work_order_id: spk || null,
+        notes: catatan || null,
+        items: bahan.filter((b) => b.material_id && Number(b.quantity) > 0)
+          .map((b) => ({ material_id: Number(b.material_id), quantity: Number(b.quantity) })),
+        waste: waste.filter((b) => b.material_id && Number(b.quantity) > 0)
+          .map((b) => ({ material_id: Number(b.material_id), quantity: Number(b.quantity) })),
+      })
+      toast.success('Pemakaian bahan tercatat, stok sudah berkurang')
+      onSaved()
+      onClose()
+    } catch (e: any) {
+      toast.error(e?.response?.data?.error || 'Gagal mencatat pemakaian bahan')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const Baris = ({ daftar, nilai, set, label }: any) => (
+    <div className="space-y-2">
+      {nilai.map((b: any, i: number) => (
+        <div key={i} className="flex flex-wrap items-end gap-2">
+          <div className="min-w-[14rem] flex-1">
+            <select className="input w-full" value={b.material_id}
+              onChange={(e) => set((p: any) => p.map((x: any, k: number) => k === i ? { ...x, material_id: e.target.value } : x))}>
+              <option value="">Pilih {label}</option>
+              {(daftar || []).map((m: any) => <option key={m.id} value={m.id}>{m.name}</option>)}
+            </select>
+          </div>
+          <div className="w-32">
+            <NumberInput value={b.quantity}
+              onChange={(v: any) => set((p: any) => p.map((x: any, k: number) => k === i ? { ...x, quantity: v } : x))}
+              placeholder="kg" />
+          </div>
+          <button type="button" className="pb-2 text-xs text-red-600 hover:underline dark:text-red-400"
+            onClick={() => set((p: any) => p.filter((_: any, k: number) => k !== i))}>Hapus</button>
+        </div>
+      ))}
+      <button type="button" className="text-xs font-medium text-primary-700 hover:underline dark:text-primary-300"
+        onClick={() => set((p: any) => [...p, { material_id: '', quantity: '' }])}>+ Tambah {label}</button>
+    </div>
+  )
+
+  return (
+    <AccessibleModal isOpen onClose={onClose} title="Pemakaian Bahan Spunlace" size="full">
+      <div className="space-y-5">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div>
+            <label className="fn-label mb-1 block">Tanggal</label>
+            <input type="date" className="input w-full" value={tanggal} onChange={(e) => setTanggal(e.target.value)} />
+          </div>
+          <div>
+            <label className="fn-label mb-1 block">Keperluan</label>
+            <select className="input w-full" value={keperluan}
+              onChange={(e) => setKeperluan(e.target.value as 'produksi' | 'uji')}>
+              <option value="produksi">Produksi (jadi roll)</option>
+              <option value="uji">Uji jalan mesin (tidak jadi roll)</option>
+            </select>
+          </div>
+          <div>
+            <label className="fn-label mb-1 block">SPK / NJO {keperluan === 'produksi' && <span className="text-red-500">*</span>}</label>
+            <select className="input w-full" value={spk} onChange={(e) => setSpk(e.target.value)}>
+              <option value="">{keperluan === 'uji' ? 'Tanpa SPK' : 'Pilih SPK'}</option>
+              {(meta.work_orders || []).map((w: any) => (
+                <option key={w.id} value={w.id}>{w.wo_number} — {w.product_name}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <p className="fn-label mb-2">Bahan keluar dari gudang</p>
+          <Baris daftar={meta.materials} nilai={bahan} set={setBahan} label="bahan" />
+        </div>
+
+        <div>
+          <p className="fn-label mb-2">Hasil waste (masuk stok lagi)</p>
+          <p className="mb-2 text-xs text-gray-500 dark:text-gray-400">
+            Waste yang dikembalikan ke gudang bahan baku dan masih dipakai lagi. Yang kembali tidak dihitung sebagai susut.
+          </p>
+          {waste.length === 0 ? (
+            <button type="button" className="text-xs font-medium text-primary-700 hover:underline dark:text-primary-300"
+              onClick={() => setWaste([{ material_id: '', quantity: '' }])}>+ Tambah waste</button>
+          ) : <Baris daftar={meta.waste_materials} nilai={waste} set={setWaste} label="waste" />}
+        </div>
+
+        <div>
+          <label className="fn-label mb-1 block">Catatan</label>
+          <input className="input w-full" value={catatan} onChange={(e) => setCatatan(e.target.value)}
+            placeholder={keperluan === 'uji' ? 'mis. uji mesin setelah ganti conveyor' : 'opsional'} />
+        </div>
+
+        <p className="rounded-lg bg-gray-50 px-3 py-2 text-sm text-gray-700 dark:bg-gray-900 dark:text-gray-200">
+          Keluar <span className="font-semibold">{kg(totalBahan)}</span>
+          {totalWaste > 0 && <> · waste kembali <span className="font-semibold">{kg(totalWaste)}</span> · selisih <span className="font-semibold">{kg(totalBahan - totalWaste)}</span></>}
+        </p>
+
+        <div className="flex flex-wrap justify-end gap-2">
+          <button type="button" className="btn-secondary" onClick={onClose}>Batal</button>
+          <button type="button" className="btn-primary disabled:opacity-50" disabled={busy || !siap} onClick={simpan}>
+            {busy ? 'Menyimpan...' : 'Simpan Pemakaian'}
           </button>
         </div>
       </div>

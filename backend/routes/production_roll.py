@@ -14,6 +14,7 @@ from models import db
 from models.product import Product
 from models.production_roll import ProductionRoll
 from utils.auth_decorators import require_permission
+from utils.timezone import get_local_now
 
 production_roll_bp = Blueprint('production_roll', __name__)
 
@@ -265,7 +266,20 @@ def meta():
                          'product_name': w.product.name if w.product else '',
                          'quantity': float(w.quantity or 0), 'uom': w.uom or ''} for w in spk],
         'max_number': NOMOR_MAKS,
+        # Untuk isian Pemakaian Bahan. Bahan baku = fiber yang keluar; waste =
+        # yang dikembalikan ke gudang karena masih dipakai lagi.
+        'materials': _pilihan_material(('raw_materials',)),
+        'waste_materials': _pilihan_material(('waste',)),
     })
+
+
+def _pilihan_material(jenis):
+    from models.product import Material
+
+    rows = Material.query.filter(Material.is_active.is_(True),
+                                 db.func.lower(Material.material_type).in_(jenis)
+                                 ).order_by(Material.name).limit(500).all()
+    return [{'id': m.id, 'code': m.code, 'name': m.name, 'uom': m.primary_uom or 'KG'} for m in rows]
 
 
 @production_roll_bp.route('', methods=['GET'])
@@ -527,6 +541,53 @@ def _berat_roll_per_spk(tanggal_set):
     return out
 
 
+JENIS_UJI = 'trial'          # MaterialIssue.issue_type untuk uji jalan mesin
+
+
+def _waste_kembali(mi_ids):
+    """Waste yang masuk lagi ke stok dari dokumen-dokumen pemakaian ini (kg).
+
+    Bahan yang dipakai tidak lenyap seluruhnya: sebagiannya jadi waste yang
+    dikembalikan ke gudang dan dipakai lagi. Yang kembali bukan susut.
+    """
+    from models.wms_advanced import InventoryTransaction
+
+    if not mi_ids:
+        return 0.0
+    total = db.session.query(db.func.coalesce(db.func.sum(InventoryTransaction.quantity), 0)).filter(
+        InventoryTransaction.reference_type == 'spunlace_waste',
+        InventoryTransaction.reference_id.in_(list(mi_ids))).scalar()
+    return round(float(total or 0), 2)
+
+
+def _bahan_uji(wo):
+    """Bahan yang keluar untuk uji jalan mesin pada SPK ini.
+
+    Tidak pernah menjadi roll, jadi tidak boleh masuk hitungan susut - tapi
+    tetap harus kelihatan, karena jumlahnya tidak sedikit.
+    """
+    from models.material_issue import MaterialIssue, MaterialIssueItem
+
+    rows = (db.session.query(MaterialIssueItem, MaterialIssue)
+            .join(MaterialIssue, MaterialIssueItem.material_issue_id == MaterialIssue.id)
+            .filter(MaterialIssue.status.in_(('issued', 'completed')),
+                    MaterialIssue.issue_type == JENIS_UJI,
+                    MaterialIssue.work_order_id == wo.id).all())
+    bahan, dokumen = {}, set()
+    for item, issue in rows:
+        dokumen.add(issue.id)
+        qty = float(item.issued_quantity or 0) - float(item.returned_quantity or 0)
+        if abs(qty) < 0.0001:
+            continue
+        b = bahan.setdefault((item.material_id, item.product_id, item.uom),
+                             {'name': item.description, 'uom': item.uom, 'qty': 0.0})
+        b['qty'] = round(b['qty'] + qty, 2)
+    daftar = sorted(bahan.values(), key=lambda x: x['name'] or '')
+    return (daftar,
+            round(sum(b['qty'] for b in daftar if (b['uom'] or '').upper() == 'KG'), 2),
+            _waste_kembali(dokumen))
+
+
 def _bahan_spk_spunlace(wo):
     """Bahan yang keluar gudang untuk SPK ini, dengan pembagian antar NJO.
 
@@ -552,6 +613,11 @@ def _bahan_spk_spunlace(wo):
     rows = (db.session.query(MaterialIssueItem, MaterialIssue)
             .join(MaterialIssue, MaterialIssueItem.material_issue_id == MaterialIssue.id)
             .filter(MaterialIssue.status.in_(('issued', 'completed')),
+                    # Bahan untuk uji jalan mesin memang tidak menjadi roll dan
+                    # jumlahnya tidak sedikit. Kalau ikut dihitung, susutnya
+                    # melonjak dan statusnya berteriak "tinggi" tanpa ada yang
+                    # salah di produksi. Dilaporkan terpisah, lihat _bahan_uji().
+                    db.func.coalesce(MaterialIssue.issue_type, '') != JENIS_UJI,
                     MaterialIssue.work_order_id.in_(spk_terkait)).all())
 
     bahan, pembagian = {}, {}
@@ -581,8 +647,9 @@ def _bahan_spk_spunlace(wo):
                               'spk_lain': len(lain)}
 
     fiber = round(sum(b['qty'] for b in bahan.values() if (b['uom'] or '').upper() == 'KG'), 2)
-    return sorted(bahan.values(), key=lambda x: x['name'] or ''), fiber, sorted(
-        pembagian.values(), key=lambda x: x['tanggal'])
+    return (sorted(bahan.values(), key=lambda x: x['name'] or ''), fiber,
+            sorted(pembagian.values(), key=lambda x: x['tanggal']),
+            _waste_kembali({i.id for _it, i in rows}))
 
 
 @production_roll_bp.route('/spk/<int:wo_id>/summary', methods=['GET'])
@@ -613,8 +680,10 @@ def spk_summary(wo_id):
     net_total = round(sum(float(r.net_weight_kg or 0) for r in rolls), 2)
     net_baik = round(sum(float(r.net_weight_kg or 0) for r in rolls if r.grade in ('A', 'B')), 2)
 
-    bahan, fiber_kg, pembagian = _bahan_spk_spunlace(wo)
-    susut_kg = round(fiber_kg - net_total, 2) if fiber_kg else 0.0
+    bahan, fiber_kg, pembagian, waste_produksi_kg = _bahan_spk_spunlace(wo)
+    bahan_uji, fiber_uji_kg, waste_uji_kg = _bahan_uji(wo)
+    # Waste yang dikembalikan ke gudang bukan susut - barangnya masih ada.
+    susut_kg = round(fiber_kg - net_total - waste_produksi_kg, 2) if fiber_kg else 0.0
     susut_pct = round(susut_kg / fiber_kg * 100, 2) if fiber_kg else 0.0
     batas_min, batas_maks = _batas_susut()
     if not fiber_kg:
@@ -645,7 +714,211 @@ def spk_summary(wo_id):
         'susut_min_pct': batas_min,
         'susut_max_pct': batas_maks,
         'pembagian': pembagian,
+        'materials_uji': bahan_uji,
+        'fiber_uji_kg': fiber_uji_kg,
+        'waste_uji_kg': waste_uji_kg,
+        'uji_terbuang_kg': round(fiber_uji_kg - waste_uji_kg, 2),
+        'waste_kembali_kg': waste_produksi_kg,
     })
+
+
+def _waste_masuk_stok(mi, baris, user_id):
+    """Waste hasil pemakaian bahan kembali ke stok sebagai material.
+
+    Bahan baku yang dipakai tidak lenyap: sebagiannya jadi waste yang di
+    Fengsheng dipakai lagi (campuran bantal). Kalau tidak dicatat masuk lagi,
+    neraca uji mesin tidak akan pernah seimbang dan barangnya hilang dari
+    sistem padahal fisiknya ada di gudang.
+
+    Mengikuti jalur yang sama dengan waste sliting: ditaruh di gudang bahan
+    baku, nomor batch = nomor dokumen pemakaiannya.
+    """
+    from models.product import Material
+    from models.warehouse import Inventory, WarehouseLocation, WarehouseZone
+    from utils.inventory_helpers import record_inventory_transaction
+
+    if not baris:
+        return []
+
+    zona = WarehouseZone.query.filter(db.func.lower(WarehouseZone.material_type) == 'raw_materials').first()
+    lokasi = WarehouseLocation.query.filter_by(zone_id=zona.id, is_active=True).first() if zona else None
+    if not lokasi:
+        raise RollError('Gudang bahan baku belum punya lokasi penyimpanan untuk menampung waste', 409)
+
+    keluar = []
+    for n, b in enumerate(baris, start=1):
+        bahan = db.session.get(Material, b.get('material_id')) if b.get('material_id') else None
+        if not bahan:
+            raise RollError(f'Bahan waste baris {n} tidak ditemukan', 404)
+        qty = float(b.get('quantity') or 0)
+        if qty <= 0:
+            raise RollError(f'Jumlah waste {bahan.name} harus lebih dari 0')
+
+        inv = Inventory.query.filter_by(material_id=bahan.id, location_id=lokasi.id,
+                                        batch_number=mi.issue_number).first()
+        if not inv:
+            inv = Inventory(material_id=bahan.id, location_id=lokasi.id, batch_number=mi.issue_number,
+                            quantity_on_hand=0, quantity_available=0, stock_status='available', is_active=True)
+            db.session.add(inv)
+            db.session.flush()
+        inv.quantity_on_hand = float(inv.quantity_on_hand or 0) + qty
+        inv.quantity_available = float(inv.quantity_available or 0) + qty
+        inv.updated_at = datetime.utcnow()
+        record_inventory_transaction(
+            transaction_type='stock_in', direction='in', quantity=qty,
+            material_id=bahan.id, to_location_id=lokasi.id, batch_number=mi.issue_number,
+            reference_type='spunlace_waste', reference_id=mi.id,
+            notes=f'Waste hasil pemakaian bahan spunlace {mi.issue_number}', created_by=user_id)
+        keluar.append({'material_id': bahan.id, 'name': bahan.name,
+                       'uom': bahan.primary_uom or 'KG', 'qty': round(qty, 2)})
+    return keluar
+
+
+@production_roll_bp.route('/material-usage', methods=['POST'])
+@jwt_required()
+@require_permission('production.create')
+def catat_pemakaian_bahan():
+    """Catat pemakaian bahan baku spunlace dari halaman Roll Spunlace.
+
+    Dulu satu-satunya jalan adalah BON Permintaan Bahan di modul Gudang, jadi
+    operator spunlace harus pindah modul - padahal di lembar harian mereka
+    pemakaian fiber dan daftar roll ada di kertas yang sama.
+
+    Yang dibuat tetap MaterialIssue, bukan jalur stok baru: stok berkurang FIFO
+    dan jurnalnya tercatat persis seperti BON biasa. Bedanya hanya pintu
+    masuknya, dan satu isian "keperluan":
+
+    - `produksi` : menjadi roll, ikut hitungan susut di Tutup SPK.
+    - `uji`      : uji jalan mesin, TIDAK menjadi roll. Jumlahnya tidak sedikit,
+                   jadi kalau ikut dihitung susutnya melonjak tanpa ada yang
+                   salah. Dicatat terpisah dan dikecualikan dari susut.
+    """
+    from models.material_issue import MaterialIssue, MaterialIssueItem
+    from models.product import Material
+    from models.production import WorkOrder
+    from utils.helpers import generate_number
+    from utils.material_issue_helper import StokKurang, keluarkan_bahan, pesan_bahan
+
+    data = request.get_json() or {}
+    user_id = int(get_jwt_identity())
+
+    keperluan = (data.get('keperluan') or 'produksi').strip().lower()
+    if keperluan not in ('produksi', 'uji'):
+        raise RollError('Keperluan harus "produksi" atau "uji"')
+
+    baris = [b for b in (data.get('items') or []) if b.get('material_id')]
+    if not baris:
+        raise RollError('Belum ada bahan yang diisi')
+
+    wo = None
+    if data.get('work_order_id'):
+        wo = db.session.get(WorkOrder, data['work_order_id'])
+        if not wo:
+            raise RollError('SPK tidak ditemukan', 404)
+    elif keperluan == 'produksi':
+        # Uji mesin boleh tanpa SPK - memang belum ada job order yang jalan.
+        raise RollError('Pemakaian untuk produksi harus menyebut SPK / NJO')
+
+    try:
+        tanggal = (datetime.fromisoformat(str(data['used_at'])).date()
+                   if data.get('used_at') else get_local_now().date())
+    except ValueError:
+        raise RollError('Tanggal pemakaian tidak valid')
+
+    mi = MaterialIssue(
+        issue_number=generate_number('MI', MaterialIssue, 'issue_number'),
+        work_order_id=wo.id if wo else None,
+        trigger_source='manual',
+        issue_type='production' if keperluan == 'produksi' else JENIS_UJI,
+        issue_date=datetime.combine(tanggal, datetime.min.time()),
+        requested_by=user_id,
+        status='pending',
+        department='Spunlace',
+        notes=(data.get('notes') or
+               ('Uji jalan mesin spunlace' if keperluan == 'uji' else 'Pemakaian bahan spunlace')),
+    )
+    db.session.add(mi)
+    db.session.flush()
+
+    for n, b in enumerate(baris, start=1):
+        bahan = db.session.get(Material, b['material_id'])
+        if not bahan:
+            raise RollError(f'Bahan baris {n} tidak ditemukan', 404)
+        qty = float(b.get('quantity') or 0)
+        if qty <= 0:
+            raise RollError(f'Jumlah {bahan.name} harus lebih dari 0')
+        db.session.add(MaterialIssueItem(
+            material_issue_id=mi.id, line_number=n, material_id=bahan.id,
+            description=bahan.name, uom=bahan.primary_uom or 'KG',
+            required_quantity=qty, status='pending'))
+    db.session.flush()
+
+    try:
+        pesan_bahan(mi)
+    except StokKurang as e:
+        db.session.rollback()
+        raise RollError(str(e))
+    mi.status = 'approved'
+    mi.approved_by = user_id
+    mi.approved_date = get_local_now()
+
+    keluar, rincian = keluarkan_bahan(mi, user_id)
+    if not keluar:
+        db.session.rollback()
+        raise RollError('Bahan tidak jadi keluar - periksa stok yang tersedia')
+
+    waste = _waste_masuk_stok(mi, data.get('waste') or [], user_id)
+    db.session.commit()
+
+    return jsonify({'id': mi.id, 'issue_number': mi.issue_number, 'keperluan': keperluan,
+                    'items': keluar, 'detail': rincian, 'waste': waste}), 201
+
+
+def _waste_dokumen(mi_id):
+    """Waste yang masuk lagi dari satu dokumen pemakaian."""
+    from models.product import Material
+    from models.wms_advanced import InventoryTransaction
+
+    keluar = []
+    for t in InventoryTransaction.query.filter_by(reference_type='spunlace_waste', reference_id=mi_id).all():
+        m = db.session.get(Material, t.material_id) if t.material_id else None
+        keluar.append({'name': m.name if m else None, 'uom': t.uom,
+                       'qty': round(float(t.quantity or 0), 2)})
+    return keluar
+
+
+@production_roll_bp.route('/material-usage', methods=['GET'])
+@jwt_required()
+@require_permission('production.view')
+def daftar_pemakaian_bahan():
+    """Pemakaian bahan spunlace yang sudah dicatat, terbaru dulu."""
+    from models.material_issue import MaterialIssue
+
+    a = request.args
+    q = MaterialIssue.query.filter(MaterialIssue.department == 'Spunlace',
+                                   MaterialIssue.status.in_(('issued', 'completed', 'partial')))
+    if a.get('date_from'):
+        q = q.filter(MaterialIssue.issue_date >= a['date_from'])
+    if a.get('date_to'):
+        q = q.filter(MaterialIssue.issue_date <= f"{a['date_to']} 23:59:59")
+    if a.get('work_order_id'):
+        q = q.filter(MaterialIssue.work_order_id == a['work_order_id'])
+
+    keluar = []
+    for mi in q.order_by(MaterialIssue.issue_date.desc(), MaterialIssue.id.desc()).limit(200).all():
+        keluar.append({
+            'id': mi.id, 'issue_number': mi.issue_number,
+            'used_at': mi.issue_date.date().isoformat() if mi.issue_date else None,
+            'keperluan': 'uji' if mi.issue_type == JENIS_UJI else 'produksi',
+            'work_order_id': mi.work_order_id,
+            'wo_number': mi.work_order.wo_number if mi.work_order else None,
+            'notes': mi.notes,
+            'items': [{'name': i.description, 'uom': i.uom,
+                       'qty': round(float(i.issued_quantity or 0) - float(i.returned_quantity or 0), 2)}
+                      for i in mi.items],
+            'waste': _waste_dokumen(mi.id),
+        })
+    return jsonify({'usages': keluar})
 
 
 @production_roll_bp.route('/summary', methods=['GET'])
