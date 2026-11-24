@@ -270,8 +270,12 @@ const ImportExcelModal: React.FC<Props> = ({ kind, satuan = 'baris', open, onClo
                   <tbody>
                     {barisTampil.map((t, i) => (
                       <tr key={i} className={`border-t align-top dark:border-gray-700 ${t.errors.length ? 'bg-red-50/40 dark:bg-red-900/10' : ''}`}>
-                        <td className="px-3 py-1.5">{t.rows.join(', ')}</td>
-                        {kolomRingkas.map((c) => <td key={c.key} className="px-3 py-1.5">{sel(t, c)}</td>)}
+                        <td className="whitespace-nowrap px-3 py-1.5">{t.rows.join(', ')}</td>
+                        {kolomRingkas.map((c, k) => (
+                          // Kolom ringkas pertama itu penanda barisnya (nomor dokumen /
+                          // nomor karyawan) - jangan dipatahkan di tengah tanda hubung.
+                          <td key={c.key} className={`px-3 py-1.5 ${k === 0 ? 'whitespace-nowrap' : ''}`}>{sel(t, c)}</td>
+                        ))}
                         <td className="px-3 py-1.5">
                           {t.errors.length
                             ? <span className="text-red-600 dark:text-red-400">{t.errors.join('; ')}</span>
