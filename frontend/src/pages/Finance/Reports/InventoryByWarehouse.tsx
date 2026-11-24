@@ -80,8 +80,8 @@ export default function InventoryByWarehouse() {
               <tr className="sticky bottom-0 bg-emerald-600 text-white">
                 <td colSpan={3} className="px-3 py-2.5 text-right font-bold">TOTAL</td>
                 {zones.map((z) => (
-                  <><td key={`${z.id}q`} className="px-3 py-2.5 text-right font-bold tabular-nums">{new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 }).format(data.zone_totals[String(z.id)].qty)}</td>
-                    <td key={`${z.id}v`} className="px-3 py-2.5 text-right font-bold tabular-nums">{new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 }).format(data.zone_totals[String(z.id)].value)}</td></>
+                  <><td key={`${z.id}q`} className="px-3 py-2.5 text-right font-bold tabular-nums">{new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 }).format(data.zone_totals[String(z.id)]?.qty ?? 0)}</td>
+                    <td key={`${z.id}v`} className="px-3 py-2.5 text-right font-bold tabular-nums">{new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 }).format(data.zone_totals[String(z.id)]?.value ?? 0)}</td></>
                 ))}
                 <td className="px-3 py-2.5 text-right font-bold tabular-nums">{new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 }).format(t.qty)}</td>
                 <td className="px-3 py-2.5 text-right font-bold tabular-nums">{new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 }).format(t.value)}</td>

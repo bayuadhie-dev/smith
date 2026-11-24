@@ -894,15 +894,54 @@ def _inv_valid(T, date_to):
             T.transaction_type.notin_(_NEUTRAL_QC)]
 
 
-def _inv_items(keys, group=None, q=None):
+# Kuantitas yang duduk di gudang nonaktif atau di lokasi tanpa gudang. Dulu ikut
+# dijumlahkan ke total tapi tidak punya kolom, jadi hilang dari tabel sambil tetap
+# menambah angka di atas (dilaporkan 2026-11-24: ethanol 2.400 LTR tercatat masuk
+# ke lokasi WIP lama yang gudangnya sudah dinonaktifkan).
+ZONA_LUAR = 'luar'
+
+# Batas aman saat menampilkan barang tanpa stok: tanpa ini "Semua kelompok"
+# menarik seluruh master ke satu halaman laporan.
+MAX_BARIS_TANPA_STOK = 2000
+
+
+class _ZonaLuar:
+    id = ZONA_LUAR
+    code = 'LUAR'
+    name = 'Gudang lain / nonaktif'
+
+
+def _inv_items(keys, group=None, q=None, semua=False):
     _, Product, Material, *_ = _inv_models()
     pids = {k[0] for k in keys if k[0]}
     mids = {k[1] for k in keys if k[1]}
     prods = {p.id: p for p in Product.query.filter(Product.id.in_(pids)).all()} if pids else {}
     mats = {m.id: m for m in Material.query.filter(Material.id.in_(mids)).all()} if mids else {}
-    out = {}
     needle = (q or '').strip().lower()
-    for k in keys:
+
+    # Barang yang belum pernah ada mutasinya sama sekali tidak punya kunci di
+    # `keys`, jadi dulu tidak pernah muncul - mencentang "tampilkan barang tanpa
+    # stok" pun percuma. Di Fengsheng itu 75 dari 76 bahan kimia.
+    daftar = list(keys)
+    if semua:
+        for model, kind in ((Product, 'product'), (Material, 'material')):
+            qq = model.query
+            if group and group != 'all':
+                qq = qq.filter(model.material_type == group)
+            if needle:
+                qq = qq.filter(db.or_(model.code.ilike(f'%{needle}%'), model.name.ilike(f'%{needle}%')))
+            for it in qq.limit(MAX_BARIS_TANPA_STOK + 1).all():
+                k = (it.id, None) if kind == 'product' else (None, it.id)
+                if kind == 'product':
+                    prods.setdefault(it.id, it)
+                else:
+                    mats.setdefault(it.id, it)
+                daftar.append(k)
+
+    out = {}
+    for k in daftar:
+        if k in out:
+            continue
         it = prods.get(k[0]) if k[0] else mats.get(k[1])
         if not it:
             continue
@@ -1226,9 +1265,12 @@ def inventory_by_warehouse():
             unit = (tv / tq) if tq > 0 else masters.get(key, 0.0)
             for cell in cells.values():
                 cell[1] = cell[0] * unit
-    items = _inv_items(list(agg.keys()), group, q)
+    items = _inv_items(list(agg.keys()), group, q, semua=not hide_zero)
+    for key in items:
+        agg.setdefault(key, {})
     zone_ids = [z.id for z in zones]
     rows = []
+    ada_di_luar = False
     for key, meta in items.items():
         by_zone = {}
         total_q = total_v = 0.0
@@ -1237,15 +1279,32 @@ def inventory_by_warehouse():
             by_zone[str(zid)] = {'qty': round(cq, 3), 'value': round(cv, 2)}
             total_q += cq
             total_v += cv
-        # stock sitting on locations without a warehouse is still part of the total
+        # Kuantitas yang duduk di gudang nonaktif atau lokasi tanpa gudang dulu
+        # ikut dijumlahkan ke total tapi tidak punya kolom, jadi barisnya
+        # terbaca "2.400" di atas sambil semua gudangnya bergaris datar.
+        # Sekarang dikumpulkan ke kolomnya sendiri supaya kelihatan.
+        luar_q = luar_v = 0.0
         for zid, (cq, cv) in agg[key].items():
             if zid not in zone_ids:
-                total_q += cq
-                total_v += cv
+                luar_q += cq
+                luar_v += cv
+        if abs(luar_q) >= 0.0005 or abs(luar_v) >= 0.005:
+            ada_di_luar = True
+        by_zone[ZONA_LUAR] = {'qty': round(luar_q, 3), 'value': round(luar_v, 2)}
+        total_q += luar_q
+        total_v += luar_v
         if hide_zero and abs(total_q) < 0.0005 and abs(total_v) < 0.005 and all(abs(z['qty']) < 0.0005 for z in by_zone.values()):
             continue
         rows.append({**meta, 'by_zone': by_zone, 'total_qty': round(total_q, 3), 'total_value': round(total_v, 2)})
     rows.sort(key=lambda r: (r['name'] or '').lower())
+    # Kolom "gudang lain" hanya muncul kalau memang ada isinya - jangan menambah
+    # kolom kosong di laporan yang sudah selebar ini.
+    if ada_di_luar:
+        zones = list(zones) + [_ZonaLuar()]
+        zone_ids = zone_ids + [ZONA_LUAR]
+    else:
+        for r in rows:
+            r['by_zone'].pop(ZONA_LUAR, None)
     zone_totals = {str(zid): {'qty': round(sum(r['by_zone'][str(zid)]['qty'] for r in rows), 3), 'value': round(sum(r['by_zone'][str(zid)]['value'] for r in rows), 2)} for zid in zone_ids}
     totals = {'qty': round(sum(r['total_qty'] for r in rows), 3), 'value': round(sum(r['total_value'] for r in rows), 2)}
     if _wants_xlsx():
