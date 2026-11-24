@@ -31,6 +31,7 @@ interface WarehouseLocation {
   current_utilization?: number | null;
   occupied?: number;
   is_active: boolean;
+  item_count?: number;
   created_at?: string;
 }
 
@@ -286,6 +287,14 @@ const LocationList: React.FC = () => {
 
               {/* Capacity Info */}
               <div className="space-y-2 mb-4">
+                <div className="flex items-center justify-between">
+                  <span className="fn-label">Jenis barang</span>
+                  {/* Jenis barang yang ada isinya, bukan banyaknya baris stok -
+                      satu barang bisa punya beberapa batch. */}
+                  <span className={`text-sm font-medium ${location.item_count ? '' : 'text-gray-400 dark:text-gray-500'}`}>
+                    {location.item_count ?? 0} jenis
+                  </span>
+                </div>
                 <div className="flex items-center justify-between">
                   <span className="fn-label">Kapasitas</span>
                   <span className="text-sm font-medium">

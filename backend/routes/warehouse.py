@@ -205,14 +205,23 @@ def get_locations():
         # Pemakaian gudang dihitung dari tabel stok, bukan dari kolom `occupied`:
         # kolom itu hanya diperbarui oleh Transfer Stok, jadi penerimaan dan
         # pengiriman tidak pernah tercermin di sana.
-        terpakai = {}
+        terpakai, jumlah_barang = {}, {}
         if locations.items:
             ids = [l.id for l in locations.items]
-            for loc_id, qty in db.session.query(
-                    Inventory.location_id, db.func.sum(Inventory.quantity_on_hand)).filter(
-                    Inventory.location_id.in_(ids), Inventory.is_active == True).group_by(  # noqa: E712
+            # Satu query untuk seluruh halaman: jumlah kuantitas dan BANYAK JENIS
+            # barang. Yang kedua dihitung dari pasangan produk/material yang
+            # berbeda, bukan dari banyaknya baris stok - satu barang bisa punya
+            # beberapa baris karena batch-nya beda, dan "3 batch" bukan "3 jenis".
+            for loc_id, qty, n in db.session.query(
+                    Inventory.location_id,
+                    db.func.sum(Inventory.quantity_on_hand),
+                    db.func.count(db.distinct(db.func.coalesce(
+                        Inventory.product_id * -1, Inventory.material_id)))).filter(
+                    Inventory.location_id.in_(ids), Inventory.is_active == True,  # noqa: E712
+                    Inventory.quantity_on_hand != 0).group_by(
                     Inventory.location_id).all():
                 terpakai[loc_id] = float(qty or 0)
+                jumlah_barang[loc_id] = int(n or 0)
         
         response_data = {
             'locations': [{
@@ -229,6 +238,7 @@ def get_locations():
                 'capacity_uom': l.capacity_uom,
                 'unlimited': float(l.capacity or 0) <= 0,
                 'occupied': round(terpakai.get(l.id, 0.0), 3),
+                'item_count': jumlah_barang.get(l.id, 0),
                 'available': (float(l.capacity) - terpakai.get(l.id, 0.0)) if float(l.capacity or 0) > 0 else None,
                 'current_utilization': (round(terpakai.get(l.id, 0.0) / float(l.capacity) * 100, 1)
                                         if float(l.capacity or 0) > 0 else None),

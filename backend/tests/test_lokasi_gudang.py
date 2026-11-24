@@ -100,3 +100,57 @@ class TestIsiLokasiBelumPernahMasuk:
         items = r.get_json()['inventory_items']
         assert [i['item_code'] for i in items] == ['KIM-001']
         assert items[0]['quantity_on_hand'] == 5
+
+
+class TestJumlahBarangDiKartu:
+    """Kartu lokasi menyebut berapa JENIS barang yang ada di sana. Dihitung dari
+    pasangan produk/material yang berbeda, bukan dari banyaknya baris stok -
+    satu barang bisa punya beberapa baris karena batch-nya beda, dan "3 batch"
+    bukan "3 jenis"."""
+
+    @pytest.fixture
+    def berisi(self, db_session, lokasi):
+        from models.product import Material, Product
+        from models.warehouse import Inventory, WarehouseLocation
+        loc = WarehouseLocation.query.filter_by(location_code='WH-ETH-01').one()
+        m = Material(code='KIM-001', name='ETHANOL', category='BAHAN KIMIA',
+                     material_type='chemical_materials', primary_uom='LTR', is_active=True)
+        p = Product(code='FG-001', name='TISU', material_type='finished_goods',
+                    primary_uom='PCS', is_active=True)
+        db_session.add_all([m, p])
+        db_session.flush()
+        db_session.add_all([
+            Inventory(material_id=m.id, location_id=loc.id, quantity_on_hand=100, batch_number='A', is_active=True),
+            Inventory(material_id=m.id, location_id=loc.id, quantity_on_hand=200, batch_number='B', is_active=True),
+            Inventory(product_id=p.id, location_id=loc.id, quantity_on_hand=5, is_active=True),
+        ])
+        db_session.commit()
+        return loc
+
+    def test_batch_yang_sama_barangnya_dihitung_sekali(self, client, auth_headers, berisi):
+        d = _daftar(client, auth_headers, include_inactive=1, per_page=500)
+        assert d['WH-ETH-01']['item_count'] == 2      # 1 material (2 batch) + 1 produk
+        assert d['WH-ETH-01']['occupied'] == 305
+
+    def test_produk_dan_material_berid_sama_tidak_tertukar(self, client, auth_headers, berisi, db_session):
+        """Produk id 1 dan material id 1 harus dihitung sebagai dua jenis."""
+        d = _daftar(client, auth_headers, include_inactive=1, per_page=500)
+        assert d['WH-ETH-01']['item_count'] == 2
+
+    def test_lokasi_kosong_nol_jenis(self, client, auth_headers, berisi):
+        d = _daftar(client, auth_headers, include_inactive=1, per_page=500)
+        assert d['WIP-R01']['item_count'] == 0
+
+    def test_baris_berstok_nol_tidak_dihitung(self, client, auth_headers, db_session, berisi):
+        from models.product import Material
+        from models.warehouse import Inventory
+        habis = Material(code='KIM-002', name='HABIS', category='BAHAN KIMIA',
+                         material_type='chemical_materials', primary_uom='LTR', is_active=True)
+        db_session.add(habis)
+        db_session.flush()
+        db_session.add(Inventory(material_id=habis.id, location_id=berisi.id,
+                                 quantity_on_hand=0, is_active=True))
+        db_session.commit()
+
+        d = _daftar(client, auth_headers, include_inactive=1, per_page=500)
+        assert d['WH-ETH-01']['item_count'] == 2
