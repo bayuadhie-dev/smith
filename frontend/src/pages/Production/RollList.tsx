@@ -22,6 +22,7 @@ interface Roll {
   machine_name: string | null
   work_order_id: number | null
   work_order_number: string | null
+  is_trial?: boolean
   produced_at: string
   shift: string | null
   gross_weight_kg: number
@@ -248,6 +249,7 @@ function RollForm({ roll, onClose, onSaved }: { roll: Roll | null; onClose: () =
     roll_number: roll ? String(roll.roll_number) : '',
     product_id: roll?.product_id ?? (null as number | string | null),
     work_order_id: roll?.work_order_id ? String(roll.work_order_id) : '',
+    is_trial: !!roll?.is_trial,
     produced_at: roll?.produced_at || ymd(new Date()),
     shift: roll?.shift || '',
     machine_id: '' as string,
@@ -278,6 +280,7 @@ function RollForm({ roll, onClose, onSaved }: { roll: Roll | null; onClose: () =
       roll_number: Number(f.roll_number),
       product_id: Number(f.product_id),
       work_order_id: f.work_order_id ? Number(f.work_order_id) : undefined,
+      is_trial: f.is_trial,
       produced_at: f.produced_at,
       shift: f.shift || undefined,
       machine_id: f.machine_id ? Number(f.machine_id) : undefined,
@@ -324,9 +327,10 @@ function RollForm({ roll, onClose, onSaved }: { roll: Roll | null; onClose: () =
           />
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium">SPK / NJO *</label>
-          <select className="input-field" value={f.work_order_id} onChange={(e) => set('work_order_id', e.target.value)}>
-            <option value="">- Pilih SPK -</option>
+          <label className="mb-1 block text-sm font-medium">SPK / NJO {!f.is_trial && '*'}</label>
+          <select className="input-field" value={f.work_order_id} disabled={f.is_trial}
+            onChange={(e) => set('work_order_id', e.target.value)}>
+            <option value="">{f.is_trial ? '- Tanpa SPK -' : '- Pilih SPK -'}</option>
             {roll?.work_order_id && !(meta.work_orders || []).some((w: any) => w.id === roll.work_order_id) && (
               <option value={roll.work_order_id}>{roll.work_order_number}</option>
             )}
@@ -334,7 +338,18 @@ function RollForm({ roll, onClose, onSaved }: { roll: Roll | null; onClose: () =
               <option key={w.id} value={w.id}>{w.wo_number}{w.product_name ? ` - ${w.product_name}` : ''}</option>
             ))}
           </select>
-          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Setiap roll harus menunjuk job order produksinya.</p>
+          {/* Uji jalan mesin memang belum punya job order, tapi kainnya tetap jadi
+              dan tetap bisa dijual - jadi rollnya harus bisa dicatat tanpa SPK. */}
+          <label className="mt-2 flex cursor-pointer items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
+            <input type="checkbox" checked={f.is_trial}
+              onChange={(e) => { set('is_trial', e.target.checked); if (e.target.checked) set('work_order_id', '') }} />
+            Roll dari uji jalan mesin (tanpa SPK)
+          </label>
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            {f.is_trial
+              ? 'Tidak menambah realisasi SPK mana pun, tapi stok kainnya tetap masuk dan bisa dijual.'
+              : 'Setiap roll harus menunjuk job order produksinya.'}
+          </p>
         </div>
         <div>
           <label className="mb-1 block text-sm font-medium">Tanggal produksi *</label>

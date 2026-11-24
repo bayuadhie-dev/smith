@@ -26,6 +26,11 @@ class ProductionRoll(db.Model):
 
     product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=False, index=True)
     work_order_id = db.Column(db.Integer, db.ForeignKey('work_orders.id'), nullable=True)
+    # Roll hasil uji jalan mesin. Produksi 2026-11-18 memutuskan SPK wajib mutlak
+    # untuk roll, lalu 2026-11-24 menambahkan kekecualiannya: uji mesin belum punya
+    # job order, tapi kainnya tetap jadi dan tetap bisa dijual. Penanda ini yang
+    # membedakan "sengaja tanpa SPK" dari "lupa mengisi SPK".
+    is_trial = db.Column(db.Boolean, nullable=False, default=False, server_default='0')
     machine_id = db.Column(db.Integer, db.ForeignKey('machines.id'), nullable=True)
 
     produced_at = db.Column(db.Date, nullable=False, index=True)
@@ -70,6 +75,7 @@ class ProductionRoll(db.Model):
             'product_code': self.product.code if self.product else None,
             'product_name': self.product.name if self.product else None,
             'work_order_id': self.work_order_id,
+            'is_trial': bool(self.is_trial),
             'work_order_number': self.work_order.wo_number if self.work_order else None,
             'machine_id': self.machine_id,
             'machine_name': self.machine.name if self.machine else None,

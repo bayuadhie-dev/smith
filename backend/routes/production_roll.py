@@ -44,6 +44,9 @@ def _spk_spunlace(wo):
 def _sinkron_realisasi(wo_id):
     """Realisasi SPK spunlace = jumlah berat bersih roll utamanya.
 
+    wo_id kosong = roll uji jalan mesin yang memang tidak punya SPK; tidak ada
+    realisasi yang perlu diperbarui.
+
     Grade A dan B dihitung sebagai hasil baik (B masih bisa disortir dan dijual),
     grade C masuk waste. Jumbo roll hasil sliting sengaja tidak ikut dijumlah -
     isinya berasal dari main roll yang sudah dihitung, jadi akan ganda.
@@ -364,15 +367,23 @@ def _validate(data, exclude_id=None):
         raise RollError('Tanggal produksi tidak valid')
 
     return {'roll_number': nomor, 'product': product, 'gross': gross, 'net': net, 'grade': grade,
-            'tanggal': tanggal, 'wo': _validate_spk(data.get('work_order_id'))}
+            'tanggal': tanggal, 'uji': bool(data.get('is_trial')),
+            'wo': _validate_spk(data.get('work_order_id'), bool(data.get('is_trial')))}
 
 
-def _validate_spk(wo_id):
-    """Setiap roll harus menunjuk SPK spunlace (NJO/RPS) - keputusan produksi
-    2026-11-18: wajib mutlak, tidak ada roll tanpa job order."""
+def _validate_spk(wo_id, uji=False):
+    """Roll produksi harus menunjuk SPK spunlace (NJO/RPS) - keputusan produksi
+    2026-11-18: wajib mutlak, tidak ada roll tanpa job order.
+
+    Kecualinya roll hasil UJI JALAN MESIN (2026-11-24): uji mesin memang belum
+    punya job order, tapi kainnya tetap jadi dan tetap bisa dijual - jadi roll-nya
+    harus bisa dicatat tanpa SPK.
+    """
     from models.production import WorkOrder
 
     if not wo_id:
+        if uji:
+            return None
         raise RollError('Pilih SPK (NJO) produksinya - setiap roll harus menunjuk job order')
     wo = db.session.get(WorkOrder, wo_id)
     if not wo:
@@ -405,7 +416,8 @@ def create_roll():
         cycle=(kembar.cycle + 1) if kembar else 1,
         roll_type='main',
         product_id=v['product'].id,
-        work_order_id=v['wo'].id,
+        work_order_id=v['wo'].id if v['wo'] else None,
+        is_trial=v['uji'],
         machine_id=data.get('machine_id') or None,
         produced_at=v['tanggal'],
         shift=(data.get('shift') or '').strip()[:20] or None,
@@ -463,7 +475,8 @@ def update_roll(rid):
         db.session.flush()
         _masukkan_stok(roll, user_id)
     spk_lama = roll.work_order_id
-    roll.work_order_id = v['wo'].id
+    roll.work_order_id = v['wo'].id if v['wo'] else None
+    roll.is_trial = v['uji']
     if 'machine_id' in data:
         roll.machine_id = data['machine_id'] or None
     for k in ('length_m', 'width_cm'):

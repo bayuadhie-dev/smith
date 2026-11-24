@@ -620,3 +620,55 @@ def test_stok_kurang_ditolak_tanpa_menyimpan_apa_pun(client, auth_headers, db_se
                items=[{'material_id': fiber.id, 'quantity': 999}])
     assert r.status_code == 400
     assert MaterialIssue.query.count() == sebelum
+
+
+def test_roll_uji_jalan_mesin_boleh_tanpa_spk(client, auth_headers, kain):
+    """Produksi 2026-11-24: uji mesin belum punya job order, tapi kainnya tetap
+    jadi dan tetap bisa dijual - rollnya harus bisa dicatat."""
+    body = _body(kain, roll_number=81, gross_weight_kg=100, net_weight_kg=95)
+    body.pop('work_order_id', None)
+    body['is_trial'] = True
+
+    r = client.post('/api/production/rolls', headers=auth_headers, json=body)
+    assert r.status_code == 201, r.get_json()
+    d = r.get_json()
+    assert d['work_order_id'] is None and d['is_trial'] is True
+
+
+def test_roll_biasa_tetap_wajib_spk(client, auth_headers, kain):
+    """Kekecualian uji mesin tidak boleh jadi jalan pintas melewati SPK."""
+    body = _body(kain, roll_number=82, gross_weight_kg=100, net_weight_kg=95)
+    body.pop('work_order_id', None)
+
+    r = client.post('/api/production/rolls', headers=auth_headers, json=body)
+    assert r.status_code == 400
+    assert 'SPK' in r.get_json()['error']
+
+
+def test_roll_uji_tidak_menambah_realisasi_spk_mana_pun(client, auth_headers, kain, db_session):
+    """Tidak punya SPK, jadi tidak ada realisasi yang bergerak."""
+    _post(client, auth_headers, kain, roll_number=83, gross_weight_kg=100, net_weight_kg=90)
+    njo = _njo()
+    sebelum = float(njo.quantity_good or 0)
+
+    body = _body(kain, roll_number=84, gross_weight_kg=100, net_weight_kg=95)
+    body.pop('work_order_id', None)
+    body['is_trial'] = True
+    assert client.post('/api/production/rolls', headers=auth_headers, json=body).status_code == 201
+
+    db_session.refresh(njo)
+    assert float(njo.quantity_good or 0) == sebelum
+
+
+def test_roll_uji_tetap_masuk_stok_kain(client, auth_headers, kain, db_session):
+    """Kainnya nyata dan bisa dijual - stoknya harus ada."""
+    from models.warehouse import Inventory
+    _gudang_kain(db_session)
+
+    body = _body(kain, roll_number=85, gross_weight_kg=100, net_weight_kg=95)
+    body.pop('work_order_id', None)
+    body['is_trial'] = True
+    d = client.post('/api/production/rolls', headers=auth_headers, json=body).get_json()
+
+    inv = Inventory.query.filter_by(batch_number=d['batch_number']).first()
+    assert inv is not None and float(inv.quantity_on_hand) == 95
