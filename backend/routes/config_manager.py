@@ -420,10 +420,13 @@ def seed_default_configs():
 
 @config_manager_bp.route('/')
 def index():
-    """Serve the configuration manager GUI"""
-    template_path = os.path.join(get_project_root(), 'templates', 'config_manager.html')
-    if os.path.exists(template_path):
-        return send_file(template_path)
+    """Halaman Editor Konfigurasi Terpusat.
+
+    Dikirim lewat render_template, BUKAN send_file: halamannya menanam alamat
+    API-nya sendiri lewat `url_for`, dan send_file mengirim berkasnya mentah
+    sehingga Jinja tidak pernah jalan - alamatnya ikut terkirim apa adanya dan
+    halaman gagal memuat data (2026-11-25).
+    """
     return render_template('config_manager.html')
 
 @config_manager_bp.route('/api/configs', methods=['GET'])

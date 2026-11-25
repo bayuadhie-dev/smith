@@ -85,6 +85,10 @@
   </div>
 
   <script>
+    // Alamat API diturunkan dari pendaftaran blueprint. Pernah diketik
+    // '/configedit/...' padahal blueprint-nya terdaftar di '/api/config' sejak
+    // lama - halamannya memuat, lalu gagal mengambil data dengan 404 (2026-11-25).
+    const ALAMAT_KONFIG = "{{ url_for('config_manager.get_configs') }}";
     let allConfigs = [];
     let activeCategory = 'job_costing';
     let pendingChanges = {};
@@ -125,7 +129,7 @@
     // Load configurations from API
     async function loadConfigs() {
       try {
-        const response = await fetch('/configedit/api/configs', {
+        const response = await fetch(ALAMAT_KONFIG, {
           headers: getAuthHeaders()
         });
         
@@ -274,7 +278,7 @@
       }
 
       try {
-        const response = await fetch('/configedit/api/configs', {
+        const response = await fetch(ALAMAT_KONFIG, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
