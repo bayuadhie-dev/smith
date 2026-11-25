@@ -1073,6 +1073,15 @@ def create_grn():
             except ValueError:
                 return jsonify({'error': 'Tanggal penerimaan tidak valid'}), 400
 
+        # Gerbang QC penerimaan sedang dimatikan? Penerimaan lahir langsung
+        # disetujui, lengkap dengan catatan kenapa - supaya enam bulan lagi tidak
+        # ada yang bingung melihat semua dokumen disetujui oleh orang gudang.
+        tanpa_persetujuan = grn_tanpa_persetujuan()
+        catatan = (data.get('notes') or '').strip()
+        if tanpa_persetujuan:
+            tanda = 'Disetujui otomatis - persetujuan QC penerimaan sedang dinonaktifkan.'
+            catatan = f'{catatan}\n{tanda}'.strip() if catatan else tanda
+
         grn = GoodsReceivedNote(
             grn_number=grn_number,
             po_id=grn_po.id if grn_po else None,
@@ -1082,8 +1091,13 @@ def create_grn():
             supplier_invoice_number=(data.get('supplier_invoice_number') or '').strip() or None,
             vehicle_number=data.get('vehicle_number'),
             driver_name=data.get('driver_name'),
-            notes=(data.get('notes') or None),
-            status='pending',
+            notes=(catatan or None),
+            status='approved' if tanpa_persetujuan else 'pending',
+            # Sengaja TIDAK ditandai "lulus QC": tidak ada yang memeriksanya.
+            # Kolom QC tetap berbunyi "Belum inspeksi", dan itu memang benar.
+            quality_status=None,
+            approved_by=user_id if tanpa_persetujuan else None,
+            approved_at=get_local_now() if tanpa_persetujuan else None,
             received_by=user_id
         )
         
@@ -1160,6 +1174,15 @@ def create_grn():
                 
                 if not inventory:
                     from utils.inventory_helpers import resolve_initial_stock_status
+                    # Semua barang di master bertanda wajib persetujuan, jadi stok
+                    # normalnya lahir karantina dan baru lepas saat GRN disetujui.
+                    # Selagi gerbang QC dimatikan, tidak ada yang akan melepasnya -
+                    # jadi lahirnya langsung tersedia.
+                    status_awal = 'available' if tanpa_persetujuan else resolve_initial_stock_status(
+                        'available',
+                        product=db.session.get(Product, product_id) if product_id else None,
+                        material=db.session.get(Material, material_id) if material_id else None,
+                    )
                     inventory = Inventory(
                         product_id=product_id,
                         material_id=material_id,
@@ -1167,11 +1190,7 @@ def create_grn():
                         quantity_on_hand=0,
                         quantity_available=0,
                         batch_number=batch_number,
-                        stock_status=resolve_initial_stock_status(
-                            'available',
-                            product=db.session.get(Product, product_id) if product_id else None,
-                            material=db.session.get(Material, material_id) if material_id else None,
-                        ),
+                        stock_status=status_awal,
                         grn_id=grn.id
                     )
                     db.session.add(inventory)
@@ -1342,6 +1361,20 @@ def create_grn():
         if 'StringDataRightTruncation' in msg or 'value too long' in msg:
             return jsonify({'error': 'Ada isian yang terlalu panjang (misalnya No. batch, No. lot, atau catatan). Persingkat atau pisahkan per baris, lalu simpan lagi.'}), 400
         return jsonify({'error': 'Penerimaan barang gagal disimpan: ' + msg.split('\n')[0][:200]}), 500
+
+
+def grn_tanpa_persetujuan():
+    """Gerbang QC penerimaan sedang dimatikan?
+
+    Diminta manajemen 2026-11-25: QC belum dilatih dan semua divisi baru mulai
+    memakai sistem, sementara stok tertahan karantina dan fakturnya tidak bisa
+    dibuat. Selagi saklar ini menyala, penerimaan lahir langsung disetujui dan
+    stoknya tidak lewat karantina. Dimatikan lagi begitu QC jalan - saklarnya di
+    Pengaturan > Konfigurasi Sistem Lanjutan, hanya bisa diubah akun pemilik.
+    """
+    from models.settings import SystemSetting
+    row = SystemSetting.query.filter_by(setting_key='purchasing.grn_tanpa_persetujuan').first()
+    return bool(row) and str(row.setting_value).strip().lower() in ('true', '1', 'yes')
 
 
 def _uom_factors(material_id=None, product_id=None):

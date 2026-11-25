@@ -17,6 +17,15 @@ config_manager_bp = Blueprint('config_manager', __name__, template_folder='../te
 
 _configs_seeded = False
 
+
+# Konfigurasi yang mengubah cara kerja gerbang mutu/persetujuan: hanya boleh
+# disentuh pemilik sistem (akun `admin`), bukan setiap Super Admin. Diputuskan
+# 2026-11-25 saat gerbang QC penerimaan dimatikan sementara - yang menyalakan dan
+# mematikan harus satu orang yang tahu konsekuensinya.
+KUNCI_KHUSUS_PEMILIK = {'purchasing.grn_tanpa_persetujuan'}
+PEMILIK_USERNAME = 'admin'
+
+
 def require_super_admin(f):
     @wraps(f)
     @jwt_required()
@@ -153,6 +162,7 @@ MASTER_CONFIGS = [
     {'key': 'purchasing.default_payment_terms_days','category': 'purchasing', 'name': 'Default Payment Terms (days)',   'value': '30',       'type': 'integer', 'description': 'Jangka waktu pembayaran default ke supplier jika tidak didefinisikan di kontrak (hari).'},
     {'key': 'purchasing.pr_auto_approve_limit',     'category': 'purchasing', 'name': 'PR Auto-Approve Limit (Rp)',     'value': '1000000',  'type': 'integer', 'description': 'Nilai Purchase Request di bawah batas ini disetujui otomatis (Rupiah).'},
     {'key': 'purchasing.max_vendor_quote_days',     'category': 'purchasing', 'name': 'Max Vendor Quote Wait (days)',   'value': '7',        'type': 'integer', 'description': 'Waktu maksimum menunggu penawaran harga dari vendor sebelum eskalasi (hari).'},
+    {'key': 'purchasing.grn_tanpa_persetujuan',     'category': 'purchasing', 'name': 'Penerimaan langsung disetujui (tanpa inspeksi QC)', 'value': 'false', 'type': 'boolean', 'description': 'Selagi menyala: penerimaan barang langsung berstatus disetujui, stoknya langsung tersedia (tidak lewat karantina), dan fakturnya bisa langsung dibuat. Langkah Inspeksi disembunyikan - barang cacat ditangani lewat Retur Pembelian, bukan ditahan di pintu. Dipakai selama QC belum dilatih; matikan lagi begitu QC jalan. Hanya bisa diubah oleh akun admin.'},
 
     # ────────────────────────────────────────────────────────
     # SALES (Modul Penjualan)
@@ -466,6 +476,13 @@ def update_configs():
             setting = SystemSetting.query.filter_by(setting_key=key).first()
             if not setting or not setting.is_editable:
                 continue
+
+            if key in KUNCI_KHUSUS_PEMILIK:
+                pengubah = db.session.get(User, int(user_id)) if user_id else None
+                if not pengubah or pengubah.username != PEMILIK_USERNAME:
+                    return jsonify({'success': False,
+                                    'message': f'"{setting.setting_name or key}" hanya bisa diubah oleh akun '
+                                               f'{PEMILIK_USERNAME}.'}), 403
 
             # Format/clean value for validation
             if setting.data_type == 'boolean':
