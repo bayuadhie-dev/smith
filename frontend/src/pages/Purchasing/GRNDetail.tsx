@@ -11,6 +11,7 @@ import {
 } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 import NumberInput from '../../components/ui/NumberInput'
+import { confirmDialog } from '../../components/ui/ConfirmDialog'
 
 import { DetailSkeleton } from '../../components/ui/Skeleton'
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
@@ -136,6 +137,25 @@ export default function GRNDetail() {
     }
   };
 
+  const handleHapus = async () => {
+    const setuju = await confirmDialog(
+      'Stok yang lahir dari penerimaan ini ditarik kembali, jumlah diterima di PO dihitung ulang, '
+      + 'dan kalau sudah menyentuh buku besar jurnalnya dibalik. Tidak bisa dibatalkan.',
+      { title: `Hapus penerimaan ${grn?.grn_number}?`, confirmText: 'Hapus penerimaan', danger: true },
+    )
+    if (!setuju) return
+    setSaving(true)
+    try {
+      const r = await axiosInstance.delete(`/api/purchasing/grn/${id}`)
+      toast.success(r.data?.message || 'Penerimaan dihapus')
+      navigate('/app/purchasing/grn')
+    } catch (err: any) {
+      toast.error(err?.response?.data?.error || 'Gagal menghapus penerimaan')
+    } finally {
+      setSaving(false)
+    }
+  }
+
   const handleApprove = async () => {
     try {
       await axiosInstance.post(`/api/purchasing/grn/${id}/approve`);
@@ -208,6 +228,18 @@ export default function GRNDetail() {
             </button>
           )}
           <Link to={`/app/purchasing/grn/${grn.id}/edit`} className="px-3 py-1.5 border border-gray-300 text-gray-700 rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-200 dark:border-gray-600">Ubah</Link>
+          {/* Sampai 2026-11-24 penerimaan yang salah catat tidak bisa dibuang sama
+              sekali - tidak ada tombolnya, tidak ada endpoint-nya. Yang menolak
+              penghapusan sekarang server (sudah difakturkan / stoknya sudah terpakai),
+              jadi alasannya tersampaikan, bukan tombolnya yang disembunyikan. */}
+          <button
+            type="button"
+            onClick={handleHapus}
+            disabled={saving}
+            className="px-3 py-1.5 border border-red-300 text-red-700 rounded-lg text-sm hover:bg-red-50 disabled:opacity-50 dark:border-red-800 dark:text-red-300 dark:hover:bg-red-900/20"
+          >
+            Hapus
+          </button>
           <DocumentGenerateButton transactionType="grn" transactionId={grn.id} transactionNumber={grn.grn_number} label="Cetak" />
           <DocumentGenerateButton transactionType="grn" transactionId={grn.id} transactionNumber={grn.grn_number} label="Cetak + rincian batch" detail />
           {grn.status === 'approved' ? (
@@ -243,10 +275,11 @@ export default function GRNDetail() {
           leaving them to guess, and point at the two documents that do undo it. */}
       {grn.status === 'approved' && (
         <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-100">
-          <p className="font-medium">Penerimaan yang sudah disetujui tidak bisa dihapus.</p>
+          <p className="font-medium">Penerimaan ini sudah disetujui - stok dan jurnalnya sudah terbentuk.</p>
           <p className="mt-1">
-            Stok dan jurnalnya sudah terbentuk, jadi nomornya harus tetap ada sebagai jejak. Lewat <strong>Ubah</strong> masih
-            bisa diperbaiki: tanggal, nomor surat jalan, nomor faktur pemasok, sopir/kendaraan, catatan, nomor batch dan lot.
+            Masih bisa <strong>Hapus</strong> selama stoknya belum terpakai dan belum difakturkan: stoknya ditarik lagi dan
+            jurnalnya dibalik. Kalau sudah terpakai, pakai <strong>Ubah</strong> untuk membetulkan tanggal, nomor surat jalan,
+            nomor faktur pemasok, sopir/kendaraan, catatan, nomor batch dan lot.
             Jumlah dan gudang terkunci - untuk mengurangi stok buat{' '}
             <Link to="/app/purchasing/returns/new" className="underline">Retur Pembelian</Link>{' '}
             (barang dikembalikan ke pemasok) atau{' '}

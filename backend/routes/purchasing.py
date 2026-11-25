@@ -2085,6 +2085,151 @@ def _apply_rebatch(grn, spec):
     db.session.flush()
 
 
+def _punya_izin(nama):
+    """Apakah pengguna sekarang punya satu izin tertentu. Super admin selalu punya."""
+    from utils.auth_decorators import _get_user_permissions
+    user = db.session.get(User, get_jwt_identity())
+    if not user:
+        return False
+    return bool(getattr(user, 'is_super_admin', False)) or nama in _get_user_permissions(user)
+
+
+@purchasing_bp.route('/grn/<int:grn_id>', methods=['DELETE'])
+@jwt_required()
+@require_permission('purchasing.create')
+def delete_grn(grn_id):
+    """Hapus penerimaan yang salah catat, beserta jejak yang dibuatnya.
+
+    Sampai 2026-11-24 tidak ada jalan sama sekali untuk membatalkan penerimaan
+    yang salah - gudang hanya bisa membiarkannya menggantung di daftar, dan
+    jumlah di PO ikut salah selamanya.
+
+    Yang dihapus bukan cuma barisnya: stok yang lahir dari penerimaan ini ditarik
+    kembali, mutasi stoknya dibuang, dan kalau sudah menyentuh buku besar,
+    jurnalnya DIBALIK (bukan dihapus - jurnal yang sudah terposting tidak boleh
+    hilang tanpa jejak). Jumlah diterima di PO dihitung ulang sesudahnya.
+
+    Ditolak kalau jejaknya sudah dipakai orang lain: sudah difakturkan, atau
+    stoknya sudah terpakai sebagian. Dua hal itu harus dibereskan lewat retur
+    pembelian atau penyesuaian stok, bukan dengan menghapus riwayatnya.
+    """
+    from models.warehouse import Inventory
+    from models.wms_advanced import InventoryTransaction
+
+    grn = db.session.get(GoodsReceivedNote, grn_id)
+    if not grn:
+        return jsonify({'error': 'Penerimaan tidak ditemukan'}), 404
+
+    faktur = Invoice.query.filter_by(grn_id=grn.id).first()
+    if faktur:
+        return jsonify({'error': f'Penerimaan ini sudah difakturkan ({faktur.invoice_number}). '
+                                 'Batalkan atau ubah fakturnya dulu.'}), 409
+
+    # Penerimaan yang sudah disetujui hanya boleh dihapus oleh yang berhak
+    # menyetujui - stoknya sudah lepas karantina dan sudah boleh dipakai siapa pun.
+    if grn.status == 'approved' and not _punya_izin('purchasing.approve'):
+        return jsonify({'error': 'Penerimaan yang sudah disetujui hanya bisa dihapus oleh '
+                                 'yang berhak menyetujui penerimaan.'}), 403
+
+    masuk = InventoryTransaction.query.filter(
+        InventoryTransaction.reference_number == grn.grn_number,
+        InventoryTransaction.direction == 'in').all()
+    keluar = InventoryTransaction.query.filter(
+        InventoryTransaction.reference_number == grn.grn_number,
+        InventoryTransaction.direction == 'out').all()
+
+    tarik = []
+    for t in masuk:
+        q = Inventory.query.filter(Inventory.location_id == t.to_location_id)
+        q = q.filter(Inventory.product_id == t.product_id) if t.product_id else q.filter(Inventory.material_id == t.material_id)
+        q = q.filter(Inventory.batch_number == t.batch_number) if t.batch_number else q.filter(Inventory.batch_number.is_(None))
+        baris = q.first()
+        jumlah = float(t.quantity or 0)
+        if jumlah <= 0:
+            continue
+        if not baris or float(baris.quantity_on_hand or 0) + 1e-6 < jumlah:
+            nama = (baris.product.name if baris and baris.product else
+                    (baris.material.name if baris and baris.material else 'barang'))
+            return jsonify({'error': f'Stok dari penerimaan ini sudah terpakai sebagian ({nama}), '
+                                     'jadi penerimaannya tidak bisa dihapus. Pakai Retur Pembelian '
+                                     'atau Penyesuaian Stok.'}), 409
+        tarik.append((baris, jumlah))
+
+    try:
+        for baris, jumlah in tarik:
+            baris.quantity_on_hand = float(baris.quantity_on_hand or 0) - jumlah
+            baris.quantity_available = max(0.0, float(baris.quantity_available or 0) - jumlah)
+            baris.updated_at = get_local_now()
+            if float(baris.quantity_on_hand) <= 1e-6 and float(baris.quantity_reserved or 0) <= 1e-6:
+                db.session.delete(baris)
+
+        for t in masuk + keluar:
+            db.session.delete(t)
+
+        _balik_jurnal_penerimaan(grn, int(get_jwt_identity()))
+
+        po_id = grn.po_id
+        nomor = grn.grn_number
+        for item in list(grn.items):
+            db.session.delete(item)
+        db.session.delete(grn)
+        db.session.flush()
+        if po_id:
+            _sync_po_received(po_id)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.exception('Gagal menghapus GRN')
+        return jsonify({'error': f'Gagal menghapus penerimaan: {e}'}), 500
+
+    return jsonify({'message': f'Penerimaan {nomor} dihapus',
+                    'stok_ditarik': len(tarik), 'mutasi_dihapus': len(masuk) + len(keluar)}), 200
+
+
+def _balik_jurnal_penerimaan(grn, user_id):
+    """Balik jurnal GR/IR penerimaan ini, kalau ada.
+
+    Jurnal yang sudah terposting tidak dihapus - dibalik, supaya penerimaan dan
+    pembatalannya dua-duanya terbaca di buku besar.
+    """
+    from models.approval_workflow import PendingJournalEntry
+    from models.finance import AccountingEntry
+    from utils.finance_helpers import is_period_locked, post_pending_journal
+
+    baris = AccountingEntry.query.filter(
+        AccountingEntry.reference_type == 'goods_receipt',
+        AccountingEntry.reference_number == grn.grn_number,
+        AccountingEntry.status == 'posted').all()
+    if not baris:
+        return None
+
+    tanggal = get_local_today()
+    if is_period_locked(tanggal, transaction_type='journal_entry'):
+        raise ValueError(f'Periode {tanggal:%Y-%m} sudah ditutup, pembatalan tidak bisa dijurnal')
+
+    catatan = f'Pembatalan penerimaan {grn.grn_number}'
+    lines, total = [], 0.0
+    for e in baris:
+        debit = float(e.credit_amount or 0)
+        kredit = float(e.debit_amount or 0)
+        if debit == 0 and kredit == 0:
+            continue
+        lines.append({'account_id': e.account_id, 'debit': debit, 'credit': kredit,
+                      'description': catatan})
+        total += debit
+    if not lines:
+        return None
+
+    pending = PendingJournalEntry(
+        workflow_id=None, entry_date=tanggal, description=catatan[:255],
+        reference=grn.grn_number, lines=lines, total_debit=total, total_credit=total,
+        created_by=user_id)
+    db.session.add(pending)
+    db.session.flush()
+    return post_pending_journal(pending.id, posted_by_user_id=user_id,
+                                reference_type='goods_receipt_reversal', reference_id=grn.id)
+
+
 @purchasing_bp.route('/grn/<int:grn_id>', methods=['PUT'])
 @jwt_required()
 @require_permission('purchasing.edit')
