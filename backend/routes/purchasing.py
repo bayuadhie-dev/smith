@@ -1353,9 +1353,16 @@ def _uom_factors(material_id=None, product_id=None):
         return None, {}
     base = item.primary_uom
     out = {base: 1.0}
+    # Konversi milik barang ini, ditambah konversi UMUM (yang tidak menyebut barang
+    # apa pun). Dulu syaratnya cuma "material_id cocok ATAU material_id kosong" -
+    # padahal konversi milik sebuah PRODUK juga punya material_id kosong, jadi
+    # satuan produk lain ikut terbawa ke bahan. Akibatnya pilihan satuan PLASTIK
+    # CRYOPACK memuat INR milik FALMED ALCOHOL SWAB (1 INR = 100 PCS), dan kalau
+    # terpilih, 53.800 tercatat jadi 5.380.000 PCS (dilaporkan 2026-11-25).
+    umum = db.and_(UoMConversion.material_id.is_(None), UoMConversion.product_id.is_(None))
     q = UoMConversion.query.filter(UoMConversion.is_active == True)
-    q = q.filter(db.or_(UoMConversion.material_id == material_id, UoMConversion.material_id.is_(None))) if material_id else \
-        q.filter(db.or_(UoMConversion.product_id == product_id, UoMConversion.product_id.is_(None)))
+    q = q.filter(db.or_(UoMConversion.material_id == material_id, umum)) if material_id else \
+        q.filter(db.or_(UoMConversion.product_id == product_id, umum))
     rows = q.all()
     rows.sort(key=lambda r: 0 if (r.material_id or r.product_id) else 1)
     b = str(base).lower()

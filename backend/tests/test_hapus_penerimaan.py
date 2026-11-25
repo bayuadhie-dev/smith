@@ -35,6 +35,9 @@ def siap(db_session):
     db_session.add_all([
         GlobalAccountDefault(transaction_key='gr_ir_clearing', account_id=grir.id),
         GlobalAccountDefault(transaction_key='akun_persediaan_id', account_id=persediaan.id),
+        GlobalAccountDefault(
+            transaction_key='accounts_payable',
+            account_id=_akun(db_session, '200001', 'Hutang Usaha IDR', 'liability', 'credit').id),
     ])
     sup = Supplier(code='SUP-HPS', company_name='Pemasok Uji', is_active=True)
     zona = WarehouseZone(code='Z-HPS', name='Gudang Uji', zone_type='all', material_type='all')
@@ -175,3 +178,68 @@ def test_penerimaan_tanpa_stok_dan_tanpa_jurnal_tetap_bisa_dihapus(client, auth_
 
     assert client.delete(f'/api/purchasing/grn/{grn_id}', headers=auth_headers).status_code == 200
     assert db.session.get(GoodsReceivedNote, grn_id) is None
+
+
+# ---- Rantai hapus: pembayaran -> faktur -> penerimaan ----------------------
+# Diputuskan manajemen 2026-11-25: "Boleh ada fitur hapus tp berurutan pembelian
+# kalo udh ada pembayaran. Urutan hapus dari pembayaran -> PI -> Grn".
+# Pembatalan pembayaran sudah ada (void). Yang bolong: menghapus faktur membuang
+# barisnya SAJA - jurnalnya tetap terposting, dan PO tetap mengira sudah tertagih.
+
+def test_hapus_faktur_membalik_jurnal_dan_mengembalikan_jumlah_tertagih(
+        client, auth_headers, db_session, siap):
+    from models.finance import Invoice
+    from models.purchasing import PurchaseOrderItem
+
+    m, po, item = _po(db_session, siap, qty=100, harga=1000)
+    _terima(client, auth_headers, siap, m, po, item, 40)
+
+    r = client.post('/api/purchasing/purchase-invoices', headers=auth_headers, json={
+        'po_id': po.id, 'supplier_id': siap['supplier'].id, 'invoice_date': date.today().isoformat(),
+        'due_date': date.today().isoformat(),
+        'items': [{'po_item_id': item.id, 'material_id': m.id, 'description': m.name,
+                   'quantity': 40, 'uom': 'KG', 'unit_price': 1000}]})
+    assert r.status_code == 201, r.get_json()
+    inv_id = r.get_json()['invoice']['id']
+    inv = db.session.get(Invoice, inv_id)
+
+    db_session.refresh(item)
+    assert float(item.quantity_invoiced or 0) == 40
+    sebelum = AccountingEntry.query.filter_by(reference_type='purchase_invoice',
+                                              reference_id=inv_id).count()
+    assert sebelum >= 2
+
+    h = client.delete(f'/api/purchasing/purchase-invoices/{inv_id}', headers=auth_headers)
+    assert h.status_code == 200, h.get_json()
+
+    assert db.session.get(Invoice, inv_id) is None
+    db_session.refresh(item)
+    assert float(item.quantity_invoiced or 0) == 0          # PO siap difakturkan ulang
+
+    # jurnal aslinya tetap ada, ditambah jurnal pembaliknya - saldonya nol
+    semua = AccountingEntry.query.filter(
+        AccountingEntry.reference_id == inv_id,
+        AccountingEntry.reference_type.in_(('purchase_invoice', 'void_purchase_invoice'))).all()
+    assert len(semua) > sebelum
+    assert round(sum(float(e.debit_amount or 0) - float(e.credit_amount or 0) for e in semua), 2) == 0
+
+
+def test_faktur_yang_sudah_dibayar_tidak_bisa_dihapus(client, auth_headers, db_session, siap):
+    from models.finance import Invoice
+
+    m, po, item = _po(db_session, siap, qty=100, harga=1000)
+    _terima(client, auth_headers, siap, m, po, item, 10)
+    r = client.post('/api/purchasing/purchase-invoices', headers=auth_headers, json={
+        'po_id': po.id, 'supplier_id': siap['supplier'].id, 'invoice_date': date.today().isoformat(),
+        'due_date': date.today().isoformat(),
+        'items': [{'po_item_id': item.id, 'material_id': m.id, 'description': m.name,
+                   'quantity': 10, 'uom': 'KG', 'unit_price': 1000}]})
+    inv_id = r.get_json()['invoice']['id']
+    inv = db.session.get(Invoice, inv_id)
+    inv.paid_amount = 5000
+    db_session.commit()
+
+    h = client.delete(f'/api/purchasing/purchase-invoices/{inv_id}', headers=auth_headers)
+    assert h.status_code == 400
+    assert 'pembayaran' in h.get_json()['error'].lower()
+    assert db.session.get(Invoice, inv_id) is not None

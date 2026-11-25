@@ -1,5 +1,5 @@
 import json
-from flask import Blueprint, request, jsonify, abort
+from flask import Blueprint, current_app, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from utils.auth_decorators import require_permission
 from models import db, Invoice, InvoiceItem, PurchaseOrder, PurchaseOrderItem, Supplier, User, Payment, Account
@@ -1116,15 +1116,48 @@ def delete_purchase_invoice(id):
             abort(404)
 
         if float(invoice.paid_amount or 0) > 0:
-            return jsonify({'error': 'Cannot delete invoice with payments recorded'}), 400
+            return jsonify({'error': f'Faktur {invoice.invoice_number} sudah ada pembayarannya. '
+                                     'Batalkan pembayarannya dulu, baru fakturnya bisa dihapus.'}), 400
 
+        # Faktur ini sudah menyentuh buku besar (Dr GR/IR atau persediaan, Cr Hutang
+        # Usaha) dan sudah menaikkan "jumlah tertagih" di baris PO-nya. Sampai
+        # 2026-11-25 penghapusannya membuang barisnya SAJA: jurnalnya tetap
+        # terposting selamanya - hutang usaha jadi kelebihan sebesar faktur yang
+        # sudah tidak ada - dan PO-nya tetap mengira sudah tertagih, jadi faktur
+        # penggantinya mengusulkan jumlah yang kurang.
+        from models.purchasing import PurchaseOrderItem
+        from utils.finance_helpers import is_period_locked, reverse_accounting_entries
+
+        tanggal = get_local_today()
+        if is_period_locked(tanggal, transaction_type='journal_entry'):
+            return jsonify({'error': f'Periode {tanggal:%Y-%m} sudah ditutup, '
+                                     'pembatalan fakturnya tidak bisa dijurnal'}), 409
+
+        dibalik = reverse_accounting_entries(
+            'purchase_invoice', invoice.id, tanggal, int(get_jwt_identity()),
+            description=f'Pembatalan faktur pembelian {invoice.invoice_number}')
+
+        dikembalikan = 0
+        for item in invoice.items:
+            if not item.po_item_id:
+                continue
+            poi = db.session.get(PurchaseOrderItem, item.po_item_id)
+            if not poi:
+                continue
+            poi.quantity_invoiced = max(0.0, float(poi.quantity_invoiced or 0) - float(item.quantity or 0))
+            dikembalikan += 1
+
+        nomor = invoice.invoice_number
         db.session.delete(invoice)
         db.session.commit()
 
-        return jsonify({'message': 'Purchase invoice deleted successfully'}), 200
+        return jsonify({'message': f'Faktur {nomor} dihapus',
+                        'jurnal_dibalik': len(dibalik or []),
+                        'baris_po_dikembalikan': dikembalikan}), 200
 
     except Exception as e:
         db.session.rollback()
+        current_app.logger.exception('Gagal menghapus faktur pembelian')
         return jsonify({'error': str(e)}), 500
 
 
