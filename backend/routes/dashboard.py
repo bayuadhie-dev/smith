@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required
 from utils.auth_decorators import require_permission
+from utils.pemilik import adalah_pemilik
 from models import db, SalesOrder, WorkOrder, Inventory, Machine, Product, Material, User, Customer, Supplier, PurchaseOrder
 from utils.i18n import success_response, error_response, get_message
 from models.oee import OEERecord, OEEAlert
@@ -506,8 +507,11 @@ def get_module_summaries():
     #   - uang milik satu modul (omzet, nilai stok, utang jatuh tempo): pemegang
     #     keputusan di modul itu (`<modul>.approve`) atau pemegang dashboard.finance
     # Yang tidak berhak tidak melihat baris kosong: rupiahnya DIGANTI kuantitas.
+    # Catatan penting: status super admin TIDAK membuka angka rupiah. Akun super
+    # admin bisa lebih dari satu (`internalaudit`), dan pemilik minta hanya akun
+    # `admin` miliknya yang ikut terbuka tanpa izin (2026-11-26).
     def uang_perusahaan():
-        return perms is None or 'dashboard.finance' in perms
+        return adalah_pemilik(user) or 'dashboard.finance' in (perms or set())
 
     def uang_modul(module):
         return uang_perusahaan() or f'{module}.approve' in (perms or set())

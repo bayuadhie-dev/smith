@@ -23,7 +23,7 @@ _configs_seeded = False
 # 2026-11-25 saat gerbang QC penerimaan dimatikan sementara - yang menyalakan dan
 # mematikan harus satu orang yang tahu konsekuensinya.
 KUNCI_KHUSUS_PEMILIK = {'purchasing.grn_tanpa_persetujuan'}
-PEMILIK_USERNAME = 'admin'
+from utils.pemilik import PEMILIK_USERNAME  # noqa: E402  (satu sumber nama akun pemilik)
 
 
 def require_super_admin(f):

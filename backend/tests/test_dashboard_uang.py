@@ -93,6 +93,29 @@ def test_staf_tetap_dapat_gantinya_dalam_kuantitas(client, staf_gudang):
     assert 'po_open' in per_modul.get('purchasing', [])
 
 
+def test_super_admin_selain_akun_pemilik_tidak_melihat_rupiah(client, app, db_session):
+    """Akun super admin ada lebih dari satu. Pemilik minta hanya akun `admin`
+    miliknya yang terbuka tanpa izin - `internalaudit` dan super admin lain ikut
+    disaring seperti pengguna biasa (keputusan 2026-11-26)."""
+    from models.user import User, UserRole
+
+    peran = _peran('Uji Super Admin Dasbor',
+                   ['dashboard.view', 'warehouse.view', 'sales.view', 'purchasing.view', 'finance.view'])
+    for username, pemilik in (('admin', True), ('auditinternal', False)):
+        u = User(username=username, email=f'{username}@uji.local', full_name=username,
+                 password_hash=app.bcrypt.generate_password_hash('ujicoba123').decode('utf-8'),
+                 is_active=True, is_super_admin=True)
+        db.session.add(u)
+        db.session.commit()
+        db.session.add(UserRole(user_id=u.id, role_id=peran.id))
+        db.session.commit()
+        d = _dasbor(client, username)
+        if pemilik:
+            assert 'kas' in _rupiah(d), 'akun pemilik justru kehilangan angkanya'
+        else:
+            assert _rupiah(d) == [], f'super admin lain masih melihat rupiah: {_rupiah(d)}'
+
+
 def test_pemegang_izin_tetap_melihat_rupiahnya(client, orang_keuangan):
     d = _dasbor(client, 'ujifinansial')
     rupiah = _rupiah(d)
