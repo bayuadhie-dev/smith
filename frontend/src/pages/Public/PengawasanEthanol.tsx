@@ -25,7 +25,7 @@ interface Mutasi {
   masuk: number; keluar: number; saldo: number; keterangan: string | null; rincian: Rincian | null
 }
 interface Data {
-  barang: { kode: string; nama: string; satuan: string }
+  barang: { kode: string; nama: string; satuan: string; status_cukai?: string }
   periode: { dari: string | null; sampai: string | null }
   ringkasan: { saldo_awal: number; masuk: number; keluar: number; saldo_akhir: number }
   mutasi: Mutasi[]
@@ -118,6 +118,11 @@ export default function PengawasanEthanol() {
             <span className="rounded bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300">
               satuan {satuan}
             </span>
+            {data.barang.status_cukai && (
+              <span className="rounded bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
+                {data.barang.status_cukai}
+              </span>
+            )}
           </div>
           <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
             PT Fengsheng Nonwoven Indonesia &middot; data per {new Date(data.data_per).toLocaleString('id-ID')}

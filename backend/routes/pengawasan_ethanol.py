@@ -33,6 +33,11 @@ pengawasan_bp = Blueprint('pengawasan', __name__)
 KUNCI_TOKEN = 'pengawasan.ethanol_token'
 KUNCI_BARANG = 'pengawasan.ethanol_material_code'
 BARANG_BAWAAN = '1050100013'
+KUNCI_CUKAI = 'pengawasan.ethanol_status_cukai'
+# Ethanolnya dibeli dengan cukai dibayar; pabrik belum punya fasilitas
+# pembebasan (ditegaskan user 2026-11-26). Ditaruh di setelan, bukan ditulis
+# mati di kode, supaya kalau fasilitasnya nanti turun cukup diganti di sini.
+CUKAI_BAWAAN = 'Cukai dibayar, belum memakai fasilitas pembebasan'
 
 
 # ---- token -----------------------------------------------------------------
@@ -60,6 +65,12 @@ def _kode_barang():
     row = _setelan(KUNCI_BARANG, BARANG_BAWAAN, nama='Kode barang yang diawasi Bea Cukai',
                    keterangan='Kode bahan yang tampil di halaman pengawasan. Bawaannya ethanol.')
     return (row.setting_value or BARANG_BAWAAN).strip()
+
+
+def _status_cukai():
+    row = _setelan(KUNCI_CUKAI, CUKAI_BAWAAN, nama='Status cukai bahan yang diawasi',
+                   keterangan='Tampil di kartu pengawasan. Ganti kalau fasilitas pembebasan sudah terbit.')
+    return (row.setting_value or CUKAI_BAWAAN).strip()
 
 
 def _token_sah(diberikan):
@@ -202,7 +213,8 @@ def susun_data(dari, sampai):
         if float(i.quantity_on_hand or 0) != 0]
 
     return {
-        'barang': {'kode': bahan.code, 'nama': bahan.name, 'satuan': bahan.primary_uom},
+        'barang': {'kode': bahan.code, 'nama': bahan.name, 'satuan': bahan.primary_uom,
+                   'status_cukai': _status_cukai()},
         'periode': {'dari': dari.isoformat() if dari else None,
                     'sampai': sampai.isoformat() if sampai else None},
         'ringkasan': {
