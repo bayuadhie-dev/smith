@@ -498,6 +498,20 @@ def get_module_summaries():
     def can(module):
         return perms is None or f'{module}.view' in perms
 
+    # Angka rupiah di dasbor utama punya penjaga sendiri (2026-11-26). Sebelumnya
+    # ikut izin `<modul>.view` yang dipegang hampir semua peran - akibatnya nilai
+    # stok fisik (miliaran) terbaca sampai helper gudang dan operator forklift,
+    # omzet serta piutang terbaca staf PPIC. Dua tingkat:
+    #   - uang lintas perusahaan (kas, piutang usaha, utang usaha): `dashboard.finance`
+    #   - uang milik satu modul (omzet, nilai stok, utang jatuh tempo): pemegang
+    #     keputusan di modul itu (`<modul>.approve`) atau pemegang dashboard.finance
+    # Yang tidak berhak tidak melihat baris kosong: rupiahnya DIGANTI kuantitas.
+    def uang_perusahaan():
+        return perms is None or 'dashboard.finance' in perms
+
+    def uang_modul(module):
+        return uang_perusahaan() or f'{module}.approve' in (perms or set())
+
     today = get_local_now().date()
     month_start = today.replace(day=1)
     soon = today + timedelta(days=30)
@@ -543,7 +557,11 @@ def get_module_summaries():
                                                Inventory.stock_status == 'quarantine').count()
             action('stok_rendah', 'Barang di bawah stok minimum', rendah, '/app/warehouse/stock-summary')
             action('kedaluwarsa', 'Barang kedaluwarsa dalam 30 hari', exp, '/app/warehouse/stock-summary')
-            return [item('nilai', 'Nilai stok fisik', num(nilai), 'currency'),
+            batch_isi = Inventory.query.filter(Inventory.is_active.is_(True), Inventory.quantity_on_hand > 0).count()
+            nilai_atau_jumlah = (item('nilai', 'Nilai stok fisik', num(nilai), 'currency')
+                                 if uang_modul('warehouse') else
+                                 item('batch', 'Batch berisi stok', batch_isi))
+            return [nilai_atau_jumlah,
                     item('rendah', 'Di bawah minimum', rendah, tone='warn' if rendah else None),
                     item('exp', 'Hampir kedaluwarsa', exp, tone='warn' if exp else None),
                     item('karantina', 'Batch karantina', karantina)]
@@ -562,8 +580,15 @@ def get_module_summaries():
             jt_n = Invoice.query.filter(Invoice.invoice_type == 'sales', Invoice.balance_due > 0,
                                         Invoice.due_date < today, Invoice.status.notin_(['draft', 'cancelled'])).count()
             action('piutang_jt', 'Faktur penjualan lewat jatuh tempo', jt_n, '/app/sales/invoices')
-            return [item('omzet', 'Pesanan bulan ini', num(omzet), 'currency'), item('so_open', 'Pesanan terbuka', so_open),
-                    item('piutang_jt', 'Piutang lewat jatuh tempo', num(jt), 'currency', 'bad' if jt else None)]
+            so_bulan = SalesOrder.query.filter(SalesOrder.order_date >= month_start,
+                                               SalesOrder.status.notin_(['draft', 'cancelled'])).count()
+            if uang_modul('sales'):
+                baris_uang = [item('omzet', 'Pesanan bulan ini', num(omzet), 'currency'),
+                              item('piutang_jt', 'Piutang lewat jatuh tempo', num(jt), 'currency', 'bad' if jt else None)]
+            else:
+                baris_uang = [item('so_bulan', 'Pesanan bulan ini', so_bulan),
+                              item('piutang_jt', 'Faktur lewat jatuh tempo', jt_n, tone='bad' if jt_n else None)]
+            return [baris_uang[0], item('so_open', 'Pesanan terbuka', so_open), baris_uang[1]]
         r = _safe(penjualan)
         if r is not None:
             modules.append({'key': 'sales', 'title': 'Penjualan', 'href': '/app/sales', 'items': r})
@@ -579,15 +604,21 @@ def get_module_summaries():
                 Invoice.status.notin_(['draft', 'cancelled'])).scalar()
             action('pr_approve', 'Permintaan pembelian menunggu persetujuan', pr, '/app/purchasing/requisitions')
             action('po_approve', 'PO menunggu persetujuan', po, '/app/purchasing/orders')
+            hutang_n = Invoice.query.filter(Invoice.invoice_type == 'purchase', Invoice.balance_due > 0,
+                                            Invoice.due_date < today,
+                                            Invoice.status.notin_(['draft', 'cancelled'])).count()
+            baris_hutang = (item('hutang', 'Utang lewat jatuh tempo', num(hutang), 'currency', 'bad' if hutang else None)
+                            if uang_modul('purchasing') else
+                            item('hutang_n', 'Faktur lewat jatuh tempo', hutang_n, tone='bad' if hutang_n else None))
             return [item('pr', 'PR menunggu approve', pr, tone='warn' if pr else None),
                     item('po', 'PO menunggu approve', po, tone='warn' if po else None),
                     item('po_open', 'PO belum diterima', po_open),
-                    item('hutang', 'Utang lewat jatuh tempo', num(hutang), 'currency', 'bad' if hutang else None)]
+                    baris_hutang]
         r = _safe(pembelian)
         if r is not None:
             modules.append({'key': 'purchasing', 'title': 'Pembelian', 'href': '/app/purchasing', 'items': r})
 
-    if can('finance'):
+    if can('finance') and uang_perusahaan():
         def keuangan():
             from utils.finance_helpers import get_cash_balance_as_of
             kas = get_cash_balance_as_of(today)
@@ -677,6 +708,15 @@ def get_module_summaries():
             prev = num(db.session.query(func.sum(SalesOrder.total_amount)).filter(
                 SalesOrder.order_date >= prev_start, SalesOrder.order_date < month_start,
                 SalesOrder.status.notin_(['draft', 'cancelled'])).scalar())
+            if not uang_modul('sales'):
+                cur = SalesOrder.query.filter(SalesOrder.order_date >= month_start,
+                                              SalesOrder.status.notin_(['draft', 'cancelled'])).count()
+                prev = SalesOrder.query.filter(SalesOrder.order_date >= prev_start,
+                                               SalesOrder.order_date < month_start,
+                                               SalesOrder.status.notin_(['draft', 'cancelled'])).count()
+                delta = round((cur - prev) / prev * 100, 1) if prev else None
+                return {'key': 'omzet', 'label': 'Pesanan penjualan bulan ini', 'value': cur, 'format': 'number',
+                        'delta': delta, 'delta_label': 'dibanding bulan lalu'}
             delta = round((cur - prev) / prev * 100, 1) if prev else None
             return {'key': 'omzet', 'label': 'Pesanan penjualan bulan ini', 'value': cur, 'format': 'currency',
                     'delta': delta, 'delta_label': 'dibanding bulan lalu'}
@@ -696,7 +736,7 @@ def get_module_summaries():
         r = _safe(h_output)
         if r:
             headline.append(r)
-    if can('finance'):
+    if can('finance') and uang_perusahaan():
         def h_kas():
             from utils.finance_helpers import get_cash_balance_as_of
             return {'key': 'kas', 'label': 'Saldo kas dan bank', 'value': num(get_cash_balance_as_of(today)), 'format': 'currency',
