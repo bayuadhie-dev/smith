@@ -74,6 +74,14 @@ function TandaCukai({ cukai }: { cukai: Cukai | null }) {
   )
 }
 
+/** Di dalam tabel tanggalnya diringkas - bulan panjang memakan lebar yang
+ *  dibutuhkan kolom nilai cukai. Rinciannya tetap memakai bulan penuh. */
+const tanggalRingkas = (iso: string | null | undefined) => {
+  if (!iso) return '-'
+  const d = new Date(iso.length <= 10 ? `${iso}T00:00:00` : iso)
+  return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
+}
+
 const JENIS_LABEL: Record<string, string> = {
   penerimaan: 'Penerimaan', pemakaian: 'Pemakaian', penyesuaian: 'Penyesuaian',
 }
@@ -138,7 +146,7 @@ export default function PengawasanEthanol() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 print:bg-white">
-      <div className="mx-auto max-w-5xl space-y-6 px-4 py-6 print:max-w-none print:py-0">
+      <div className="mx-auto max-w-6xl space-y-6 px-4 py-6 print:max-w-none print:py-0">
 
         <header>
           <div className="fn-label mb-1.5">PENGAWASAN &middot; BEA DAN CUKAI</div>
@@ -236,7 +244,7 @@ export default function PengawasanEthanol() {
                     <tr className="cursor-pointer hover:bg-emerald-50 dark:hover:bg-emerald-900/10"
                         onClick={() => setDibuka(dibuka === i ? null : i)}
                         title="Klik untuk lihat dokumen asalnya">
-                      <td className="whitespace-nowrap px-3 py-3 text-gray-700 dark:text-gray-300">{tanggalPanjang(m.tanggal)}</td>
+                      <td className="whitespace-nowrap px-3 py-3 text-gray-700 dark:text-gray-300">{tanggalRingkas(m.tanggal)}</td>
                       <td className="px-3 py-3">
                         <span className={`rounded px-2 py-0.5 text-xs font-medium ${
                           m.jenis === 'penerimaan'
@@ -309,7 +317,7 @@ export default function PengawasanEthanol() {
                   <tr key={i}>
                     <td className="fn-num py-2 pr-3 font-medium text-gray-900 dark:text-white">{s.batch || '-'}</td>
                     <td className="py-2 pr-3 text-gray-700 dark:text-gray-300">{s.gudang || '-'}</td>
-                    <td className="py-2 pr-3 text-gray-700 dark:text-gray-300">{tanggalPanjang(s.kedaluwarsa)}</td>
+                    <td className="whitespace-nowrap py-2 pr-3 text-gray-700 dark:text-gray-300">{tanggalRingkas(s.kedaluwarsa)}</td>
                     <td className="py-2 pr-3">
                       <span className="rounded bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
                         {s.status}
