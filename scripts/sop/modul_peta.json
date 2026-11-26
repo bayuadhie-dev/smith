@@ -1,0 +1,415 @@
+[
+ {
+  "nama": "Sales",
+  "model": "sales.py",
+  "route": "sales.py",
+  "halaman": "Sales/",
+  "ringkas": "Customer, lead, opportunity, pipeline, quotation, sales order, sales forecast."
+ },
+ {
+  "nama": "Production Core",
+  "model": "production.py",
+  "route": "production.py, production_input.py, production_integration.py, product_changeover.py",
+  "halaman": "Production/",
+  "ringkas": "Work order, shift production, WIP batch/stock, changeover — inti alur produksi."
+ },
+ {
+  "nama": "Production Planning",
+  "model": "production.py (ProductionPlan)",
+  "route": "production_planning.py, weekly_production_plan.py, schedule_grid.py",
+  "halaman": "Production/ (planning, schedule grid)",
+  "ringkas": "Perencanaan produksi mingguan & schedule grid."
+ },
+ {
+  "nama": "Production Approval",
+  "model": "production.py",
+  "route": "production_approval.py",
+  "halaman": "Production/ (approval flow)",
+  "ringkas": "Approval bertingkat record produksi, terhubung notification & wip_job_costing."
+ },
+ {
+  "nama": "FG Conversion",
+  "model": "production.py (FGConversion)",
+  "route": "fg_conversion.py",
+  "halaman": "Production/ (FG Conversion)",
+  "ringkas": "Konversi WIP ke barang jadi, tracking loss/material saat konversi."
+ },
+ {
+  "nama": "Converting",
+  "model": "converting.py",
+  "route": "converting.py",
+  "halaman": "Production/ (Converting Dashboard/Input)",
+  "ringkas": "Mesin converting terpisah dari production utama, FK ke converting_machines."
+ },
+ {
+  "nama": "Packing List",
+  "model": "production.py",
+  "route": "packing_list.py",
+  "halaman": "Production/ (packing)",
+  "ringkas": "Daftar kemasan pengiriman."
+ },
+ {
+  "nama": "QC / Quality",
+  "model": "quality.py, quality_enhanced.py",
+  "route": "quality.py, quality_enhanced.py",
+  "halaman": "Quality/",
+  "ringkas": "Inspeksi kualitas, standar mutu, quality training — terhubung erat ke warehouse & production."
+ },
+ {
+  "nama": "SPC",
+  "model": "spc.py",
+  "route": "spc.py",
+  "halaman": "(kemungkinan submodul di Quality)",
+  "ringkas": "Statistical Process Control — parameter & sample, FK ke machines/products/work_orders."
+ },
+ {
+  "nama": "Warehouse",
+  "model": "warehouse.py, warehouse_enhanced.py, warehouse_adjustment.py",
+  "route": "warehouse.py, warehouse_enhanced.py, material_stock.py, materials.py, materials_crud.py, materials_simple_crud.py",
+  "halaman": "Warehouse/, Materials/",
+  "ringkas": "Inventory, lokasi/zona gudang, adjustment, material stock."
+ },
+ {
+  "nama": "WMS Advanced",
+  "model": "wms_advanced.py",
+  "route": "wms_advanced.py",
+  "halaman": "WMS/",
+  "ringkas": "Pick list, cycle count, stock transfer order, traceability — layer lanjutan di atas warehouse dasar."
+ },
+ {
+  "nama": "Stock Opname",
+  "model": "stock_opname.py",
+  "route": "stock_opname.py",
+  "halaman": "(terkait Warehouse/Materials)",
+  "ringkas": "Stock opname order & adjustment inventaris."
+ },
+ {
+  "nama": "Material Issue",
+  "model": "material_issue.py",
+  "route": "material_issue.py",
+  "halaman": "Materials/",
+  "ringkas": "Pengeluaran material ke produksi & retur material."
+ },
+ {
+  "nama": "Finance",
+  "model": "finance.py, expense.py",
+  "route": "finance.py, expense.py",
+  "halaman": "Finance/",
+  "ringkas": "Akun, invoice, budget, cost center, consolidation entity, reimbursement."
+ },
+ {
+  "nama": "WIP Accounting",
+  "model": "wip_accounting.py",
+  "route": "wip_accounting.py",
+  "halaman": "Finance/ (WIP Ledger)",
+  "ringkas": "Ledger WIP & jurnal akuntansi produksi."
+ },
+ {
+  "nama": "WIP Job Costing",
+  "model": "wip_job_costing.py",
+  "route": "wip_job_costing.py",
+  "halaman": "Production/ (WIP Dashboard, Batch List/Form)",
+  "ringkas": "Job costing per batch/work order."
+ },
+ {
+  "nama": "HR",
+  "model": "hr.py, hr_extended.py",
+  "route": "hr.py, hr_extended.py, hr_payroll.py, hr_appraisal.py, hr_training.py, attendance.py, work_roster.py, staff_leave.py, face_recognition.py",
+  "halaman": "HR/",
+  "ringkas": "Karyawan, payroll, appraisal, training, roster, absensi, face recognition."
+ },
+ {
+  "nama": "R&D (rd)",
+  "model": "rd.py",
+  "route": "rd.py, rd_extended.py, rd_products.py, rd_materials.py, rd_projects.py, rd_experiments.py, rd_reports.py, rd_integration.py",
+  "halaman": "RD/",
+  "ringkas": "Research project, experiment, prototype — modul R&D lama."
+ },
+ {
+  "nama": "RND (terpisah)",
+  "model": "rnd.py",
+  "route": "rnd.py",
+  "halaman": "RND/",
+  "ringkas": "Formula & project R&D versi baru — tampak paralel/duplikat dengan modul RD."
+ },
+ {
+  "nama": "DCC / CAPA",
+  "model": "dcc.py",
+  "route": "dcc.py",
+  "halaman": "DCC/",
+  "ringkas": "Document control, CAPA request, quality record, internal memo."
+ },
+ {
+  "nama": "Document Management",
+  "model": "document_management.py",
+  "route": "document_management.py",
+  "halaman": "Documents/",
+  "ringkas": "Template dokumen & generator PDF, terpisah dari DCC."
+ },
+ {
+  "nama": "Executive Dashboard",
+  "model": "analytics.py",
+  "route": "executive_dashboard.py",
+  "halaman": "Executive/, Dashboard/",
+  "ringkas": "KPI & laporan eksekutif, agregasi lintas modul."
+ },
+ {
+  "nama": "KPI Target",
+  "model": "kpi_target.py",
+  "route": "kpi_targets.py",
+  "halaman": "Settings/ (KPI Target Settings)",
+  "ringkas": "Target KPI departemen/perusahaan, dipakai executive_dashboard."
+ },
+ {
+  "nama": "Accurate Integration",
+  "model": "accurate.py, integration.py, integration_extended.py",
+  "route": "accurate_integration.py, oauth.py, integration.py, integration_extended.py",
+  "halaman": "Integration/",
+  "ringkas": "Sinkronisasi item/BOM ke Accurate Online; sync job, webhook, connector generik."
+ },
+ {
+  "nama": "EWS (downtime ML)",
+  "model": "ews.py",
+  "route": "ews.py, downtime_actions.py",
+  "halaman": "EWS/",
+  "ringkas": "Early warning system downtime mesin berbasis ML (inference batch harian)."
+ },
+ {
+  "nama": "OEE / Daily Controller",
+  "model": "oee.py",
+  "route": "oee.py, machine_health.py",
+  "halaman": "OEE/",
+  "ringkas": "Overall Equipment Effectiveness, downtime record, analytics mesin."
+ },
+ {
+  "nama": "Maintenance",
+  "model": "maintenance.py",
+  "route": "maintenance.py, maintenance_extended.py",
+  "halaman": "Maintenance/",
+  "ringkas": "Maintenance record & schedule, terhubung assets & machines."
+ },
+ {
+  "nama": "Machine Layout",
+  "model": "machine_layout.py",
+  "route": "(di dalam executive_dashboard.py)",
+  "halaman": "Executive/ (Factory Layout Dashboard), Settings/ (Factory Layout Admin)",
+  "ringkas": "Visualisasi denah pabrik & posisi mesin per wing."
+ },
+ {
+  "nama": "Pre-shift Checklist",
+  "model": "pre_shift_checklist.py",
+  "route": "pre_shift_checklist.py",
+  "halaman": "(terkait Live Monitoring)",
+  "ringkas": "Checklist sebelum shift, item & submission jawaban."
+ },
+ {
+  "nama": "Live Monitoring",
+  "model": "(pakai model production)",
+  "route": "live_monitoring.py",
+  "halaman": "Production/ (Live Monitoring)",
+  "ringkas": "Monitoring real-time proses produksi."
+ },
+ {
+  "nama": "MRP",
+  "model": "—",
+  "route": "mrp.py",
+  "halaman": "MRP/",
+  "ringkas": "Material Requirement Planning: demand forecast, capacity, shortage; trigger PO/WO otomatis."
+ },
+ {
+  "nama": "Purchasing",
+  "model": "purchasing.py",
+  "route": "purchasing.py, purchase_invoice.py, purchase_requisition.py, purchase_return.py",
+  "halaman": "Purchasing/",
+  "ringkas": "PO, RFQ, supplier quote/contract, GRN, purchase invoice/return."
+ },
+ {
+  "nama": "Shipping",
+  "model": "shipping.py, shipping_updated.py",
+  "route": "shipping.py",
+  "halaman": "Shipping/",
+  "ringkas": "Shipping order, logistics provider, terhubung sales order & QC."
+ },
+ {
+  "nama": "Returns",
+  "model": "returns.py",
+  "route": "returns.py",
+  "halaman": "Returns/",
+  "ringkas": "Retur pelanggan & item retur, terhubung sales order."
+ },
+ {
+  "nama": "Waste",
+  "model": "waste.py",
+  "route": "waste.py",
+  "halaman": "Waste/",
+  "ringkas": "Catatan waste produksi per kategori & mesin."
+ },
+ {
+  "nama": "Asset Management",
+  "model": "asset_management.py",
+  "route": "asset_management.py",
+  "halaman": "AssetManagement/",
+  "ringkas": "Aset, depresiasi, spare part, maintenance record aset."
+ },
+ {
+  "nama": "Approval Workflow",
+  "model": "approval_workflow.py",
+  "route": "approval_workflow.py",
+  "halaman": "Approval/",
+  "ringkas": "Workflow approval generik lintas modul (mis. accounting entries)."
+ },
+ {
+  "nama": "Workflow Integration",
+  "model": "workflow_integration.py",
+  "route": "workflow_integration.py, workflow.py, workflow_complete.py",
+  "halaman": "(tidak ada referensi UI langsung ditemukan)",
+  "ringkas": "Orkestrasi otomatis lintas modul (sales -> MRP -> PO/WO); tampak backend-only/trigger internal."
+ },
+ {
+  "nama": "Group Chat",
+  "model": "group_chat.py",
+  "route": "group_chat.py, socketio_chat.py",
+  "halaman": "Chat/",
+  "ringkas": "Chat server/channel/thread internal berbasis Socket.IO."
+ },
+ {
+  "nama": "Notification",
+  "model": "notification.py",
+  "route": "notifications.py, notifications_email.py",
+  "halaman": "Notifications/",
+  "ringkas": "Notifikasi user & email."
+ },
+ {
+  "nama": "Settings",
+  "model": "settings.py",
+  "route": "settings.py, config_manager.py",
+  "halaman": "Settings/",
+  "ringkas": "Konfigurasi sistem umum."
+ },
+ {
+  "nama": "Settings Extended",
+  "model": "settings_extended.py",
+  "route": "settings_extended.py",
+  "halaman": "Settings/ (Advanced System Config, Audit Trail)",
+  "ringkas": "RBAC lanjutan (roles, permissions granular), audit log, system config."
+ },
+ {
+  "nama": "User / Auth",
+  "model": "user.py",
+  "route": "auth.py",
+  "halaman": "Auth/, Profile/",
+  "ringkas": "User, role, permission (RBAC dasar), JWT auth."
+ },
+ {
+  "nama": "Custom BOM",
+  "model": "custom_bom.py",
+  "route": "custom_bom.py",
+  "halaman": "(tidak ditemukan referensi UI)",
+  "ringkas": "BOM kustom per work order, terpisah dari BOM master."
+ },
+ {
+  "nama": "BOM History",
+  "model": "bom_history.py",
+  "route": "bom_management.py",
+  "halaman": "(tidak ditemukan referensi UI langsung)",
+  "ringkas": "Riwayat perubahan BOM master."
+ },
+ {
+  "nama": "Work Order BOM",
+  "model": "work_order_bom.py",
+  "route": "(dipakai production.py, production_integration.py)",
+  "halaman": "Production/ (BOM terkait WO)",
+  "ringkas": "BOM snapshot per work order spesifik."
+ },
+ {
+  "nama": "Product",
+  "model": "product.py, product_excel_schema.py, product_new_schema.py",
+  "route": "products.py, products_new.py, products_new_excel.py, products_new_extended.py, product_calculations.py",
+  "halaman": "Products/, ProductsNewPage.tsx",
+  "ringkas": "Master data produk; skema \"baru\" (excel-based) berdampingan dengan skema lama."
+ },
+ {
+  "nama": "UOM",
+  "model": "uom.py",
+  "route": "uom.py",
+  "halaman": "(dipakai luas, generik lintas modul)",
+  "ringkas": "Unit of measure & konversi antar unit."
+ },
+ {
+  "nama": "MBF Report",
+  "model": "mbf_report.py",
+  "route": "mbf_report.py",
+  "halaman": "Production/ (MBF Report, MBF Report List)",
+  "ringkas": "Laporan MBF (laporan produksi custom pabrik), sinkron dari data produksi."
+ },
+ {
+  "nama": "Work Order Monitoring",
+  "model": "(pakai production.py)",
+  "route": "work_order_monitoring.py",
+  "halaman": "(tidak ditemukan referensi UI)",
+  "ringkas": "Monitoring status WO — kemungkinan dipakai TV Display/tool internal."
+ },
+ {
+  "nama": "Backup",
+  "model": "backup.py",
+  "route": "backup.py",
+  "halaman": "(tidak ditemukan referensi UI)",
+  "ringkas": "Backup database — kemungkinan dijalankan via script/cron, bukan UI."
+ },
+ {
+  "nama": "User Manual",
+  "model": "user_manual.py",
+  "route": "user_manual.py",
+  "halaman": "Manual/",
+  "ringkas": "Dokumentasi & FAQ internal aplikasi."
+ },
+ {
+  "nama": "Desk / Workspace",
+  "model": "—",
+  "route": "desk.py, desk_minimal.py, workspace.py",
+  "halaman": "Desk/, Management/",
+  "ringkas": "Dashboard kerja harian, agregator lintas banyak modul lain."
+ },
+ {
+  "nama": "Search",
+  "model": "—",
+  "route": "search.py",
+  "halaman": "Search/",
+  "ringkas": "Pencarian global lintas modul (dcc, hr, maintenance, product, production, purchasing, quality, sales, warehouse)."
+ },
+ {
+  "nama": "AI Assistant",
+  "model": "—",
+  "route": "ai_assistant.py",
+  "halaman": "(kemungkinan terintegrasi Desk/Chat)",
+  "ringkas": "Asisten AI lintas modul (finance, hr, maintenance, oee, product, production, purchasing, quality, rd, sales, shipping, user, warehouse)."
+ },
+ {
+  "nama": "TV Display",
+  "model": "—",
+  "route": "tv_display.py",
+  "halaman": "TVDisplay/",
+  "ringkas": "Layar display pabrik (sengaja tanpa autentikasi — keputusan sadar manajemen, lihat CLAUDE.md §8)."
+ },
+ {
+  "nama": "System Monitor",
+  "model": "—",
+  "route": "system_monitor.py, cache_stats.py, health.py, logs.py",
+  "halaman": "SystemMonitor.tsx",
+  "ringkas": "Monitoring server/aplikasi itu sendiri."
+ },
+ {
+  "nama": "Import Data",
+  "model": "—",
+  "route": "import_data.py",
+  "halaman": "(Settings/tools)",
+  "ringkas": "Import data massal (Excel dsb)."
+ },
+ {
+  "nama": "Reports",
+  "model": "—",
+  "route": "reports.py",
+  "halaman": "Reports/",
+  "ringkas": "Laporan gabungan finance/hr/production."
+ }
+]
