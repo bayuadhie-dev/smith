@@ -343,6 +343,21 @@ def update_expense(expense_id):
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
+def _boleh_hapus_biaya_orang_lain(user):
+    """Siapa yang boleh menghapus draf biaya ORANG LAIN.
+
+    Hanya bendahara - yang memegang `expense.payment` - plus super admin.
+    Sebelum ini siapa pun yang punya `expense.delete` bisa menghapus draf siapa
+    pun, dan izin itu tersemai ke hampir semua peran (38 dari 39, termasuk
+    Helper Gudang dan Viewer; ketahuan 2026-11-26). Hak hapusnya sendiri tetap
+    luas supaya orang bisa membereskan drafnya sendiri yang salah ketik.
+    """
+    if getattr(user, 'is_super_admin', False):
+        return True
+    from utils.auth_decorators import _get_user_permissions
+    return 'expense.payment' in _get_user_permissions(user)
+
+
 @expense_bp.route('/<int:expense_id>', methods=['DELETE'])
 @jwt_required()
 @require_permission('expense.delete')
@@ -351,15 +366,18 @@ def delete_expense(expense_id):
     try:
         user_id = get_jwt_identity()
         
-        # Check permission
-        # if not check_permission('expense.delete'):
-        #     return jsonify({'success': False, 'error': 'Permission denied'}), 403
-        
         expense = Expense.query.get_or_404(expense_id)
         
         # Only draft or rejected expenses can be deleted
         if expense.status not in ['draft', 'rejected']:
             return jsonify({'success': False, 'error': 'Only draft or rejected expenses can be deleted'}), 400
+
+        milik_sendiri = user_id and str(user_id) in (str(expense.created_by), str(expense.submitted_by))
+        if not milik_sendiri:
+            user = db.session.get(User, user_id)
+            if not user or not _boleh_hapus_biaya_orang_lain(user):
+                return jsonify({'success': False,
+                                'error': 'Biaya ini diajukan orang lain. Hanya bagian keuangan yang bisa menghapusnya.'}), 403
         
         # Delete receipt file if exists
         if expense.receipt_file_path and os.path.exists(expense.receipt_file_path):
