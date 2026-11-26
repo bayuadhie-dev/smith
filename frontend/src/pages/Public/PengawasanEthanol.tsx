@@ -1,49 +1,36 @@
 /**
- * Halaman pengawasan ethanol untuk Bea dan Cukai.
+ * Kartu pengawasan ethanol untuk Bea dan Cukai.
  *
  * Dibuka lewat tautan tanpa login, jadi tidak ada rangka aplikasi di sini:
- * tidak ada menu, tidak ada tombol yang mengubah apa pun. Yang ditampilkan satu
- * rantai utuh - penerimaan, stok, pemakaian, sampai barang jadi - dalam
- * kuantitas saja. Harga sengaja tidak ada.
+ * tidak ada menu, tidak ada tombol yang mengubah apa pun.
  *
- * Dibuat supaya enak dicetak: pemeriksa biasanya ingin membawa lembarnya.
+ * Batas isinya ditetapkan Presiden Direktur 2026-11-26 sesudah melihat versi
+ * pertama: kuantitas liter saja - tanpa rupiah (termasuk nilai cukai yang
+ * dibebaskan), tanpa nomor dokumen internal, tanpa baris rincian yang harus
+ * diklik, tanpa unduhan PDF. Dari dokumen asalnya tersisa nama pemasok saja,
+ * sebagai kolom biasa. Jangan dikembalikan tanpa keputusan baru.
  */
-import { Fragment, useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { getBaseURL } from '../../utils/apiConfig'
 
-interface Rincian {
-  no_penerimaan?: string; tanggal?: string | null; no_po?: string | null; pemasok?: string | null
-  no_surat_jalan?: string | null; status?: string; mutu?: string; kedaluwarsa?: string | null
-  no_bon?: string; keperluan?: string | null; no_spk?: string | null; produk?: string | null
-  kode_produk?: string | null; rencana_produksi?: number | null; satuan_produksi?: string | null
-  hasil_baik?: number | null; hasil_total?: number | null; no_catatan_bets?: string | null
-  status_spk?: string | null
-}
-interface Cukai { status: string; dokumen: string | null; tarif: number }
 interface Mutasi {
-  tanggal: string | null; jenis: string; no_dokumen: string; batch: string | null
-  masuk: number; keluar: number; saldo: number; keterangan: string | null; rincian: Rincian | null
-  cukai: Cukai | null; nilai_dibebaskan: number
+  tanggal: string | null; jenis: string; batch: string | null
+  pemasok: string | null; produk: string | null
+  masuk: number; keluar: number; saldo: number
 }
 interface Data {
   barang: { kode: string; nama: string; satuan: string }
   periode: { dari: string | null; sampai: string | null }
   ringkasan: { saldo_awal: number; masuk: number; keluar: number; saldo_akhir: number }
-  cukai: { tarif_bawaan: number; dibebaskan: number }
   mutasi: Mutasi[]
   stok_sekarang: { batch: string | null; jumlah: number; tersedia: number; status: string;
-                   kedaluwarsa: string | null; gudang: string | null; cukai: Cukai | null }[]
+                   kedaluwarsa: string | null; gudang: string | null }[]
   data_per: string
 }
 
 const angka = (n: number | null | undefined) =>
   n === null || n === undefined ? '-' : n.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-
-/** Nilai cukai yang dibebaskan, bukan harga beli - harga memang tidak pernah
- *  ikut ke kartu ini. Tanpa sen: tarifnya rupiah bulat per liter. */
-const rupiah = (n: number | null | undefined) =>
-  n === null || n === undefined ? '-' : `Rp ${Math.round(n).toLocaleString('id-ID')}`
 
 const tanggalPanjang = (iso: string | null | undefined) => {
   if (!iso) return '-'
@@ -51,30 +38,7 @@ const tanggalPanjang = (iso: string | null | undefined) => {
   return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })
 }
 
-/** Status cukai melekat pada batch, bukan pada barangnya: batch berikutnya bisa
- *  saja masuk dengan fasilitas pembebasan sementara yang sekarang cukainya
- *  dibayar. Karena itu tandanya menempel di baris batch, bukan di kepala kartu. */
-function TandaCukai({ cukai }: { cukai: Cukai | null }) {
-  if (!cukai?.status) return <span className="text-gray-400">-</span>
-  const bebas = /bebas|pembebasan/i.test(cukai.status) && !/belum/i.test(cukai.status)
-  // Di dalam tabel cukup anak kalimat pertama ("Cukai dibayar"). Kalimat
-  // panjangnya mendorong kolom nilai keluar layar - selengkapnya ada di
-  // rincian baris, yang memang tempatnya keterangan.
-  const pendek = cukai.status.split(',')[0]
-  return (
-    <span className={`inline-block whitespace-nowrap rounded px-2 py-0.5 text-xs font-medium ${
-      bebas
-        ? 'bg-sky-100 text-sky-800 dark:bg-sky-900/30 dark:text-sky-300'
-        : 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'}`}
-      title={cukai.status + (cukai.dokumen ? ` - ${cukai.dokumen}` : '')}>
-      {pendek}{cukai.dokumen ? ` - ${cukai.dokumen}` : ''}
-      {cukai.tarif ? <span className="fn-num"> &middot; Rp {Math.round(cukai.tarif).toLocaleString('id-ID')}</span> : null}
-    </span>
-  )
-}
-
-/** Di dalam tabel tanggalnya diringkas - bulan panjang memakan lebar yang
- *  dibutuhkan kolom nilai cukai. Rinciannya tetap memakai bulan penuh. */
+/** Di dalam tabel tanggalnya diringkas supaya kolomnya tidak saling mendorong. */
 const tanggalRingkas = (iso: string | null | undefined) => {
   if (!iso) return '-'
   const d = new Date(iso.length <= 10 ? `${iso}T00:00:00` : iso)
@@ -92,7 +56,6 @@ export default function PengawasanEthanol() {
   const [memuat, setMemuat] = useState(true)
   const [dari, setDari] = useState('')
   const [sampai, setSampai] = useState('')
-  const [dibuka, setDibuka] = useState<number | null>(null)
 
   const ambil = useCallback(async () => {
     setMemuat(true)
@@ -138,14 +101,10 @@ export default function PengawasanEthanol() {
 
   const r = data.ringkasan
   const satuan = data.barang.satuan
-  const qPdf = new URLSearchParams()
-  if (dari) qPdf.set('dari', dari)
-  if (sampai) qPdf.set('sampai', sampai)
-  const alamatPdf = `${getBaseURL()}/api/pengawasan/ethanol/${token}/pdf?${qPdf}`
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 print:bg-white">
-      <div className="mx-auto max-w-6xl space-y-6 px-4 py-6 print:max-w-none print:py-0">
+      <div className="mx-auto max-w-5xl space-y-6 px-4 py-6 print:max-w-none print:py-0">
 
         <header>
           <div className="fn-label mb-1.5">PENGAWASAN &middot; BEA DAN CUKAI</div>
@@ -181,8 +140,7 @@ export default function PengawasanEthanol() {
                 Tampilkan semua
               </button>
             )}
-            <button type="button" className="btn-secondary ml-auto" onClick={() => window.print()}>Cetak</button>
-            <a className="btn-primary" href={alamatPdf} target="_blank" rel="noopener noreferrer">Unduh PDF</a>
+            <button type="button" className="btn-primary ml-auto" onClick={() => window.print()}>Cetak</button>
           </div>
         </div>
 
@@ -197,61 +155,33 @@ export default function PengawasanEthanol() {
             ))}
         </section>
 
-        {/* Satu angka yang dicari Bea Cukai: berapa cukai yang dibebaskan atas
-            ethanol yang diterima. Dasarnya jumlah diterima x tarif per liter. */}
-        <section className="fn-card p-5">
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <p className="fn-label">Nilai cukai yang dibebaskan</p>
-              <p className="fn-num mt-1 text-3xl font-semibold text-amber-800 dark:text-amber-300">
-                {rupiah(data.cukai.dibebaskan)}
-              </p>
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                {angka(r.masuk)} {satuan} diterima &times; {rupiah(data.cukai.tarif_bawaan)} per {satuan}
-              </p>
-            </div>
-            <div className="text-right">
-              <p className="fn-label">Tarif cukai</p>
-              <p className="fn-num mt-1 text-lg font-semibold text-gray-900 dark:text-white">
-                {rupiah(data.cukai.tarif_bawaan)} <span className="text-sm font-normal text-gray-500 dark:text-gray-400">/ {satuan}</span>
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* Mutasi adalah isi utama kartu ini - yang diperiksa Bea Cukai adalah
-            perjalanan barangnya, bukan angka ringkasnya. Karena itu bloknya
-            dibuat paling menonjol: kepala tabel berpita, baris lebih lega. */}
+        {/* Mutasi adalah isi utama kartu ini - yang ditelusuri pemeriksa adalah
+            perjalanan barangnya, bukan angka ringkasnya. Barisnya rata: tidak
+            ada yang perlu diklik, semua yang ditampilkan sudah ada di kolom. */}
         <section className="fn-card overflow-hidden p-0">
           <div className="flex flex-wrap items-baseline gap-3 border-b border-gray-200 px-5 py-4 dark:border-gray-700">
             <h2 className="text-lg font-bold text-gray-900 dark:text-white">Mutasi</h2>
             <span className="rounded bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300">
               penerimaan &rarr; pemakaian &rarr; barang jadi
             </span>
-            <span className="ml-auto text-xs text-gray-500 dark:text-gray-400 print:hidden">Klik satu baris untuk melihat dokumen asalnya</span>
           </div>
           <div className="px-4 pb-5 pt-4">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-emerald-800 text-left text-[11px] uppercase tracking-wide text-white dark:bg-emerald-900">
-                  <th className="whitespace-nowrap rounded-l px-2.5 py-2 font-semibold">Tanggal</th>
-                  <th className="px-2.5 py-2 font-semibold">Jenis</th>
-                  <th className="px-2.5 py-2 font-semibold">No. Dokumen</th>
-                  <th className="px-2.5 py-2 font-semibold">Batch</th>
-                  <th className="px-2.5 py-2 font-semibold">Status cukai</th>
-                  <th className="px-3 py-2 text-right font-semibold">Masuk</th>
-                  <th className="px-3 py-2 text-right font-semibold">Keluar</th>
-                  <th className="px-3 py-2 text-right font-semibold">Saldo</th>
-                  <th className="rounded-r px-2.5 py-2 text-right font-semibold">Cukai dibebaskan</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                {data.mutasi.map((m, i) => (
-                  <Fragment key={i}>
-                    <tr className="cursor-pointer hover:bg-emerald-50 dark:hover:bg-emerald-900/10"
-                        onClick={() => setDibuka(dibuka === i ? null : i)}
-                        title="Klik untuk lihat dokumen asalnya">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-emerald-800 text-left text-[11px] uppercase tracking-wide text-white dark:bg-emerald-900">
+                    <th className="whitespace-nowrap rounded-l px-2.5 py-2 font-semibold">Tanggal</th>
+                    <th className="px-2.5 py-2 font-semibold">Jenis</th>
+                    <th className="px-2.5 py-2 font-semibold">Batch</th>
+                    <th className="px-2.5 py-2 font-semibold">Pemasok / Pemakaian</th>
+                    <th className="px-2.5 py-2 text-right font-semibold">Masuk</th>
+                    <th className="px-2.5 py-2 text-right font-semibold">Keluar</th>
+                    <th className="rounded-r px-2.5 py-2 text-right font-semibold">Saldo</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                  {data.mutasi.map((m, i) => (
+                    <tr key={i}>
                       <td className="whitespace-nowrap px-2.5 py-3 text-gray-700 dark:text-gray-300">{tanggalRingkas(m.tanggal)}</td>
                       <td className="px-2.5 py-3">
                         <span className={`rounded px-2 py-0.5 text-xs font-medium ${
@@ -263,43 +193,27 @@ export default function PengawasanEthanol() {
                           {JENIS_LABEL[m.jenis] || m.jenis}
                         </span>
                       </td>
-                      <td className="fn-num whitespace-nowrap px-2.5 py-3 font-medium text-gray-900 dark:text-white">{m.no_dokumen}</td>
                       <td className="fn-num whitespace-nowrap px-2.5 py-3 text-gray-700 dark:text-gray-300">{m.batch || '-'}</td>
-                      <td className="px-2.5 py-3"><TandaCukai cukai={m.cukai} /></td>
+                      <td className="px-2.5 py-3 text-gray-700 dark:text-gray-300">{m.pemasok || m.produk || '-'}</td>
                       <td className="fn-num px-2.5 py-3 text-right text-gray-900 dark:text-white">{m.masuk ? angka(m.masuk) : '-'}</td>
                       <td className="fn-num px-2.5 py-3 text-right text-gray-900 dark:text-white">{m.keluar ? angka(m.keluar) : '-'}</td>
                       <td className="fn-num px-2.5 py-3 text-right font-semibold text-gray-900 dark:text-white">{angka(m.saldo)}</td>
-                      <td className={`fn-num whitespace-nowrap px-2.5 py-3 text-right font-medium ${
-                        m.nilai_dibebaskan ? 'text-amber-800 dark:text-amber-300' : 'text-gray-400'}`}>
-                        {m.nilai_dibebaskan ? rupiah(m.nilai_dibebaskan) : '-'}
-                      </td>
                     </tr>
-                    {/* Saat dicetak semua rinciannya ikut keluar, bukan cuma yang
-                        sedang dibuka - pemeriksa membawa lembarnya, bukan layarnya. */}
-                    {m.rincian && (
-                      <tr className={dibuka === i ? '' : 'hidden print:table-row'}>
-                        <td colSpan={9} className="bg-gray-50 px-2.5 py-3 text-xs text-gray-700 dark:bg-gray-900/40 dark:text-gray-300 print:bg-white">
-                          <RincianBaris m={m} />
-                        </td>
-                      </tr>
-                    )}
-                  </Fragment>
-                ))}
-                {data.mutasi.length === 0 && (
-                  <tr><td colSpan={9} className="py-6 text-center text-gray-500 dark:text-gray-400">Belum ada mutasi pada periode ini.</td></tr>
-                )}
-                {data.mutasi.length > 0 && (
-                  <tr className="border-t-2 border-gray-300 bg-gray-50 font-semibold dark:border-gray-600 dark:bg-gray-900/40">
-                    <td className="px-2.5 py-3 text-gray-700 dark:text-gray-200" colSpan={5}>Jumlah periode ini</td>
-                    <td className="fn-num px-2.5 py-3 text-right text-gray-900 dark:text-white">{angka(r.masuk)}</td>
-                    <td className="fn-num px-2.5 py-3 text-right text-gray-900 dark:text-white">{angka(r.keluar)}</td>
-                    <td className="fn-num px-2.5 py-3 text-right text-gray-900 dark:text-white">{angka(r.saldo_akhir)}</td>
-                    <td className="fn-num whitespace-nowrap px-2.5 py-3 text-right text-amber-800 dark:text-amber-300">{rupiah(data.cukai.dibebaskan)}</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+                  ))}
+                  {data.mutasi.length === 0 && (
+                    <tr><td colSpan={7} className="py-6 text-center text-gray-500 dark:text-gray-400">Belum ada mutasi pada periode ini.</td></tr>
+                  )}
+                  {data.mutasi.length > 0 && (
+                    <tr className="border-t-2 border-gray-300 bg-gray-50 font-semibold dark:border-gray-600 dark:bg-gray-900/40">
+                      <td className="px-2.5 py-3 text-gray-700 dark:text-gray-200" colSpan={4}>Jumlah periode ini</td>
+                      <td className="fn-num px-2.5 py-3 text-right text-gray-900 dark:text-white">{angka(r.masuk)}</td>
+                      <td className="fn-num px-2.5 py-3 text-right text-gray-900 dark:text-white">{angka(r.keluar)}</td>
+                      <td className="fn-num px-2.5 py-3 text-right text-gray-900 dark:text-white">{angka(r.saldo_akhir)}</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </section>
 
@@ -313,7 +227,6 @@ export default function PengawasanEthanol() {
                   <th className="pb-2 pr-3">Gudang</th>
                   <th className="pb-2 pr-3">Kedaluwarsa</th>
                   <th className="pb-2 pr-3">Status</th>
-                  <th className="pb-2 pr-3">Status cukai</th>
                   <th className="pb-2 text-right">Jumlah</th>
                 </tr>
               </thead>
@@ -328,12 +241,11 @@ export default function PengawasanEthanol() {
                         {s.status}
                       </span>
                     </td>
-                    <td className="py-2 pr-3"><TandaCukai cukai={s.cukai} /></td>
                     <td className="fn-num py-2 text-right font-semibold text-gray-900 dark:text-white">{angka(s.jumlah)} {satuan}</td>
                   </tr>
                 ))}
                 {data.stok_sekarang.length === 0 && (
-                  <tr><td colSpan={6} className="py-6 text-center text-gray-500 dark:text-gray-400">Tidak ada stok tersisa.</td></tr>
+                  <tr><td colSpan={5} className="py-6 text-center text-gray-500 dark:text-gray-400">Tidak ada stok tersisa.</td></tr>
                 )}
               </tbody>
             </table>
@@ -341,34 +253,12 @@ export default function PengawasanEthanol() {
         </section>
 
         <footer className="pb-2 text-xs text-gray-500 dark:text-gray-400">
-          Kolom rupiah adalah nilai cukai yang dibebaskan, bukan harga beli. Data langsung dari sistem ERP PT Fengsheng Nonwoven Indonesia.
+          Seluruh angka dalam satuan {satuan}. Periode{' '}
+          {tanggalPanjang(data.periode.dari) !== '-' ? tanggalPanjang(data.periode.dari) : 'awal pencatatan'} sampai{' '}
+          {tanggalPanjang(data.periode.sampai) !== '-' ? tanggalPanjang(data.periode.sampai) : 'sekarang'}.
+          Data langsung dari sistem ERP PT Fengsheng Nonwoven Indonesia.
         </footer>
       </div>
     </div>
-  )
-}
-
-function RincianBaris({ m }: { m: Mutasi }) {
-  const d = m.rincian!
-  const baris = m.jenis === 'penerimaan'
-    ? [['Nomor pesanan', d.no_po], ['Pemasok', d.pemasok], ['Surat jalan', d.no_surat_jalan],
-       ['Status penerimaan', d.status], ['Pemeriksaan mutu', d.mutu],
-       ['Kedaluwarsa', d.kedaluwarsa ? tanggalPanjang(d.kedaluwarsa) : null],
-       ['Status cukai', m.cukai ? m.cukai.status + (m.cukai.dokumen ? ` - ${m.cukai.dokumen}` : '') : null],
-       ['Tarif cukai', m.cukai?.tarif ? `${rupiah(m.cukai.tarif)} per satuan` : null],
-       ['Cukai dibebaskan', m.nilai_dibebaskan ? rupiah(m.nilai_dibebaskan) : null]]
-    : [['Nomor perintah kerja', d.no_spk], ['Produk', d.produk ? `${d.kode_produk} - ${d.produk}` : null],
-       ['Catatan pengolahan bets', d.no_catatan_bets], ['Status perintah kerja', d.status_spk],
-       ['Rencana produksi', d.rencana_produksi != null ? `${angka(d.rencana_produksi)} ${d.satuan_produksi || ''}` : null],
-       ['Hasil baik', d.hasil_baik != null ? `${angka(d.hasil_baik)} ${d.satuan_produksi || ''}` : null]]
-  return (
-    <dl className="grid grid-cols-1 gap-x-8 gap-y-1 sm:grid-cols-2">
-      {baris.filter(([, v]) => v).map(([k, v]) => (
-        <div key={k as string} className="flex justify-between gap-4 border-b border-gray-200/70 py-0.5 dark:border-gray-700/70">
-          <dt className="text-gray-500 dark:text-gray-400">{k}</dt>
-          <dd className="text-right font-medium text-gray-800 dark:text-gray-200">{v as string}</dd>
-        </div>
-      ))}
-    </dl>
   )
 }

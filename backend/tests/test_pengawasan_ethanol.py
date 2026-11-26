@@ -1,9 +1,10 @@
-"""Halaman pengawasan ethanol untuk Bea dan Cukai.
+"""Kartu pengawasan ethanol untuk Bea dan Cukai.
 
 Diminta Bea Cukai 2026-11-25: mereka ingin melihat sendiri perjalanan ethanol,
-bukan menunggu laporan dikirim. Yang dijaga tes ini: rantainya utuh dari
-penerimaan sampai barang jadi, angkanya benar, harga TIDAK ikut, dan tautannya
-tidak bisa dibuka sembarangan.
+bukan menunggu laporan dikirim. Yang dijaga tes ini: angkanya benar, tautannya
+tidak bisa dibuka sembarangan, tiap pembukaan tercatat - dan batas isi kartu
+yang ditetapkan Presiden Direktur 2026-11-26: kuantitas liter saja, tanpa satu
+pun angka rupiah dan tanpa nomor dokumen internal.
 """
 from datetime import date, datetime
 
@@ -58,7 +59,7 @@ def test_tautan_salah_ditolak_dan_tidak_membocorkan_apa_pun(client, token):
     assert 'mutasi' not in isi and 'ringkasan' not in isi
 
 
-def test_tautan_benar_menampilkan_rantai_dari_penerimaan_sampai_barang_jadi(client, token):
+def test_tautan_benar_menampilkan_rantai_dari_penerimaan_sampai_pemakaian(client, token):
     r = client.get(f'/api/pengawasan/ethanol/{token}')
     assert r.status_code == 200, r.get_json()
     d = r.get_json()
@@ -69,18 +70,47 @@ def test_tautan_benar_menampilkan_rantai_dari_penerimaan_sampai_barang_jadi(clie
 
     jenis = [m['jenis'] for m in d['mutasi']]
     assert jenis == ['penerimaan', 'pemakaian']
-    assert d['mutasi'][0]['no_dokumen'] == 'BPB-26/11/005'
-    assert d['mutasi'][1]['no_dokumen'] == 'BON-26/11/001'
     assert d['mutasi'][-1]['saldo'] == 2253.56
     assert d['stok_sekarang'][0]['batch'] == 'TA-04/19112026'
     assert d['data_per']
 
 
-def test_harga_tidak_pernah_ikut_tampil(client, token):
-    """Keputusan 2026-11-25: Bea Cukai mengawasi kuantitas, bukan nilai belanja."""
+def test_tidak_ada_satu_pun_angka_rupiah(client, token):
+    """Keputusan Presiden Direktur 2026-11-26: seluruh data yang berhubungan
+    dengan rupiah tidak ditampilkan - termasuk nilai cukai yang dibebaskan dan
+    tarif per liternya, yang sempat ada di versi sebelumnya."""
     isi = str(client.get(f'/api/pengawasan/ethanol/{token}').get_json()).lower()
-    for kata in ('harga', 'price', 'unit_cost', 'total_cost', 'nilai_rupiah'):
-        assert kata not in isi, f'"{kata}" bocor ke halaman pengawasan'
+    for kata in ('harga', 'price', 'unit_cost', 'total_cost', 'rupiah', 'cukai',
+                 'tarif', 'dibebaskan', 'nilai'):
+        assert kata not in isi, f'"{kata}" bocor ke kartu pengawasan'
+
+
+def test_nomor_dokumen_internal_tidak_ikut_hanya_nama_pemasok(client, db_session, ethanol, token):
+    """Keputusan yang sama: kode dokumen internal (BPB, PO, surat jalan, SPK)
+    tidak dicantumkan. Dari dokumen asalnya yang boleh tampil cuma nama pemasok,
+    dan itu kolom biasa - tidak ada lagi rincian yang harus diklik."""
+    from models.purchasing import GRNItem, GoodsReceivedNote, Supplier
+
+    sup = Supplier(code='SUP-BC', company_name='PT KARSAVICTA SATYA', is_active=True)
+    db_session.add(sup)
+    db_session.commit()
+    grn = GoodsReceivedNote(grn_number='BPB-26/11/005', supplier_id=sup.id,
+                            receipt_date=datetime(2026, 11, 20), status='approved')
+    db_session.add(grn)
+    db_session.commit()
+    db_session.add(GRNItem(grn_id=grn.id, material_id=ethanol.id, quantity_ordered=2400,
+                           quantity_received=2400, quantity_accepted=2400, uom='LTR',
+                           batch_number='TA-04/19112026'))
+    db_session.commit()
+
+    d = client.get(f'/api/pengawasan/ethanol/{token}').get_json()
+    masuk = next(m for m in d['mutasi'] if m['jenis'] == 'penerimaan')
+    assert masuk['pemasok'] == 'PT KARSAVICTA SATYA'
+    assert 'no_dokumen' not in masuk and 'rincian' not in masuk
+
+    isi = str(d)
+    for kode in ('BPB-', 'PO-', 'SPK-', 'DO26-', 'BON-'):
+        assert kode not in isi, f'nomor dokumen internal "{kode}" masih ikut terkirim'
 
 
 def test_periode_menyaring_dan_saldo_awal_ikut_bergeser(client, token):
@@ -117,101 +147,3 @@ def test_mengganti_tautan_butuh_login(client, token):
     assert client.post('/api/pengawasan/ethanol/tautan/ganti').status_code in (401, 422)
     assert client.get('/api/pengawasan/ethanol/tautan').status_code in (401, 422)
 
-
-def test_status_cukai_menempel_pada_batch_bukan_pada_barangnya(client, db_session, ethanol, token):
-    """Satu batch bisa masuk dengan cukai dibayar sementara batch berikutnya
-    memakai pembebasan - jadi statusnya harus per batch, dan batch yang belum
-    diisi tetap punya keterangan (bawaan), bukan kosong."""
-    from models.purchasing import GRNItem, GoodsReceivedNote, Supplier
-    from models.warehouse import Inventory, WarehouseLocation
-
-    sup = Supplier(code='SUP-UJI', company_name='PT Pemasok Uji', is_active=True)
-    db_session.add(sup)
-    db_session.commit()
-    grn = GoodsReceivedNote(grn_number='BPB-26/11/005', supplier_id=sup.id,
-                            receipt_date=datetime(2026, 11, 20), status='approved')
-    db_session.add(grn)
-    db_session.commit()
-    db_session.add(GRNItem(grn_id=grn.id, material_id=ethanol.id, quantity_ordered=2400,
-                           quantity_received=2400, quantity_accepted=2400, uom='LTR',
-                           batch_number='TA-04/19112026',
-                           cukai_status='Pembebasan cukai', cukai_dokumen='CK-5 No. 12/2026'))
-    lok = WarehouseLocation.query.first()
-    db_session.add(Inventory(material_id=ethanol.id, location_id=lok.id, batch_number='TB-99/01122026',
-                             quantity_on_hand=500, quantity_available=500,
-                             stock_status='available', is_active=True))
-    db_session.commit()
-
-    d = client.get(f'/api/pengawasan/ethanol/{token}').get_json()
-
-    masuk = next(m for m in d['mutasi'] if m['jenis'] == 'penerimaan')
-    assert masuk['cukai']['status'] == 'Pembebasan cukai'
-    assert masuk['cukai']['dokumen'] == 'CK-5 No. 12/2026'
-    # Pemakaian tidak punya status cukai sendiri - cukainya urusan saat masuk.
-    assert next(m for m in d['mutasi'] if m['jenis'] == 'pemakaian')['cukai'] is None
-
-    per_batch = {s['batch']: s['cukai']['status'] for s in d['stok_sekarang']}
-    assert per_batch['TA-04/19112026'] == 'Pembebasan cukai'
-    assert per_batch['TB-99/01122026'] == 'Pembebasan cukai'
-    # Tidak ada lagi satu kalimat cukai untuk seluruh barang di kepala kartu.
-    assert 'status_cukai' not in d['barang']
-
-
-def test_pdf_memakai_tautan_yang_sama_dan_ikut_tercatat(client, db_session, token):
-    from models.settings_extended import AuditLog
-
-    salah = client.get('/api/pengawasan/ethanol/bukan-tautan/pdf')
-    assert salah.status_code == 403
-    assert b'%PDF' not in salah.data
-
-    r = client.get(f'/api/pengawasan/ethanol/{token}/pdf')
-    assert r.status_code == 200, r.data[:200]
-    assert r.mimetype == 'application/pdf'
-    assert r.data.startswith(b'%PDF')
-    assert 'attachment' in r.headers.get('Content-Disposition', '')
-
-    hasil = [a.status for a in AuditLog.query.filter_by(resource_type='pengawasan_ethanol')
-             .order_by(AuditLog.id).all()]
-    assert hasil[-2:] == ['ditolak', 'success']
-
-
-def test_nilai_cukai_dihitung_per_batch_dari_tarifnya(client, db_session, ethanol, token):
-    """Yang dilaporkan: cukai yang DIBEBASKAN atas barang yang diterima -
-    jumlah diterima x tarif per liter. Tarifnya ikut batch supaya kartu batch
-    lama tidak berubah waktu tarif cukai naik."""
-    from models.purchasing import GRNItem, GoodsReceivedNote, Supplier
-
-    sup = Supplier(code='SUP-CK', company_name='PT Pemasok Cukai', is_active=True)
-    db_session.add(sup)
-    db_session.commit()
-    grn = GoodsReceivedNote(grn_number='BPB-26/11/005', supplier_id=sup.id,
-                            receipt_date=datetime(2026, 11, 20), status='approved')
-    db_session.add(grn)
-    db_session.commit()
-    db_session.add(GRNItem(grn_id=grn.id, material_id=ethanol.id, quantity_ordered=2400,
-                           quantity_received=2400, quantity_accepted=2400, uom='LTR',
-                           batch_number='TA-04/19112026', cukai_tarif=25000))
-    db_session.commit()
-
-    d = client.get(f'/api/pengawasan/ethanol/{token}').get_json()
-
-    # Batch ini tarifnya sendiri 25.000, bukan bawaan 20.000.
-    masuk = next(m for m in d['mutasi'] if m['jenis'] == 'penerimaan')
-    assert masuk['cukai']['tarif'] == 25000.0
-    assert masuk['nilai_dibebaskan'] == 2400 * 25000
-    # Pemakaian tidak punya nilai sendiri - pembebasannya sudah dihitung saat masuk,
-    # kalau ikut dihitung lagi di sini angkanya jadi dobel.
-    pakai = next(m for m in d['mutasi'] if m['jenis'] == 'pemakaian')
-    assert pakai['nilai_dibebaskan'] == 0
-
-    assert d['cukai']['tarif_bawaan'] == 20000.0
-    assert d['cukai']['dibebaskan'] == 2400 * 25000
-
-
-def test_batch_tanpa_tarif_memakai_tarif_bawaan(client, token):
-    """Tidak ada batch yang tampil tanpa nilai: yang belum diisi memakai tarif
-    bawaan di setelan (Rp 20.000/LTR)."""
-    d = client.get(f'/api/pengawasan/ethanol/{token}').get_json()
-    assert d['cukai']['tarif_bawaan'] == 20000.0
-    assert d['mutasi'][0]['nilai_dibebaskan'] == 2400 * 20000
-    assert d['cukai']['dibebaskan'] == 2400 * 20000
