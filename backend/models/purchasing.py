@@ -208,6 +208,12 @@ class GRNItem(db.Model):
     expiry_date = db.Column(db.Date, nullable=True)
     location_id = db.Column(db.Integer, db.ForeignKey('warehouse_locations.id'), nullable=True)
     notes = db.Column(db.Text, nullable=True)
+    # Status cukai melekat pada BATCH, bukan pada barangnya: satu batch ethanol
+    # bisa masuk dengan cukai dibayar sementara batch berikutnya memakai
+    # fasilitas pembebasan. Karena satu baris GRN = satu batch, tempatnya di
+    # sini. Kosong berarti ikut bawaan di setelan pengawasan.
+    cukai_status = db.Column(db.String(80), nullable=True)
+    cukai_dokumen = db.Column(db.String(100), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     

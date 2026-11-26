@@ -1155,6 +1155,8 @@ def create_grn():
                 production_date=datetime.strptime(item_data['production_date'][:10], '%Y-%m-%d').date() if item_data.get('production_date') else None,
                 expiry_date=datetime.strptime(item_data['expiry_date'][:10], '%Y-%m-%d').date() if item_data.get('expiry_date') else None,
                 notes=(item_data.get('notes') or None),
+                cukai_status=((item_data.get('cukai_status') or '').strip()[:80] or None),
+                cukai_dokumen=((item_data.get('cukai_dokumen') or '').strip()[:100] or None),
                 location_id=location_id
             )
             db.session.add(grn_item)
@@ -1450,6 +1452,7 @@ def get_grn(grn_id):
         if not grn:
             return jsonify({'error': 'GRN not found'}), 404
         po = grn.purchase_order
+        diawasi = _kode_barang_diawasi()
         return jsonify({
             'id': grn.id,
             'grn_number': grn.grn_number,
@@ -1504,10 +1507,25 @@ def get_grn(grn_id):
                 'zone_id': (item.location.zone_id if item.location else None),
                 'zone_name': (item.location.zone.name if item.location and item.location.zone else None),
                 'notes': item.notes,
+                # Status cukai hanya ditampilkan untuk barang yang memang diawasi
+                # Bea Cukai - selebihnya kolomnya cuma bikin ramai.
+                'cukai_diawasi': bool(item.material and item.material.code == diawasi),
+                'cukai_status': item.cukai_status,
+                'cukai_dokumen': item.cukai_dokumen,
             } for item in grn.items],
         }), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+def _kode_barang_diawasi():
+    """Kode bahan yang kartunya dibaca Bea Cukai. Dipakai untuk memutuskan
+    baris penerimaan mana yang perlu isian status cukai."""
+    try:
+        from routes.pengawasan_ethanol import _kode_barang
+        return _kode_barang()
+    except Exception:
+        return None
 
 
 def _resolve_grn_quarantine_location():
@@ -2361,7 +2379,7 @@ def update_grn(grn_id):
                         return jsonify({'error': str(e)}), 400
 
                 for f in ['quantity_received', 'quantity_accepted', 'quantity_rejected', 'item_name',
-                          'batch_number', 'lot_number', 'notes']:
+                          'batch_number', 'lot_number', 'notes', 'cukai_status', 'cukai_dokumen']:
                     if locked and f in stock_fields:
                         continue
                     if f in item_data:

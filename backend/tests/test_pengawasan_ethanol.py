@@ -116,3 +116,60 @@ def test_tautan_bisa_dicabut_dan_yang_lama_langsung_mati(client, auth_headers, t
 def test_mengganti_tautan_butuh_login(client, token):
     assert client.post('/api/pengawasan/ethanol/tautan/ganti').status_code in (401, 422)
     assert client.get('/api/pengawasan/ethanol/tautan').status_code in (401, 422)
+
+
+def test_status_cukai_menempel_pada_batch_bukan_pada_barangnya(client, db_session, ethanol, token):
+    """Satu batch bisa masuk dengan cukai dibayar sementara batch berikutnya
+    memakai pembebasan - jadi statusnya harus per batch, dan batch yang belum
+    diisi tetap punya keterangan (bawaan), bukan kosong."""
+    from models.purchasing import GRNItem, GoodsReceivedNote, Supplier
+    from models.warehouse import Inventory, WarehouseLocation
+
+    sup = Supplier(code='SUP-UJI', company_name='PT Pemasok Uji', is_active=True)
+    db_session.add(sup)
+    db_session.commit()
+    grn = GoodsReceivedNote(grn_number='BPB-26/11/005', supplier_id=sup.id,
+                            receipt_date=datetime(2026, 11, 20), status='approved')
+    db_session.add(grn)
+    db_session.commit()
+    db_session.add(GRNItem(grn_id=grn.id, material_id=ethanol.id, quantity_ordered=2400,
+                           quantity_received=2400, quantity_accepted=2400, uom='LTR',
+                           batch_number='TA-04/19112026',
+                           cukai_status='Pembebasan cukai', cukai_dokumen='CK-5 No. 12/2026'))
+    lok = WarehouseLocation.query.first()
+    db_session.add(Inventory(material_id=ethanol.id, location_id=lok.id, batch_number='TB-99/01122026',
+                             quantity_on_hand=500, quantity_available=500,
+                             stock_status='available', is_active=True))
+    db_session.commit()
+
+    d = client.get(f'/api/pengawasan/ethanol/{token}').get_json()
+
+    masuk = next(m for m in d['mutasi'] if m['jenis'] == 'penerimaan')
+    assert masuk['cukai']['status'] == 'Pembebasan cukai'
+    assert masuk['cukai']['dokumen'] == 'CK-5 No. 12/2026'
+    # Pemakaian tidak punya status cukai sendiri - cukainya urusan saat masuk.
+    assert next(m for m in d['mutasi'] if m['jenis'] == 'pemakaian')['cukai'] is None
+
+    per_batch = {s['batch']: s['cukai']['status'] for s in d['stok_sekarang']}
+    assert per_batch['TA-04/19112026'] == 'Pembebasan cukai'
+    assert per_batch['TB-99/01122026'] == 'Cukai dibayar, belum memakai fasilitas pembebasan'
+    # Tidak ada lagi satu kalimat cukai untuk seluruh barang di kepala kartu.
+    assert 'status_cukai' not in d['barang']
+
+
+def test_pdf_memakai_tautan_yang_sama_dan_ikut_tercatat(client, db_session, token):
+    from models.settings_extended import AuditLog
+
+    salah = client.get('/api/pengawasan/ethanol/bukan-tautan/pdf')
+    assert salah.status_code == 403
+    assert b'%PDF' not in salah.data
+
+    r = client.get(f'/api/pengawasan/ethanol/{token}/pdf')
+    assert r.status_code == 200, r.data[:200]
+    assert r.mimetype == 'application/pdf'
+    assert r.data.startswith(b'%PDF')
+    assert 'attachment' in r.headers.get('Content-Disposition', '')
+
+    hasil = [a.status for a in AuditLog.query.filter_by(resource_type='pengawasan_ethanol')
+             .order_by(AuditLog.id).all()]
+    assert hasil[-2:] == ['ditolak', 'success']

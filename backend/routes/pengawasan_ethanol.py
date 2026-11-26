@@ -104,6 +104,24 @@ def _tanggal(v, bawaan=None):
         return bawaan
 
 
+def _cukai_per_batch(material_id):
+    """Status cukai tiap batch, diambil dari baris penerimaannya.
+
+    Statusnya melekat pada batch - satu batch bisa masuk dengan cukai dibayar
+    dan batch berikutnya memakai pembebasan. Baris yang belum diisi memakai
+    bawaan di setelan, supaya tidak ada batch yang tampil tanpa keterangan.
+    """
+    from models.purchasing import GRNItem
+    bawaan = _status_cukai()
+    peta = {}
+    for it in (GRNItem.query.filter(GRNItem.material_id == material_id)
+               .order_by(GRNItem.id).all()):
+        kunci = (it.batch_number or '').strip()
+        peta[kunci] = {'status': (it.cukai_status or '').strip() or bawaan,
+                       'dokumen': (it.cukai_dokumen or '').strip() or None}
+    return peta, bawaan
+
+
 def _rincian_penerimaan(nomor):
     """Dari nomor BPB ke dokumen aslinya: PO, pemasok, mutu, kedaluwarsa."""
     from models.purchasing import GoodsReceivedNote
@@ -174,6 +192,11 @@ def susun_data(dari, sampai):
         q = float(t.quantity or 0)
         return (q, 0.0) if t.direction == 'in' else (0.0, q)
 
+    cukai, cukai_bawaan = _cukai_per_batch(bahan.id)
+
+    def cukai_batch(batch):
+        return cukai.get((batch or '').strip()) or {'status': cukai_bawaan, 'dokumen': None}
+
     saldo = 0.0
     mutasi = []
     for t in semua:
@@ -195,6 +218,7 @@ def susun_data(dari, sampai):
             'keluar': round(keluar, 2),
             'saldo': round(saldo, 2),
             'keterangan': t.notes,
+            'cukai': cukai_batch(t.batch_number) if jenis == 'penerimaan' else None,
         }
         baris['rincian'] = (_rincian_penerimaan(t.reference_number) if jenis == 'penerimaan'
                             else _rincian_pemakaian(t.reference_number) if jenis == 'pemakaian'
@@ -209,12 +233,12 @@ def susun_data(dari, sampai):
         'status': i.stock_status,
         'kedaluwarsa': i.expiry_date.isoformat() if i.expiry_date else None,
         'gudang': (i.location.zone.name if i.location and i.location.zone else None),
+        'cukai': cukai_batch(i.batch_number),
     } for i in Inventory.query.filter_by(material_id=bahan.id).all()
         if float(i.quantity_on_hand or 0) != 0]
 
     return {
-        'barang': {'kode': bahan.code, 'nama': bahan.name, 'satuan': bahan.primary_uom,
-                   'status_cukai': _status_cukai()},
+        'barang': {'kode': bahan.code, 'nama': bahan.name, 'satuan': bahan.primary_uom},
         'periode': {'dari': dari.isoformat() if dari else None,
                     'sampai': sampai.isoformat() if sampai else None},
         'ringkasan': {
@@ -273,3 +297,151 @@ def ganti_tautan():
     db.session.commit()
     return jsonify({'token': row.setting_value,
                     'pesan': 'Tautan lama dicabut. Kirim tautan baru ini ke Bea Cukai.'}), 200
+
+
+# ---- cetak PDF -------------------------------------------------------------
+
+def _pdf_kartu(data):
+    """Kartu pengawasan dalam bentuk PDF.
+
+    Bea Cukai perlu salinan yang bisa diarsipkan, bukan hanya layar. Isinya
+    persis sama dengan halaman: kuantitas, status cukai per batch, dan rincian
+    dokumen asal tiap mutasi - tanpa harga.
+    """
+    import io
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import A4, landscape
+    from reportlab.lib.styles import ParagraphStyle
+    from reportlab.lib.units import mm
+    from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+    from xml.sax.saxutils import escape
+
+    from routes.finance_reports import _company_name, _date_idn, _idn
+
+    page = landscape(A4)
+    margin = 12 * mm
+    avail = page[0] - 2 * margin
+    sel = ParagraphStyle('sel', fontName='Helvetica', fontSize=8, leading=10)
+    sel_b = ParagraphStyle('selb', parent=sel, fontName='Helvetica-Bold')
+    kanan = ParagraphStyle('kn', parent=sel, alignment=2)
+    kanan_b = ParagraphStyle('knb', parent=kanan, fontName='Helvetica-Bold')
+    judul_kolom = ParagraphStyle('jk', parent=sel, fontName='Helvetica-Bold', textColor=colors.white)
+    judul_kanan = ParagraphStyle('jkn', parent=judul_kolom, alignment=2)
+    kecil = ParagraphStyle('kc', fontName='Helvetica', fontSize=7.5, leading=9.5,
+                           textColor=colors.HexColor('#4B5563'))
+
+    def tgl(v):
+        return _date_idn(v) if v else ''
+
+    def tabel(isi, lebar, kolom_kanan=()):
+        t = Table(isi, colWidths=lebar, repeatRows=1)
+        t.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#047857')),
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+            ('GRID', (0, 0), (-1, -1), 0.25, colors.HexColor('#D1D5DB')),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#F9FAFB')]),
+            ('LEFTPADDING', (0, 0), (-1, -1), 3), ('RIGHTPADDING', (0, 0), (-1, -1), 3),
+            ('TOPPADDING', (0, 0), (-1, -1), 2.5), ('BOTTOMPADDING', (0, 0), (-1, -1), 2.5),
+        ] + [('ALIGN', (j, 0), (j, -1), 'RIGHT') for j in kolom_kanan]))
+        return t
+
+    brg = data['barang']
+    r = data['ringkasan']
+    sat = brg['satuan'] or ''
+    per = data['periode']
+    rentang = ('Semua periode' if not (per['dari'] or per['sampai'])
+               else f"Periode {tgl(per['dari']) or 'awal'} s/d {tgl(per['sampai']) or 'sekarang'}")
+
+    cerita = [
+        Paragraph(escape(_company_name()), ParagraphStyle('co', fontName='Helvetica-Bold', fontSize=10,
+                                                          textColor=colors.HexColor('#065F46'))),
+        Paragraph('Kartu Pengawasan Ethanol', ParagraphStyle('ti', fontName='Helvetica-Bold', fontSize=15, leading=19)),
+        Paragraph(escape(f"{brg['kode']} - {brg['nama']} | satuan {sat} | {rentang}"),
+                  ParagraphStyle('su', fontName='Helvetica', fontSize=9, textColor=colors.HexColor('#4B5563'))),
+        Spacer(1, 4 * mm),
+    ]
+
+    ringkas = [[Paragraph(h, judul_kolom) for h in ('Saldo awal', 'Masuk', 'Dipakai', 'Saldo akhir')],
+               [Paragraph(f"{_idn(r[k])} {sat}", kanan_b)
+                for k in ('saldo_awal', 'masuk', 'keluar', 'saldo_akhir')]]
+    cerita += [tabel(ringkas, [avail / 4] * 4, kolom_kanan=(0, 1, 2, 3)), Spacer(1, 5 * mm),
+               Paragraph('Mutasi', ParagraphStyle('h2', fontName='Helvetica-Bold', fontSize=11)), Spacer(1, 2 * mm)]
+
+    kepala = ('Tanggal', 'Jenis', 'No. Dokumen', 'Batch', 'Status cukai', 'Asal / tujuan', 'Masuk', 'Keluar', 'Saldo')
+    baris = [[Paragraph(h, judul_kanan if h in ('Masuk', 'Keluar', 'Saldo') else judul_kolom) for h in kepala]]
+    for m in data['mutasi']:
+        d = m.get('rincian') or {}
+        if m['jenis'] == 'penerimaan':
+            asal = ' | '.join(x for x in [d.get('pemasok'), f"PO {d['no_po']}" if d.get('no_po') else None,
+                                          f"SJ {d['no_surat_jalan']}" if d.get('no_surat_jalan') else None,
+                                          f"mutu {d['mutu']}" if d.get('mutu') else None] if x)
+        else:
+            asal = ' | '.join(x for x in [f"SPK {d['no_spk']}" if d.get('no_spk') else None, d.get('produk'),
+                                          f"bets {d['no_catatan_bets']}" if d.get('no_catatan_bets') else None,
+                                          (f"hasil {_idn(d['hasil_baik'])} {d.get('satuan_produksi') or ''}".strip()
+                                           if d.get('hasil_baik') else None)] if x)
+        ck = m.get('cukai') or {}
+        ck_teks = ' - '.join(x for x in [ck.get('status'), ck.get('dokumen')] if x)
+        baris.append([
+            Paragraph(tgl(m['tanggal']), sel), Paragraph(m['jenis'].capitalize(), sel),
+            Paragraph(escape(m['no_dokumen'] or ''), sel_b), Paragraph(escape(m['batch'] or '-'), sel),
+            Paragraph(escape(ck_teks), sel), Paragraph(escape(asal or m.get('keterangan') or ''), sel),
+            Paragraph(_idn(m['masuk']) if m['masuk'] else '-', kanan),
+            Paragraph(_idn(m['keluar']) if m['keluar'] else '-', kanan),
+            Paragraph(_idn(m['saldo']), kanan_b),
+        ])
+    bobot = [9, 8, 13, 12, 18, 24, 8, 8, 9]
+    skala = avail / sum(bobot)
+    cerita.append(tabel(baris, [b * skala for b in bobot], kolom_kanan=(6, 7, 8)))
+
+    cerita += [Spacer(1, 5 * mm),
+               Paragraph('Stok saat ini', ParagraphStyle('h3', fontName='Helvetica-Bold', fontSize=11)),
+               Spacer(1, 2 * mm)]
+    kepala2 = ('Batch', 'Gudang', 'Kedaluwarsa', 'Status', 'Status cukai', 'Jumlah')
+    baris2 = [[Paragraph(h, judul_kanan if h == 'Jumlah' else judul_kolom) for h in kepala2]]
+    for i in data['stok_sekarang']:
+        ck = i.get('cukai') or {}
+        baris2.append([
+            Paragraph(escape(i['batch'] or '-'), sel_b), Paragraph(escape(i['gudang'] or '-'), sel),
+            Paragraph(tgl(i['kedaluwarsa']), sel), Paragraph(escape(i['status'] or ''), sel),
+            Paragraph(escape(' - '.join(x for x in [ck.get('status'), ck.get('dokumen')] if x)), sel),
+            Paragraph(f"{_idn(i['jumlah'])} {sat}", kanan_b),
+        ])
+    bobot2 = [14, 16, 12, 12, 32, 14]
+    skala2 = avail / sum(bobot2)
+    cerita += [tabel(baris2, [b * skala2 for b in bobot2], kolom_kanan=(5,)), Spacer(1, 4 * mm),
+               Paragraph('Data langsung dari sistem ERP ' + escape(_company_name()) + '.', kecil)]
+
+    dicetak = datetime.now().strftime('%d/%m/%Y %H:%M')
+
+    def kaki(canvas, doc):
+        canvas.saveState()
+        canvas.setFont('Helvetica', 7.5)
+        canvas.setFillColor(colors.HexColor('#6B7280'))
+        canvas.drawString(margin, 8 * mm, f'{_company_name()} - Kartu Pengawasan Ethanol')
+        canvas.drawRightString(page[0] - margin, 8 * mm, f'Dicetak {dicetak}  |  Halaman {doc.page}')
+        canvas.restoreState()
+
+    buf = io.BytesIO()
+    SimpleDocTemplate(buf, pagesize=page, leftMargin=margin, rightMargin=margin, topMargin=margin,
+                      bottomMargin=14 * mm, title='Kartu Pengawasan Ethanol',
+                      author=_company_name()).build(cerita, onFirstPage=kaki, onLaterPages=kaki)
+    buf.seek(0)
+    return buf
+
+
+@pengawasan_bp.route('/ethanol/<token>/pdf', methods=['GET'])
+def unduh_ethanol_pdf(token):
+    """Salinan kartu untuk arsip Bea Cukai. Tautan dan pencatatannya sama
+    dengan halamannya - yang mengunduh juga tercatat."""
+    from flask import send_file
+    if not _token_sah(token):
+        _catat_akses(token, 'ditolak')
+        return jsonify({'error': 'Tautan tidak berlaku. Hubungi PT Fengsheng Nonwoven Indonesia '
+                                 'untuk tautan yang baru.'}), 403
+    data = susun_data(_tanggal(request.args.get('dari')), _tanggal(request.args.get('sampai')))
+    if data is None:
+        return jsonify({'error': 'Barang yang diawasi belum disetel di sistem'}), 404
+    _catat_akses(token, 'success')
+    nama = f"kartu-pengawasan-ethanol-{datetime.now().strftime('%Y%m%d')}.pdf"
+    return send_file(_pdf_kartu(data), mimetype='application/pdf', as_attachment=True, download_name=nama)
