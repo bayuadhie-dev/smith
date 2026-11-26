@@ -8,7 +8,7 @@
  *
  * Dibuat supaya enak dicetak: pemeriksa biasanya ingin membawa lembarnya.
  */
-import { useCallback, useEffect, useState } from 'react'
+import { Fragment, useCallback, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { getBaseURL } from '../../utils/apiConfig'
 
@@ -55,6 +55,10 @@ export default function PengawasanEthanol() {
   const [dari, setDari] = useState('')
   const [sampai, setSampai] = useState('')
   const [dibuka, setDibuka] = useState<number | null>(null)
+
+  // Tanpa ini judul tab jadi tokennya sendiri - ikut tersimpan di riwayat
+  // browser dan terbaca di tiap tangkapan layar atau berbagi layar.
+  useEffect(() => { document.title = 'Kartu Pengawasan Ethanol' }, [])
 
   const ambil = useCallback(async () => {
     setMemuat(true)
@@ -164,8 +168,8 @@ export default function PengawasanEthanol() {
               </thead>
               <tbody>
                 {data.mutasi.map((m, i) => (
-                  <>
-                    <tr key={i} className="cursor-pointer border-b border-slate-100 hover:bg-slate-50"
+                  <Fragment key={i}>
+                    <tr className="cursor-pointer border-b border-slate-100 hover:bg-slate-50"
                         onClick={() => setDibuka(dibuka === i ? null : i)}>
                       <td className="py-2 pr-3 whitespace-nowrap">{tanggalPanjang(m.tanggal)}</td>
                       <td className="py-2 pr-3">{JENIS_LABEL[m.jenis] || m.jenis}</td>
@@ -175,14 +179,16 @@ export default function PengawasanEthanol() {
                       <td className="py-2 pr-3 text-right tabular-nums">{m.keluar ? angka(m.keluar) : '-'}</td>
                       <td className="py-2 text-right font-medium tabular-nums">{angka(m.saldo)}</td>
                     </tr>
-                    {(dibuka === i || typeof window !== 'undefined') && m.rincian && (
-                      <tr key={`r${i}`} className={dibuka === i ? '' : 'hidden print:table-row'}>
+                    {/* Saat dicetak semua rinciannya ikut keluar, bukan cuma yang
+                        sedang dibuka - pemeriksa membawa lembarnya, bukan layarnya. */}
+                    {m.rincian && (
+                      <tr className={dibuka === i ? '' : 'hidden print:table-row'}>
                         <td colSpan={7} className="bg-slate-50 px-3 py-3 text-xs text-slate-700 print:bg-white">
                           <RincianBaris m={m} />
                         </td>
                       </tr>
                     )}
-                  </>
+                  </Fragment>
                 ))}
                 {data.mutasi.length === 0 && (
                   <tr><td colSpan={7} className="py-6 text-center text-slate-500">Belum ada mutasi pada periode ini.</td></tr>
