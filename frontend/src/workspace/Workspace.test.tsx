@@ -34,14 +34,45 @@ function FormPage() {
   )
 }
 
+function JurnalPage() { return <div data-testid="jurnal">jurnal</div> }
+function OrdersPage() { return <div data-testid="orders">orders</div> }
+
 function AppRoutes() {
   return (
     <Routes>
       <Route path="finance/payments" element={<ListPage />} />
       <Route path="finance/payments/new" element={<FormPage />} />
       <Route path="finance/payments/:id" element={<DetailPage />} />
+      <Route path="finance/journal" element={<JurnalPage />} />
+      <Route path="sales/orders" element={<OrdersPage />} />
       <Route path="*" element={<div>nf</div>} />
     </Routes>
+  )
+}
+
+/** Menu di luar area tab - persis seperti sidebar: klik menu mengubah alamat. */
+function Menu() {
+  const nav = useNavigate()
+  return (
+    <div>
+      <button onClick={() => nav('/app/finance/payments')}>menu:Payments</button>
+      <button onClick={() => nav('/app/finance/journal')}>menu:Jurnal</button>
+      <button onClick={() => nav('/app/sales/orders')}>menu:Orders</button>
+      <button onClick={() => nav('/app/finance/payments/new')}>menu:Catat Baru</button>
+    </div>
+  )
+}
+
+function ShellWithMenu({ start = '/app/finance/payments' }: { start?: string }) {
+  return (
+    <StrictMode>
+      <MemoryRouter initialEntries={[start]}>
+        <WorkspaceProvider>
+          <Menu />
+          <Workspace visible />
+        </WorkspaceProvider>
+      </MemoryRouter>
+    </StrictMode>
   )
 }
 
@@ -268,5 +299,58 @@ describe('typing inside a tab', () => {
     expect(input.value).toBe('Toko Maju')
     // the form tab is marked as holding unsaved input
     expect(document.querySelector('[role="tab"] .bg-amber-500')).not.toBeNull()
+  })
+})
+
+describe('tab tidak menumpuk waktu pindah menu', () => {
+  // Keluhan 2026-11-26: tiap klik menu menambah satu tab, setengah jam kemudian
+  // tab bar penuh halaman daftar yang tidak sedang dipakai.
+  it('halaman daftar yang cuma dilihat ditutup sendiri waktu pindah menu', async () => {
+    render(<ShellWithMenu />)
+    await waitFor(() => expect(screen.getByTestId('list')).toBeTruthy())
+
+    fireEvent.click(screen.getByText('menu:Jurnal'))
+    await waitFor(() => expect(screen.getByTestId('jurnal')).toBeTruthy())
+    await waitFor(() => expect(tabTitles()).not.toContain('Payments'))
+
+    fireEvent.click(screen.getByText('menu:Orders'))
+    await waitFor(() => expect(screen.getByTestId('orders')).toBeTruthy())
+    await waitFor(() => expect(tabTitles()).not.toContain('Journal'))
+    // Modul yang kehabisan tab ikut hilang dari tab bar.
+    await waitFor(() => expect(tabTitles()).not.toContain('Finance'))
+  })
+
+  it('isian yang belum disimpan tidak ikut ditutup', async () => {
+    render(<ShellWithMenu start="/app/finance/payments/new" />)
+    await waitFor(() => expect(screen.getByTestId('form')).toBeTruthy())
+    const nama = screen.getByPlaceholderText('Nama') as HTMLInputElement
+    fireEvent.input(nama, { target: { value: 'Toko Maju' } })
+    await act(async () => { await new Promise((r) => setTimeout(r, 50)) })
+
+    fireEvent.click(screen.getByText('menu:Jurnal'))
+    await waitFor(() => expect(screen.getByTestId('jurnal')).toBeTruthy())
+    expect(tabTitles().some((t) => t?.startsWith('Baru'))).toBe(true)
+    expect((screen.getByPlaceholderText('Nama') as HTMLInputElement).value).toBe('Toko Maju')
+  })
+
+  it('halaman buat/ubah tetap dibiarkan terbuka walau belum diketik apa-apa', async () => {
+    render(<ShellWithMenu start="/app/finance/payments/new" />)
+    await waitFor(() => expect(screen.getByTestId('form')).toBeTruthy())
+
+    fireEvent.click(screen.getByText('menu:Orders'))
+    await waitFor(() => expect(screen.getByTestId('orders')).toBeTruthy())
+    // Modulnya pindah ke Sales, jadi tab halaman Finance tidak ikut tergambar -
+    // yang diperiksa: modul Finance masih ada, dan isiannya masih di dalamnya.
+    expect(tabTitles()).toContain('Finance')
+    fireEvent.click(screen.getByText('Finance'))
+    await waitFor(() => expect(tabTitles().some((t) => t?.startsWith('Baru'))).toBe(true))
+  })
+
+  it('rincian yang dibuka dari dalam daftar tidak menutup daftarnya', async () => {
+    render(<ShellWithMenu />)
+    await waitFor(() => expect(screen.getByTestId('list')).toBeTruthy())
+    fireEvent.click(screen.getByText('PAY-18'))
+    await waitFor(() => expect(screen.getByTestId('detail')).toBeTruthy())
+    expect(tabTitles()).toContain('Payments')
   })
 })

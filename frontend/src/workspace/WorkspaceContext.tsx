@@ -49,8 +49,8 @@ export function clearWorkspaceStorage() {
 }
 
 type Action =
-  | { type: 'open'; moduleId: string; tab: TabState; allowDuplicate?: boolean }
-  | { type: 'activateTab'; moduleId: string; tabId: string }
+  | { type: 'open'; moduleId: string; tab: TabState; allowDuplicate?: boolean; closeTabId?: string }
+  | { type: 'activateTab'; moduleId: string; tabId: string; closeTabId?: string }
   | { type: 'activateModule'; moduleId: string }
   | { type: 'closeTab'; moduleId: string; tabId: string }
   | { type: 'closeModule'; moduleId: string }
@@ -62,9 +62,34 @@ type Action =
 
 const isNewFormPath = (pathname: string) => /\/new\/?$/.test(pathname)
 
+/** Halaman yang sedang dipakai mengerjakan sesuatu: isian baru, ubah, atau cetak.
+ *  Tab seperti ini tidak pernah ditutup sendiri oleh sistem. */
+const isWorkPath = (pathname: string) => /\/(new|create|edit|print|cetak|designer)(\/|$)/.test(pathname)
+
+/** Tab yang boleh hilang sendiri waktu orangnya pindah menu.
+ *
+ *  Keluhan 2026-11-26: tiap klik menu menambah satu tab, dan setelah setengah
+ *  jam bekerja tab bar penuh halaman daftar yang tidak sedang dipakai. Yang
+ *  dipertahankan cuma yang jelas sedang dikerjakan: tab yang dipin, tab dengan
+ *  isian yang belum disimpan, dan halaman buat/ubah/cetak. Halaman daftar atau
+ *  rincian yang cuma dilihat tidak perlu disimpan - menunya tinggal diklik lagi. */
+function bolehDitutupSendiri(tab: TabState): boolean {
+  if (tab.pinned) return false
+  if (isWorkPath(splitPath(tab.path).pathname)) return false
+  return !isTabDirty(tab.id)
+}
+
 const pinnedFirst = (tabs: TabState[]) => [...tabs.filter((t) => t.pinned), ...tabs.filter((t) => !t.pinned)]
 
 function reducer(state: WorkspaceState, action: Action): WorkspaceState {
+  // Tab lama dibuang LEBIH DULU, supaya modul yang jadi kosong ikut tertutup
+  // sebelum tab barunya masuk - kalau dibalik, modulnya terhapus bersama tab baru.
+  if ((action.type === 'open' || action.type === 'activateTab') && action.closeTabId) {
+    const { closeTabId, ...sisa } = action
+    const pemilik = Object.keys(state.modules).find((id) => state.modules[id].tabs.some((t) => t.id === closeTabId))
+    const bersih = pemilik ? reducer(state, { type: 'closeTab', moduleId: pemilik, tabId: closeTabId }) : state
+    return reducer(bersih, sisa as Action)
+  }
   switch (action.type) {
     case 'open': {
       const cur = state.modules[action.moduleId] || { tabs: [], activeTabId: null }
@@ -168,7 +193,7 @@ export type OpenResult = 'opened' | 'activated' | 'full' | 'not-module'
 
 interface WorkspaceApi {
   state: WorkspaceState
-  openPath: (path: string, title?: string) => OpenResult
+  openPath: (path: string, title?: string, opsi?: { gantiTabSekaliPakai?: boolean }) => OpenResult
   activateTab: (moduleId: string, tabId: string) => void
   activateModule: (moduleId: string) => void
   closeTab: (moduleId: string, tabId: string) => void
@@ -201,7 +226,7 @@ export function WorkspaceProvider({ children, onFull }: { children: React.ReactN
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)) } catch { /* ignore */ }
   }, [state])
 
-  const openPath = useCallback((path: string, title?: string): OpenResult => {
+  const openPath = useCallback((path: string, title?: string, opsi?: { gantiTabSekaliPakai?: boolean }): OpenResult => {
     const { pathname } = splitPath(path)
     const mod = moduleForPath(pathname)
     if (!mod) return 'not-module'
@@ -209,15 +234,30 @@ export function WorkspaceProvider({ children, onFull }: { children: React.ReactN
     const existing = cur?.tabs.find((t) => t.path === path)
     // A form for a new record that already has unsaved input must not be reopened: start a fresh empty one instead.
     const allowDuplicate = !!existing && isNewFormPath(pathname) && isTabDirty(existing.id)
+
+    // Tab yang ditinggalkan: ditutup kalau memang tidak sedang dipakai apa-apa.
+    // Hanya untuk perpindahan lewat menu - tombol "buka di tab baru" dari dalam
+    // halaman tidak boleh menutup halaman asalnya.
+    let closeTabId: string | undefined
+    if (opsi?.gantiTabSekaliPakai) {
+      const modulLama = ref.current.activeModule
+      const lama = modulLama ? ref.current.modules[modulLama] : null
+      const tabLama = lama?.tabs.find((t) => t.id === lama.activeTabId)
+      if (tabLama && tabLama.id !== existing?.id && bolehDitutupSendiri(tabLama)) {
+        closeTabId = tabLama.id
+        clearTabDrafts(tabLama.id)
+      }
+    }
+
     if (existing && !allowDuplicate) {
-      dispatch({ type: 'activateTab', moduleId: mod.id, tabId: existing.id })
+      dispatch({ type: 'activateTab', moduleId: mod.id, tabId: existing.id, closeTabId })
       return 'activated'
     }
     if ((cur?.tabs.length || 0) >= MAX_TABS_PER_MODULE) {
       onFull?.(mod.label)
       return 'full'
     }
-    dispatch({ type: 'open', moduleId: mod.id, tab: { id: newId(), path, title: title || pathLabel(path) }, allowDuplicate })
+    dispatch({ type: 'open', moduleId: mod.id, tab: { id: newId(), path, title: title || pathLabel(path) }, allowDuplicate, closeTabId })
     return 'opened'
   }, [onFull])
 

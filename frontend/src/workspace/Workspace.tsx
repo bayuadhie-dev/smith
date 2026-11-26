@@ -142,7 +142,8 @@ export default function Workspace({ visible }: { visible: boolean }) {
     if (ws.activeTabPath() === urlPath) return
     const click = recentClick.current
     const title = click && Date.now() - click.time < 1500 ? click.title : undefined
-    const result = ws.openPath(urlPath, title || undefined)
+    // Perpindahan lewat menu/alamat: tab lama yang tidak sedang dipakai ikut ditutup.
+    const result = ws.openPath(urlPath, title || undefined, { gantiTabSekaliPakai: true })
     if (result === 'full') {
       pendingUrl.current = null
       const back = ws.activeTabPath()
