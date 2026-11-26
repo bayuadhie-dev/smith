@@ -279,6 +279,7 @@ const FaceAdmin = lazy(() => muat(() => import('./pages/HR/FaceAdmin')))
 const AttendancePage = lazy(() => muat(() => import('./pages/HR/AttendancePage')))
 const AttendanceReport = lazy(() => muat(() => import('./pages/HR/AttendanceReport')))
 const PublicAttendance = lazy(() => muat(() => import('./pages/Public/PublicAttendance')))
+const PengawasanEthanol = lazy(() => muat(() => import('./pages/Public/PengawasanEthanol')))
 const StaffLeaveRequest = lazy(() => muat(() => import('./pages/Public/StaffLeaveRequest')))
 const FaceRegistration = lazy(() => muat(() => import('./pages/Public/FaceRegistration')))
 const AttendanceCalendar = lazy(() => muat(() => import('./pages/HR/AttendanceCalendar')))
@@ -1131,6 +1132,9 @@ function App() {
               <Route path="/approval-email/:token" element={<ApprovalEmail />} />
               <Route path="/absensi" element={<PublicAttendance />} />
               <Route path="/public/attendance" element={<PublicAttendance />} />
+              {/* Dibuka Bea Cukai lewat tautan panjang tanpa login - tokennya yang
+                  menjaga, dan halamannya tidak punya jalur mengubah data. */}
+              <Route path="/public/pengawasan-ethanol/:token" element={<PengawasanEthanol />} />
               <Route path="/public/leave-request" element={<StaffLeaveRequest />} />
               <Route path="/public/face-registration" element={<FaceRegistration />} />
               {/* Public Production Monitoring - No login required */}

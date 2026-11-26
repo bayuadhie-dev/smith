@@ -437,6 +437,7 @@ def create_app(config_class=Config):
     from routes.purchase_invoice import purchase_invoice_bp
     from routes.purchase_down_payments import purchase_down_payments_bp
     from routes.record_attachments import record_attachments_bp
+    from routes.pengawasan_ethanol import pengawasan_bp
     from routes.record_history import record_history_bp
     from routes.approval_email import approval_email_bp
     from routes.doc_actions import doc_actions_bp
@@ -550,6 +551,7 @@ def create_app(config_class=Config):
     app.register_blueprint(approval_email_bp, url_prefix='/api/approval-email')
     app.register_blueprint(record_history_bp, url_prefix='/api/history')
     app.register_blueprint(record_attachments_bp, url_prefix='/api/attachments')
+    app.register_blueprint(pengawasan_bp, url_prefix='/api/pengawasan')
     app.register_blueprint(purchase_down_payments_bp, url_prefix='/api/purchasing/down-payments')
     # Imported since at least 2026-08 but never registered - the entire
     # Purchase Return feature was completely unreachable via API (and has no
