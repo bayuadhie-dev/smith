@@ -368,16 +368,21 @@ def _pdf_kartu(data):
     def tgl(v):
         return _date_idn(v) if v else ''
 
-    def tabel(isi, lebar, kolom_kanan=()):
+    def tabel(isi, lebar, kolom_kanan=(), baris_kepala=(0,)):
+        """baris_kepala: baris mana saja yang jadi kepala berpita hijau. Tabel
+        ringkasan punya dua kepala (kuantitas lalu cukai) - tanpa ini tulisannya
+        putih di atas putih, alias hilang."""
         t = Table(isi, colWidths=lebar, repeatRows=1)
+        # Pita kepala dipasang TERAKHIR: ROWBACKGROUNDS menimpa apa pun yang
+        # dideklarasikan sebelumnya, jadi kepala kedua ikut terhapus kalau urutannya dibalik.
         t.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#047857')),
             ('VALIGN', (0, 0), (-1, -1), 'TOP'),
             ('GRID', (0, 0), (-1, -1), 0.25, colors.HexColor('#D1D5DB')),
             ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#F9FAFB')]),
             ('LEFTPADDING', (0, 0), (-1, -1), 3), ('RIGHTPADDING', (0, 0), (-1, -1), 3),
             ('TOPPADDING', (0, 0), (-1, -1), 2.5), ('BOTTOMPADDING', (0, 0), (-1, -1), 2.5),
-        ] + [('ALIGN', (j, 0), (j, -1), 'RIGHT') for j in kolom_kanan]))
+        ] + [('ALIGN', (j, 0), (j, -1), 'RIGHT') for j in kolom_kanan]
+          + [('BACKGROUND', (0, k), (-1, k), colors.HexColor('#047857')) for k in baris_kepala]))
         return t
 
     brg = data['barang']
@@ -406,7 +411,7 @@ def _pdf_kartu(data):
                 Paragraph(f"Rp {_idn(ck.get('masuk') or 0, 0)}", kanan_b),
                 Paragraph(f"Rp {_idn(ck.get('terpakai') or 0, 0)}", kanan_b),
                 Paragraph(f"Rp {_idn(ck.get('melekat_di_stok') or 0, 0)}", kanan_b)]]
-    cerita += [tabel(ringkas, [avail / 4] * 4, kolom_kanan=(0, 1, 2, 3)), Spacer(1, 5 * mm),
+    cerita += [tabel(ringkas, [avail / 4] * 4, kolom_kanan=(0, 1, 2, 3), baris_kepala=(0, 2)), Spacer(1, 5 * mm),
                Paragraph('Mutasi', ParagraphStyle('h2', fontName='Helvetica-Bold', fontSize=11)), Spacer(1, 2 * mm)]
 
     kepala = ('Tanggal', 'Jenis', 'No. Dokumen', 'Batch', 'Status cukai', 'Asal / tujuan',
