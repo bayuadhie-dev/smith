@@ -98,9 +98,19 @@ const ROUTE_TITLES: Record<string, string> = {
   '/app/imports': 'Impor & Ekspor Data',
   '/app/master-data': 'Master Data',
   '/app/integrations/accurate': 'Integrasi Accurate',
+  '/public/pengawasan-ethanol': 'Kartu Pengawasan Ethanol',
 }
 
-const getPageTitle = (pathname: string): string => {
+/** Potongan alamat yang tidak boleh jadi judul tab.
+ *
+ * Judul tab ikut tersimpan di riwayat browser dan terbaca di tiap tangkapan
+ * layar. Halaman pengawasan Bea Cukai dibuka lewat tautan yang tokennya ADA DI
+ * ALAMAT - tanpa penjaga ini, tokennya terpampang di judul tab (ketahuan
+ * 2026-11-26). Potongan yang panjang dan acak tidak pernah jadi judul.
+ */
+const rahasia = (bagian: string) => bagian.length > 20 && /[A-Z]/.test(bagian) && /[a-z0-9_-]/.test(bagian)
+
+export const getPageTitle = (pathname: string): string => {
   // Exact match
   if (ROUTE_TITLES[pathname]) {
     return ROUTE_TITLES[pathname]
@@ -125,7 +135,7 @@ const getPageTitle = (pathname: string): string => {
   }
   
   // Fallback: generate title from path
-  const parts = pathname.split('/').filter(Boolean)
+  const parts = pathname.split('/').filter(Boolean).filter((p) => !rahasia(p))
   if (parts.length >= 2) {
     const lastPart = parts[parts.length - 1]
     return lastPart.charAt(0).toUpperCase() + lastPart.slice(1).replace(/-/g, ' ')

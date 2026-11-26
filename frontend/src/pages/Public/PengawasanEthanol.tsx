@@ -56,10 +56,6 @@ export default function PengawasanEthanol() {
   const [sampai, setSampai] = useState('')
   const [dibuka, setDibuka] = useState<number | null>(null)
 
-  // Tanpa ini judul tab jadi tokennya sendiri - ikut tersimpan di riwayat
-  // browser dan terbaca di tiap tangkapan layar atau berbagi layar.
-  useEffect(() => { document.title = 'Kartu Pengawasan Ethanol' }, [])
-
   const ambil = useCallback(async () => {
     setMemuat(true)
     setGalat('')
