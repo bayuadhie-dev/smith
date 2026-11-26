@@ -214,6 +214,7 @@ class GRNItem(db.Model):
     # sini. Kosong berarti ikut bawaan di setelan pengawasan.
     cukai_status = db.Column(db.String(80), nullable=True)
     cukai_dokumen = db.Column(db.String(100), nullable=True)
+    cukai_tarif = db.Column(db.Numeric(15, 2), nullable=True)   # rupiah per satuan dasar, mis. 20.000/LTR
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     

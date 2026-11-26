@@ -1157,6 +1157,7 @@ def create_grn():
                 notes=(item_data.get('notes') or None),
                 cukai_status=((item_data.get('cukai_status') or '').strip()[:80] or None),
                 cukai_dokumen=((item_data.get('cukai_dokumen') or '').strip()[:100] or None),
+                cukai_tarif=(item_data.get('cukai_tarif') if item_data.get('cukai_tarif') not in ('', None) else None),
                 location_id=location_id
             )
             db.session.add(grn_item)
@@ -1512,6 +1513,7 @@ def get_grn(grn_id):
                 'cukai_diawasi': bool(item.material and item.material.code == diawasi),
                 'cukai_status': item.cukai_status,
                 'cukai_dokumen': item.cukai_dokumen,
+                'cukai_tarif': float(item.cukai_tarif) if item.cukai_tarif is not None else None,
             } for item in grn.items],
         }), 200
     except Exception as e:
@@ -2379,7 +2381,7 @@ def update_grn(grn_id):
                         return jsonify({'error': str(e)}), 400
 
                 for f in ['quantity_received', 'quantity_accepted', 'quantity_rejected', 'item_name',
-                          'batch_number', 'lot_number', 'notes', 'cukai_status', 'cukai_dokumen']:
+                          'batch_number', 'lot_number', 'notes', 'cukai_status', 'cukai_dokumen', 'cukai_tarif']:
                     if locked and f in stock_fields:
                         continue
                     if f in item_data:
