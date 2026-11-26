@@ -162,13 +162,16 @@ const NotificationsPage: React.FC = () => {
       />
 
       {/* Filters */}
+      {/* Tombol saringnya WAJIB whitespace-nowrap + shrink-0. Tanpa itu, di layar
+          sempit ketiganya saling mendesak sampai tulisannya patah per suku kata
+          ("Be/lum Di/baca") - Presiden Direktur menemukannya 2026-11-26. */}
       <div className="flex flex-wrap gap-4 mb-6">
-        <div className="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+        <div className="flex max-w-full overflow-x-auto bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
           {['all', 'unread', 'read'].map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f as 'all' | 'unread' | 'read')}
-              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+              className={`shrink-0 whitespace-nowrap px-4 py-2 text-sm font-medium rounded-md transition-colors ${
                 filter === f 
                   ? 'bg-white text-blue-600 shadow-sm dark:bg-gray-800 dark:text-blue-400' 
                   : 'text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white'
@@ -183,7 +186,7 @@ const NotificationsPage: React.FC = () => {
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
-            className="px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="min-w-0 max-w-full px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
           >
             <option value="">Semua Kategori</option>
             {categories.map(cat => (

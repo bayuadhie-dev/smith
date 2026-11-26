@@ -238,10 +238,10 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
         </div>
         <div className="flex gap-3 items-center flex-wrap">
           {/* View Mode Toggle */}
-          <div className="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+          <div className="flex max-w-full overflow-x-auto bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
             <button
               onClick={() => { setViewMode('list'); localStorage.setItem('wo_view_mode', 'list') }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+              className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
                 viewMode === 'list' ? 'bg-white text-blue-600 shadow-sm dark:bg-gray-800 dark:text-blue-400' : 'text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white'
               }`}
             >
@@ -250,7 +250,7 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
             </button>
             <button
               onClick={() => { setViewMode('kanban'); localStorage.setItem('wo_view_mode', 'kanban') }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+              className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
                 viewMode === 'kanban' ? 'bg-white text-blue-600 shadow-sm dark:bg-gray-800 dark:text-blue-400' : 'text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white'
               }`}
             >
