@@ -58,12 +58,17 @@ const tanggalPanjang = (iso: string | null | undefined) => {
 function TandaCukai({ cukai }: { cukai: Cukai | null }) {
   if (!cukai?.status) return <span className="text-gray-400">-</span>
   const bebas = /bebas|pembebasan/i.test(cukai.status) && !/belum/i.test(cukai.status)
+  // Di dalam tabel cukup anak kalimat pertama ("Cukai dibayar"). Kalimat
+  // panjangnya mendorong kolom nilai keluar layar - selengkapnya ada di
+  // rincian baris, yang memang tempatnya keterangan.
+  const pendek = cukai.status.split(',')[0]
   return (
-    <span className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${
+    <span className={`inline-block whitespace-nowrap rounded px-2 py-0.5 text-xs font-medium ${
       bebas
         ? 'bg-sky-100 text-sky-800 dark:bg-sky-900/30 dark:text-sky-300'
-        : 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'}`}>
-      {cukai.status}{cukai.dokumen ? ` - ${cukai.dokumen}` : ''}
+        : 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'}`}
+      title={cukai.status + (cukai.dokumen ? ` - ${cukai.dokumen}` : '')}>
+      {pendek}{cukai.dokumen ? ` - ${cukai.dokumen}` : ''}
       {cukai.tarif ? <span className="fn-num"> &middot; Rp {Math.round(cukai.tarif).toLocaleString('id-ID')}</span> : null}
     </span>
   )
@@ -214,7 +219,7 @@ export default function PengawasanEthanol() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-emerald-800 text-left text-[11px] uppercase tracking-wide text-white dark:bg-emerald-900">
-                  <th className="rounded-l px-3 py-2 font-semibold">Tanggal</th>
+                  <th className="whitespace-nowrap rounded-l px-3 py-2 font-semibold">Tanggal</th>
                   <th className="px-3 py-2 font-semibold">Jenis</th>
                   <th className="px-3 py-2 font-semibold">No. Dokumen</th>
                   <th className="px-3 py-2 font-semibold">Batch</th>
@@ -242,8 +247,8 @@ export default function PengawasanEthanol() {
                           {JENIS_LABEL[m.jenis] || m.jenis}
                         </span>
                       </td>
-                      <td className="fn-num px-3 py-3 font-medium text-gray-900 dark:text-white">{m.no_dokumen}</td>
-                      <td className="fn-num px-3 py-3 text-gray-700 dark:text-gray-300">{m.batch || '-'}</td>
+                      <td className="fn-num whitespace-nowrap px-3 py-3 font-medium text-gray-900 dark:text-white">{m.no_dokumen}</td>
+                      <td className="fn-num whitespace-nowrap px-3 py-3 text-gray-700 dark:text-gray-300">{m.batch || '-'}</td>
                       <td className="px-3 py-3"><TandaCukai cukai={m.cukai} /></td>
                       <td className="fn-num px-3 py-3 text-right text-gray-900 dark:text-white">{m.masuk ? angka(m.masuk) : '-'}</td>
                       <td className="fn-num px-3 py-3 text-right text-gray-900 dark:text-white">{m.keluar ? angka(m.keluar) : '-'}</td>
@@ -336,11 +341,15 @@ function RincianBaris({ m }: { m: Mutasi }) {
   const baris = m.jenis === 'penerimaan'
     ? [['Nomor pesanan', d.no_po], ['Pemasok', d.pemasok], ['Surat jalan', d.no_surat_jalan],
        ['Status penerimaan', d.status], ['Pemeriksaan mutu', d.mutu],
-       ['Kedaluwarsa', d.kedaluwarsa ? tanggalPanjang(d.kedaluwarsa) : null]]
+       ['Kedaluwarsa', d.kedaluwarsa ? tanggalPanjang(d.kedaluwarsa) : null],
+       ['Status cukai', m.cukai ? m.cukai.status + (m.cukai.dokumen ? ` - ${m.cukai.dokumen}` : '') : null],
+       ['Tarif cukai', m.cukai?.tarif ? `${rupiah(m.cukai.tarif)} per satuan` : null],
+       ['Nilai cukai batch', m.nilai_cukai ? rupiah(Math.abs(m.nilai_cukai)) : null]]
     : [['Nomor perintah kerja', d.no_spk], ['Produk', d.produk ? `${d.kode_produk} - ${d.produk}` : null],
        ['Catatan pengolahan bets', d.no_catatan_bets], ['Status perintah kerja', d.status_spk],
        ['Rencana produksi', d.rencana_produksi != null ? `${angka(d.rencana_produksi)} ${d.satuan_produksi || ''}` : null],
-       ['Hasil baik', d.hasil_baik != null ? `${angka(d.hasil_baik)} ${d.satuan_produksi || ''}` : null]]
+       ['Hasil baik', d.hasil_baik != null ? `${angka(d.hasil_baik)} ${d.satuan_produksi || ''}` : null],
+       ['Nilai cukai yang ikut keluar', m.nilai_cukai ? rupiah(Math.abs(m.nilai_cukai)) : null]]
   return (
     <dl className="grid grid-cols-1 gap-x-8 gap-y-1 sm:grid-cols-2">
       {baris.filter(([, v]) => v).map(([k, v]) => (
