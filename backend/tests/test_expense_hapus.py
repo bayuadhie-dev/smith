@@ -113,3 +113,48 @@ def test_biaya_yang_sudah_disetujui_tidak_bisa_dihapus_siapa_pun(client, db_sess
     assert r.status_code == 400
     from models.expense import Expense
     assert db.session.get(Expense, disetujui.id) is not None
+
+
+def test_penyetuju_bukan_super_admin_tetap_bisa_menyetujui_dan_menolak(client, db_session, app):
+    """Sampai 2026-11-26 syarat menyetujui biaya adalah SUPER ADMIN, bukan izin -
+    jadi Manager Finance memegang `expense.approve` tapi selalu ditolak, dan
+    tidak ada satu pun pengajuan yang bisa diproses. Yang dijaga: pemegang izin
+    bisa memproses, dan yang hanya bisa melihat tetap tidak bisa."""
+    from routes.expense import boleh_proses_semua
+
+    penyetuju = _peran('Uji Manager Finance', ['expense.view', 'expense.approve', 'expense.payment'])
+    pelihat = _peran('Uji Pelihat Biaya', ['expense.view'])
+    orang_keuangan = _pengguna(app, 'ujiapprove', penyetuju)
+    orang_biasa = _pengguna(app, 'ujilihat', pelihat)
+
+    assert boleh_proses_semua(orang_keuangan.id) is True
+    assert boleh_proses_semua(orang_biasa.id) is False
+
+    # Menolak butuh izin menyetujui, bukan izin membuat.
+    biaya = _biaya(orang_biasa.id, status='submitted')
+    r = client.post(f'/api/expenses/{biaya.id}/reject',
+                    json={'rejection_reason': 'Nota tidak terbaca'},
+                    headers=_masuk(client, 'ujiapprove'))
+    assert r.status_code == 200, r.get_json()
+    from models.expense import Expense
+    assert db.session.get(Expense, biaya.id).status == 'rejected'
+
+
+def test_akun_tanpa_data_karyawan_tidak_melihat_biaya_siapa_pun(client, db_session, app):
+    """Akun yang belum ditautkan ke data karyawan: daftarnya kosong (dulu 404
+    sehingga halamannya gagal dibuka) dan dasbornya nol - dulu justru
+    menampilkan rekap seluruh pabrik karena penyaringnya kosong."""
+    pelihat = _peran('Uji Pelihat Dasbor', ['expense.view'])
+    orang = _pengguna(app, 'ujitanpakaryawan', pelihat)
+    _biaya(orang.id, status='submitted')   # dicatat atas nama pegawai lain
+
+    h = _masuk(client, 'ujitanpakaryawan')
+    daftar = client.get('/api/expenses', headers=h)
+    assert daftar.status_code == 200, daftar.get_json()
+    assert daftar.get_json()['expenses'] == []
+
+    dasbor = client.get('/api/expenses/dashboard', headers=h)
+    assert dasbor.status_code == 200, dasbor.get_json()
+    ringkas = dasbor.get_json()
+    ringkas = ringkas.get('dashboard', ringkas)
+    assert float(ringkas.get('total_expenses') or 0) == 0

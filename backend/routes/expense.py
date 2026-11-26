@@ -28,17 +28,29 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-def can_view_all(user_id):
-    """Return True if the user is a super admin and may view/approve all employees'
-    expenses. is_admin alone no longer grants this (see auth_decorators.py
-    require_permission comment) - a department admin should only see/approve
-    their own team's expenses unless they're also a manager (checked separately
-    at the approval call site) or a true super admin."""
+def boleh_proses_semua(user_id):
+    """Boleh melihat dan memproses pengajuan biaya SEMUA karyawan.
+
+    Sampai 2026-11-26 syaratnya super admin saja. Akibatnya Manager Finance,
+    Direktur Keuangan, dan Direktur Utama memegang izin `expense.approve` tapi
+    tetap ditolak di sini - jadi seluruh modul biaya hanya bisa dipakai dua akun
+    super admin, dan tidak ada satu pun pengajuan yang pernah bisa disetujui.
+
+    Sekarang yang menentukan izinnya: `expense.approve` (penyetuju) atau
+    `expense.payment` (bendahara). Pemegang `expense.view` saja tetap hanya
+    melihat pengajuannya sendiri - izin itu tersemai ke hampir semua peran, dan
+    pengajuan biaya orang lain bukan tontonan satu pabrik.
+    """
     try:
         user = db.session.get(User, int(user_id))
-        return bool(user and user.is_super_admin)
     except (TypeError, ValueError):
         return False
+    if not user:
+        return False
+    if user.is_super_admin:
+        return True
+    from utils.auth_decorators import _get_user_permissions
+    return bool({'expense.approve', 'expense.payment'} & _get_user_permissions(user))
 
 
 # ============================================================================
@@ -71,12 +83,12 @@ def get_expenses():
         query = Expense.query
         
         # Filter by employee (admins see all, others see only their own expenses)
-        if not can_view_all(user_id):
+        if not boleh_proses_semua(user_id):
             employee = Employee.query.filter_by(user_id=user_id).first()
-            if employee:
-                query = query.filter_by(employee_id=employee.id)
-            else:
-                return jsonify({'success': False, 'error': 'Employee not found'}), 404
+            # Akun yang belum ditautkan ke data karyawan memang belum punya
+            # pengajuan - daftarnya kosong, bukan 404. Sebelumnya seluruh
+            # halaman gagal dibuka hanya karena tautannya belum dibuat.
+            query = query.filter_by(employee_id=employee.id) if employee else query.filter(db.false())
 
         if employee_id:
             query = query.filter_by(employee_id=employee_id)
@@ -162,7 +174,7 @@ def get_expense(expense_id):
         expense = Expense.query.get_or_404(expense_id)
         
         # Check access (admins see all, others see only their own expenses)
-        if not can_view_all(user_id):
+        if not boleh_proses_semua(user_id):
             employee = Employee.query.filter_by(user_id=user_id).first()
             if not employee or expense.employee_id != employee.id:
                 return jsonify({'success': False, 'error': 'Access denied'}), 403
@@ -567,7 +579,7 @@ def manager_approve_expense(expense_id):
 
         manager_employee = db.session.get(Employee, expense.required_manager_id) if expense.required_manager_id else None
         is_the_manager = manager_employee and manager_employee.user_id == int(user_id)
-        if not (is_the_manager or can_view_all(user_id)):
+        if not (is_the_manager or boleh_proses_semua(user_id)):
             return jsonify({'success': False, 'error': 'Hanya manager departemen karyawan ini yang bisa approve'}), 403
 
         data = request.get_json() or {}
@@ -600,7 +612,7 @@ def approve_expense(expense_id):
         #     return jsonify({'success': False, 'error': 'Permission denied'}), 403
 
         # Only admins may approve expenses
-        if not can_view_all(user_id):
+        if not boleh_proses_semua(user_id):
             return jsonify({'success': False, 'error': 'Permission denied'}), 403
 
         expense = Expense.query.get_or_404(expense_id)
@@ -688,7 +700,7 @@ def approve_expense(expense_id):
 
 @expense_bp.route('/<int:expense_id>/reject', methods=['POST'])
 @jwt_required()
-@require_permission('expense.create')
+@require_permission('expense.approve')
 def reject_expense(expense_id):
     """Reject expense"""
     try:
@@ -699,7 +711,7 @@ def reject_expense(expense_id):
         #     return jsonify({'success': False, 'error': 'Permission denied'}), 403
         
         # Only admins may reject expenses
-        if not can_view_all(user_id):
+        if not boleh_proses_semua(user_id):
             return jsonify({'success': False, 'error': 'Permission denied'}), 403
 
         expense = Expense.query.get_or_404(expense_id)
@@ -753,12 +765,9 @@ def get_reimbursements():
         query = Reimbursement.query
         
         # Filter by employee (admins see all, others see only their own)
-        if not can_view_all(user_id):
+        if not boleh_proses_semua(user_id):
             employee = Employee.query.filter_by(user_id=user_id).first()
-            if employee:
-                query = query.filter_by(employee_id=employee.id)
-            else:
-                return jsonify({'success': False, 'error': 'Employee not found'}), 404
+            query = query.filter_by(employee_id=employee.id) if employee else query.filter(db.false())
 
         if employee_id:
             query = query.filter_by(employee_id=employee_id)
@@ -906,7 +915,7 @@ def approve_reimbursement(reimbursement_id):
         #     return jsonify({'success': False, 'error': 'Permission denied'}), 403
         
         # Only admins may approve reimbursements
-        if not can_view_all(user_id):
+        if not boleh_proses_semua(user_id):
             return jsonify({'success': False, 'error': 'Permission denied'}), 403
 
         reimbursement = Reimbursement.query.get_or_404(reimbursement_id)
@@ -968,7 +977,7 @@ def pay_reimbursement(reimbursement_id):
         reimbursement = Reimbursement.query.get_or_404(reimbursement_id)
         # Super admin, atau pihak Mengetahui (Finance) pada rantai persetujuan reimbursement ini.
         is_finance = any(st.kind == 'mengetahui' and st.assigned_user_id == int(user_id) for st in reimbursement.approval_steps)
-        if not can_view_all(user_id) and not is_finance:
+        if not boleh_proses_semua(user_id) and not is_finance:
             from utils.auth_decorators import _get_user_permissions
             if 'expense.payment' not in _get_user_permissions(db.session.get(User, int(user_id))):
                 return jsonify({'success': False, 'error': 'Permission denied'}), 403
@@ -1086,10 +1095,11 @@ def get_expense_dashboard():
         
         # Filter by employee (admins see all, others see only their own)
         employee_filter = []
-        if not can_view_all(user_id):
+        if not boleh_proses_semua(user_id):
             employee = Employee.query.filter_by(user_id=user_id).first()
-            if employee:
-                employee_filter = [Expense.employee_id == employee.id]
+            # Tanpa penyaring, akun yang belum ditautkan ke data karyawan justru
+            # melihat REKAP SELURUH PABRIK di dasbor - kebalikan dari maksudnya.
+            employee_filter = [Expense.employee_id == employee.id] if employee else [db.false()]
         
         # Get summary (exclude draft/rejected - not real committed cost yet)
         counted_status = Expense.status.notin_(['draft', 'rejected'])
