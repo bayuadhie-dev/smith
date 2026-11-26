@@ -78,15 +78,20 @@ export default function PengawasanEthanol() {
   useEffect(() => { ambil() }, [ambil])
 
   if (memuat && !data) {
-    return <div className="flex min-h-screen items-center justify-center text-slate-500">Memuat data pengawasan...</div>
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="fn-card is-loading h-32 w-80" />
+      </div>
+    )
   }
 
   if (galat) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50 p-6">
-        <div className="max-w-md rounded-lg border border-red-200 bg-white p-6 text-center">
-          <h1 className="text-lg font-semibold text-slate-900">Tautan tidak bisa dibuka</h1>
-          <p className="mt-2 text-sm text-slate-600">{galat}</p>
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 p-6 dark:bg-gray-900">
+        <div className="fn-card max-w-md p-6 text-center">
+          <div className="fn-label mb-1.5">PENGAWASAN &middot; BEA DAN CUKAI</div>
+          <h1 className="text-lg font-semibold text-gray-900 dark:text-white">Tautan tidak bisa dibuka</h1>
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">{galat}</p>
         </div>
       </div>
     )
@@ -97,89 +102,101 @@ export default function PengawasanEthanol() {
   const satuan = data.barang.satuan
 
   return (
-    <div className="min-h-screen bg-slate-100 py-6 print:bg-white print:py-0">
-      <div className="mx-auto max-w-5xl bg-white p-8 shadow-sm print:max-w-none print:p-0 print:shadow-none">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 print:bg-white">
+      <div className="mx-auto max-w-5xl space-y-6 px-4 py-6 print:max-w-none print:py-0">
 
-        <header className="border-b-2 border-slate-800 pb-4">
-          <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">
-            PT Fengsheng Nonwoven Indonesia
-          </p>
-          <h1 className="mt-1 text-2xl font-semibold text-slate-900">Kartu Pengawasan Ethanol</h1>
-          <p className="mt-1 text-sm text-slate-600">
-            {data.barang.kode} &middot; {data.barang.nama} &middot; satuan {satuan}
-          </p>
-          <p className="mt-2 text-xs text-slate-500">
-            Data per {new Date(data.data_per).toLocaleString('id-ID')} &middot; halaman ini hanya menampilkan data, tidak bisa diubah dari sini
+        <header>
+          <div className="fn-label mb-1.5">PENGAWASAN &middot; BEA DAN CUKAI</div>
+          <h1 className="text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">
+            Kartu Pengawasan Ethanol
+          </h1>
+          <div className="mt-1.5 flex flex-wrap items-center gap-2">
+            <span className="fn-num rounded bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700 dark:bg-gray-700 dark:text-gray-200">
+              {data.barang.kode}
+            </span>
+            <span className="text-sm text-gray-700 dark:text-gray-300">{data.barang.nama}</span>
+            <span className="rounded bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300">
+              satuan {satuan}
+            </span>
+          </div>
+          <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+            PT Fengsheng Nonwoven Indonesia &middot; data per {new Date(data.data_per).toLocaleString('id-ID')}
           </p>
         </header>
 
-        <div className="mt-4 flex flex-wrap items-end gap-3 print:hidden">
-          <label className="text-sm">
-            <span className="mb-1 block text-slate-600">Dari tanggal</span>
-            <input type="date" className="rounded border border-slate-300 px-2 py-1.5" value={dari}
-                   onChange={(e) => setDari(e.target.value)} />
-          </label>
-          <label className="text-sm">
-            <span className="mb-1 block text-slate-600">Sampai tanggal</span>
-            <input type="date" className="rounded border border-slate-300 px-2 py-1.5" value={sampai}
-                   onChange={(e) => setSampai(e.target.value)} />
-          </label>
-          {(dari || sampai) && (
-            <button type="button" onClick={() => { setDari(''); setSampai('') }}
-                    className="rounded border border-slate-300 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50">
-              Tampilkan semua
-            </button>
-          )}
-          <button type="button" onClick={() => window.print()}
-                  className="ml-auto rounded bg-slate-800 px-4 py-1.5 text-sm font-medium text-white hover:bg-slate-700">
-            Cetak
-          </button>
+        <div className="fn-card p-4 print:hidden">
+          <div className="flex flex-wrap items-end gap-3">
+            <label className="text-sm">
+              <span className="fn-label mb-1 block">Dari tanggal</span>
+              <input type="date" className="input w-44" value={dari} onChange={(e) => setDari(e.target.value)} />
+            </label>
+            <label className="text-sm">
+              <span className="fn-label mb-1 block">Sampai tanggal</span>
+              <input type="date" className="input w-44" value={sampai} onChange={(e) => setSampai(e.target.value)} />
+            </label>
+            {(dari || sampai) && (
+              <button type="button" className="btn-secondary" onClick={() => { setDari(''); setSampai('') }}>
+                Tampilkan semua
+              </button>
+            )}
+            <button type="button" className="btn-primary ml-auto" onClick={() => window.print()}>Cetak</button>
+          </div>
         </div>
 
-        <section className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {[['Saldo awal', r.saldo_awal], ['Masuk', r.masuk], ['Dipakai', r.keluar], ['Saldo akhir', r.saldo_akhir]].map(
             ([label, nilai]) => (
-              <div key={label as string} className="rounded border border-slate-200 p-3">
-                <p className="text-xs uppercase tracking-wide text-slate-500">{label}</p>
-                <p className="mt-1 text-xl font-semibold tabular-nums text-slate-900">{angka(nilai as number)}</p>
-                <p className="text-xs text-slate-500">{satuan}</p>
+              <div key={label as string} className="fn-card fn-card-sm p-4">
+                <p className="fn-label">{label}</p>
+                <p className="fn-num mt-1 text-xl font-semibold text-gray-900 dark:text-white">{angka(nilai as number)}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{satuan}</p>
               </div>
             ))}
         </section>
 
-        <section className="mt-6">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-700">Mutasi</h2>
-          <div className="mt-2 overflow-x-auto">
-            <table className="min-w-full text-sm">
+        <section className="fn-card p-5">
+          <h2 className="mb-4 text-base font-bold text-gray-900 dark:text-white">Mutasi</h2>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-slate-300 text-left text-xs uppercase tracking-wide text-slate-500">
-                  <th className="py-2 pr-3">Tanggal</th>
-                  <th className="py-2 pr-3">Jenis</th>
-                  <th className="py-2 pr-3">No. dokumen</th>
-                  <th className="py-2 pr-3">Batch</th>
-                  <th className="py-2 pr-3 text-right">Masuk</th>
-                  <th className="py-2 pr-3 text-right">Keluar</th>
-                  <th className="py-2 text-right">Saldo</th>
+                <tr className="border-b border-gray-200 text-left text-xs text-gray-500 dark:border-gray-700 dark:text-gray-400">
+                  <th className="pb-2 pr-3">Tanggal</th>
+                  <th className="pb-2 pr-3">Jenis</th>
+                  <th className="pb-2 pr-3">No. Dokumen</th>
+                  <th className="pb-2 pr-3">Batch</th>
+                  <th className="pb-2 pr-3 text-right">Masuk</th>
+                  <th className="pb-2 pr-3 text-right">Keluar</th>
+                  <th className="pb-2 text-right">Saldo</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                 {data.mutasi.map((m, i) => (
                   <Fragment key={i}>
-                    <tr className="cursor-pointer border-b border-slate-100 hover:bg-slate-50"
-                        onClick={() => setDibuka(dibuka === i ? null : i)}>
-                      <td className="py-2 pr-3 whitespace-nowrap">{tanggalPanjang(m.tanggal)}</td>
-                      <td className="py-2 pr-3">{JENIS_LABEL[m.jenis] || m.jenis}</td>
-                      <td className="py-2 pr-3 font-medium text-slate-900">{m.no_dokumen}</td>
-                      <td className="py-2 pr-3">{m.batch || '-'}</td>
-                      <td className="py-2 pr-3 text-right tabular-nums">{m.masuk ? angka(m.masuk) : '-'}</td>
-                      <td className="py-2 pr-3 text-right tabular-nums">{m.keluar ? angka(m.keluar) : '-'}</td>
-                      <td className="py-2 text-right font-medium tabular-nums">{angka(m.saldo)}</td>
+                    <tr className="cursor-pointer hover:bg-emerald-50 dark:hover:bg-emerald-900/10"
+                        onClick={() => setDibuka(dibuka === i ? null : i)}
+                        title="Klik untuk lihat dokumen asalnya">
+                      <td className="whitespace-nowrap py-2 pr-3 text-gray-700 dark:text-gray-300">{tanggalPanjang(m.tanggal)}</td>
+                      <td className="py-2 pr-3">
+                        <span className={`rounded px-2 py-0.5 text-xs font-medium ${
+                          m.jenis === 'penerimaan'
+                            ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
+                            : m.jenis === 'pemakaian'
+                              ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'
+                              : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200'}`}>
+                          {JENIS_LABEL[m.jenis] || m.jenis}
+                        </span>
+                      </td>
+                      <td className="fn-num py-2 pr-3 font-medium text-gray-900 dark:text-white">{m.no_dokumen}</td>
+                      <td className="fn-num py-2 pr-3 text-gray-700 dark:text-gray-300">{m.batch || '-'}</td>
+                      <td className="fn-num py-2 pr-3 text-right text-gray-900 dark:text-white">{m.masuk ? angka(m.masuk) : '-'}</td>
+                      <td className="fn-num py-2 pr-3 text-right text-gray-900 dark:text-white">{m.keluar ? angka(m.keluar) : '-'}</td>
+                      <td className="fn-num py-2 text-right font-semibold text-gray-900 dark:text-white">{angka(m.saldo)}</td>
                     </tr>
                     {/* Saat dicetak semua rinciannya ikut keluar, bukan cuma yang
                         sedang dibuka - pemeriksa membawa lembarnya, bukan layarnya. */}
                     {m.rincian && (
                       <tr className={dibuka === i ? '' : 'hidden print:table-row'}>
-                        <td colSpan={7} className="bg-slate-50 px-3 py-3 text-xs text-slate-700 print:bg-white">
+                        <td colSpan={7} className="bg-gray-50 px-3 py-3 text-xs text-gray-700 dark:bg-gray-900/40 dark:text-gray-300 print:bg-white">
                           <RincianBaris m={m} />
                         </td>
                       </tr>
@@ -187,46 +204,51 @@ export default function PengawasanEthanol() {
                   </Fragment>
                 ))}
                 {data.mutasi.length === 0 && (
-                  <tr><td colSpan={7} className="py-6 text-center text-slate-500">Belum ada mutasi pada periode ini.</td></tr>
+                  <tr><td colSpan={7} className="py-6 text-center text-gray-500 dark:text-gray-400">Belum ada mutasi pada periode ini.</td></tr>
                 )}
               </tbody>
             </table>
           </div>
-          <p className="mt-2 text-xs text-slate-500 print:hidden">Klik satu baris untuk melihat dokumen asalnya.</p>
+          <p className="mt-3 text-xs text-gray-500 dark:text-gray-400 print:hidden">Klik satu baris untuk melihat dokumen asalnya.</p>
         </section>
 
-        <section className="mt-6">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-700">Stok saat ini</h2>
-          <table className="mt-2 min-w-full text-sm">
-            <thead>
-              <tr className="border-b border-slate-300 text-left text-xs uppercase tracking-wide text-slate-500">
-                <th className="py-2 pr-3">Batch</th>
-                <th className="py-2 pr-3">Gudang</th>
-                <th className="py-2 pr-3">Kedaluwarsa</th>
-                <th className="py-2 pr-3">Status</th>
-                <th className="py-2 text-right">Jumlah</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.stok_sekarang.map((s, i) => (
-                <tr key={i} className="border-b border-slate-100">
-                  <td className="py-2 pr-3 font-medium text-slate-900">{s.batch || '-'}</td>
-                  <td className="py-2 pr-3">{s.gudang || '-'}</td>
-                  <td className="py-2 pr-3">{tanggalPanjang(s.kedaluwarsa)}</td>
-                  <td className="py-2 pr-3">{s.status}</td>
-                  <td className="py-2 text-right tabular-nums">{angka(s.jumlah)} {satuan}</td>
+        <section className="fn-card p-5">
+          <h2 className="mb-4 text-base font-bold text-gray-900 dark:text-white">Stok Saat Ini</h2>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-gray-200 text-left text-xs text-gray-500 dark:border-gray-700 dark:text-gray-400">
+                  <th className="pb-2 pr-3">Batch</th>
+                  <th className="pb-2 pr-3">Gudang</th>
+                  <th className="pb-2 pr-3">Kedaluwarsa</th>
+                  <th className="pb-2 pr-3">Status</th>
+                  <th className="pb-2 text-right">Jumlah</th>
                 </tr>
-              ))}
-              {data.stok_sekarang.length === 0 && (
-                <tr><td colSpan={5} className="py-6 text-center text-slate-500">Tidak ada stok tersisa.</td></tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                {data.stok_sekarang.map((s, i) => (
+                  <tr key={i}>
+                    <td className="fn-num py-2 pr-3 font-medium text-gray-900 dark:text-white">{s.batch || '-'}</td>
+                    <td className="py-2 pr-3 text-gray-700 dark:text-gray-300">{s.gudang || '-'}</td>
+                    <td className="py-2 pr-3 text-gray-700 dark:text-gray-300">{tanggalPanjang(s.kedaluwarsa)}</td>
+                    <td className="py-2 pr-3">
+                      <span className="rounded bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
+                        {s.status}
+                      </span>
+                    </td>
+                    <td className="fn-num py-2 text-right font-semibold text-gray-900 dark:text-white">{angka(s.jumlah)} {satuan}</td>
+                  </tr>
+                ))}
+                {data.stok_sekarang.length === 0 && (
+                  <tr><td colSpan={5} className="py-6 text-center text-gray-500 dark:text-gray-400">Tidak ada stok tersisa.</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </section>
 
-        <footer className="mt-8 border-t border-slate-200 pt-3 text-xs text-slate-500">
-          Kartu ini dibangkitkan langsung dari pencatatan sistem ERP PT Fengsheng Nonwoven Indonesia.
-          Dokumen yang statusnya belum disetujui tetap ditampilkan apa adanya beserta tanda statusnya.
+        <footer className="pb-2 text-xs text-gray-500 dark:text-gray-400">
+          Data langsung dari sistem ERP PT Fengsheng Nonwoven Indonesia.
         </footer>
       </div>
     </div>
@@ -246,9 +268,9 @@ function RincianBaris({ m }: { m: Mutasi }) {
   return (
     <dl className="grid grid-cols-1 gap-x-8 gap-y-1 sm:grid-cols-2">
       {baris.filter(([, v]) => v).map(([k, v]) => (
-        <div key={k as string} className="flex justify-between gap-4 border-b border-slate-200/70 py-0.5">
-          <dt className="text-slate-500">{k}</dt>
-          <dd className="text-right font-medium text-slate-800">{v as string}</dd>
+        <div key={k as string} className="flex justify-between gap-4 border-b border-gray-200/70 py-0.5 dark:border-gray-700/70">
+          <dt className="text-gray-500 dark:text-gray-400">{k}</dt>
+          <dd className="text-right font-medium text-gray-800 dark:text-gray-200">{v as string}</dd>
         </div>
       ))}
     </dl>
