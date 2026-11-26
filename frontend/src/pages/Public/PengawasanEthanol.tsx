@@ -222,20 +222,20 @@ export default function PengawasanEthanol() {
             </span>
             <span className="ml-auto text-xs text-gray-500 dark:text-gray-400 print:hidden">Klik satu baris untuk melihat dokumen asalnya</span>
           </div>
-          <div className="px-5 pb-5 pt-4">
+          <div className="px-4 pb-5 pt-4">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-emerald-800 text-left text-[11px] uppercase tracking-wide text-white dark:bg-emerald-900">
-                  <th className="whitespace-nowrap rounded-l px-3 py-2 font-semibold">Tanggal</th>
-                  <th className="px-3 py-2 font-semibold">Jenis</th>
-                  <th className="px-3 py-2 font-semibold">No. Dokumen</th>
-                  <th className="px-3 py-2 font-semibold">Batch</th>
-                  <th className="px-3 py-2 font-semibold">Status cukai</th>
+                  <th className="whitespace-nowrap rounded-l px-2.5 py-2 font-semibold">Tanggal</th>
+                  <th className="px-2.5 py-2 font-semibold">Jenis</th>
+                  <th className="px-2.5 py-2 font-semibold">No. Dokumen</th>
+                  <th className="px-2.5 py-2 font-semibold">Batch</th>
+                  <th className="px-2.5 py-2 font-semibold">Status cukai</th>
                   <th className="px-3 py-2 text-right font-semibold">Masuk</th>
                   <th className="px-3 py-2 text-right font-semibold">Keluar</th>
                   <th className="px-3 py-2 text-right font-semibold">Saldo</th>
-                  <th className="rounded-r px-3 py-2 text-right font-semibold">Nilai cukai</th>
+                  <th className="rounded-r px-2.5 py-2 text-right font-semibold">Nilai cukai</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
@@ -244,8 +244,8 @@ export default function PengawasanEthanol() {
                     <tr className="cursor-pointer hover:bg-emerald-50 dark:hover:bg-emerald-900/10"
                         onClick={() => setDibuka(dibuka === i ? null : i)}
                         title="Klik untuk lihat dokumen asalnya">
-                      <td className="whitespace-nowrap px-3 py-3 text-gray-700 dark:text-gray-300">{tanggalRingkas(m.tanggal)}</td>
-                      <td className="px-3 py-3">
+                      <td className="whitespace-nowrap px-2.5 py-3 text-gray-700 dark:text-gray-300">{tanggalRingkas(m.tanggal)}</td>
+                      <td className="px-2.5 py-3">
                         <span className={`rounded px-2 py-0.5 text-xs font-medium ${
                           m.jenis === 'penerimaan'
                             ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
@@ -255,13 +255,13 @@ export default function PengawasanEthanol() {
                           {JENIS_LABEL[m.jenis] || m.jenis}
                         </span>
                       </td>
-                      <td className="fn-num whitespace-nowrap px-3 py-3 font-medium text-gray-900 dark:text-white">{m.no_dokumen}</td>
-                      <td className="fn-num whitespace-nowrap px-3 py-3 text-gray-700 dark:text-gray-300">{m.batch || '-'}</td>
-                      <td className="px-3 py-3"><TandaCukai cukai={m.cukai} /></td>
-                      <td className="fn-num px-3 py-3 text-right text-gray-900 dark:text-white">{m.masuk ? angka(m.masuk) : '-'}</td>
-                      <td className="fn-num px-3 py-3 text-right text-gray-900 dark:text-white">{m.keluar ? angka(m.keluar) : '-'}</td>
-                      <td className="fn-num px-3 py-3 text-right font-semibold text-gray-900 dark:text-white">{angka(m.saldo)}</td>
-                      <td className={`fn-num whitespace-nowrap px-3 py-3 text-right font-medium ${
+                      <td className="fn-num whitespace-nowrap px-2.5 py-3 font-medium text-gray-900 dark:text-white">{m.no_dokumen}</td>
+                      <td className="fn-num whitespace-nowrap px-2.5 py-3 text-gray-700 dark:text-gray-300">{m.batch || '-'}</td>
+                      <td className="px-2.5 py-3"><TandaCukai cukai={m.cukai} /></td>
+                      <td className="fn-num px-2.5 py-3 text-right text-gray-900 dark:text-white">{m.masuk ? angka(m.masuk) : '-'}</td>
+                      <td className="fn-num px-2.5 py-3 text-right text-gray-900 dark:text-white">{m.keluar ? angka(m.keluar) : '-'}</td>
+                      <td className="fn-num px-2.5 py-3 text-right font-semibold text-gray-900 dark:text-white">{angka(m.saldo)}</td>
+                      <td className={`fn-num whitespace-nowrap px-2.5 py-3 text-right font-medium ${
                         m.nilai_cukai > 0 ? 'text-emerald-700 dark:text-emerald-300'
                           : m.nilai_cukai < 0 ? 'text-amber-800 dark:text-amber-300'
                           : 'text-gray-400'}`}>
@@ -272,7 +272,7 @@ export default function PengawasanEthanol() {
                         sedang dibuka - pemeriksa membawa lembarnya, bukan layarnya. */}
                     {m.rincian && (
                       <tr className={dibuka === i ? '' : 'hidden print:table-row'}>
-                        <td colSpan={9} className="bg-gray-50 px-3 py-3 text-xs text-gray-700 dark:bg-gray-900/40 dark:text-gray-300 print:bg-white">
+                        <td colSpan={9} className="bg-gray-50 px-2.5 py-3 text-xs text-gray-700 dark:bg-gray-900/40 dark:text-gray-300 print:bg-white">
                           <RincianBaris m={m} />
                         </td>
                       </tr>
@@ -284,11 +284,11 @@ export default function PengawasanEthanol() {
                 )}
                 {data.mutasi.length > 0 && (
                   <tr className="border-t-2 border-gray-300 bg-gray-50 font-semibold dark:border-gray-600 dark:bg-gray-900/40">
-                    <td className="px-3 py-3 text-gray-700 dark:text-gray-200" colSpan={5}>Jumlah periode ini</td>
-                    <td className="fn-num px-3 py-3 text-right text-gray-900 dark:text-white">{angka(r.masuk)}</td>
-                    <td className="fn-num px-3 py-3 text-right text-gray-900 dark:text-white">{angka(r.keluar)}</td>
-                    <td className="fn-num px-3 py-3 text-right text-gray-900 dark:text-white">{angka(r.saldo_akhir)}</td>
-                    <td className="fn-num whitespace-nowrap px-3 py-3 text-right text-amber-800 dark:text-amber-300">{rupiah(data.cukai.melekat_di_stok)}</td>
+                    <td className="px-2.5 py-3 text-gray-700 dark:text-gray-200" colSpan={5}>Jumlah periode ini</td>
+                    <td className="fn-num px-2.5 py-3 text-right text-gray-900 dark:text-white">{angka(r.masuk)}</td>
+                    <td className="fn-num px-2.5 py-3 text-right text-gray-900 dark:text-white">{angka(r.keluar)}</td>
+                    <td className="fn-num px-2.5 py-3 text-right text-gray-900 dark:text-white">{angka(r.saldo_akhir)}</td>
+                    <td className="fn-num whitespace-nowrap px-2.5 py-3 text-right text-amber-800 dark:text-amber-300">{rupiah(data.cukai.melekat_di_stok)}</td>
                   </tr>
                 )}
               </tbody>
