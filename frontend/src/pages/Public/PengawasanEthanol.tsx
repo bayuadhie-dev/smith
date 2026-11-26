@@ -24,25 +24,24 @@ interface Cukai { status: string; dokumen: string | null; tarif: number }
 interface Mutasi {
   tanggal: string | null; jenis: string; no_dokumen: string; batch: string | null
   masuk: number; keluar: number; saldo: number; keterangan: string | null; rincian: Rincian | null
-  cukai: Cukai | null; nilai_cukai: number
+  cukai: Cukai | null; nilai_dibebaskan: number
 }
 interface Data {
   barang: { kode: string; nama: string; satuan: string }
   periode: { dari: string | null; sampai: string | null }
   ringkasan: { saldo_awal: number; masuk: number; keluar: number; saldo_akhir: number }
-  cukai: { tarif_bawaan: number; masuk: number; terpakai: number; melekat_di_stok: number }
+  cukai: { tarif_bawaan: number; dibebaskan: number }
   mutasi: Mutasi[]
   stok_sekarang: { batch: string | null; jumlah: number; tersedia: number; status: string;
-                   kedaluwarsa: string | null; gudang: string | null; cukai: Cukai | null
-                   nilai_cukai: number }[]
+                   kedaluwarsa: string | null; gudang: string | null; cukai: Cukai | null }[]
   data_per: string
 }
 
 const angka = (n: number | null | undefined) =>
   n === null || n === undefined ? '-' : n.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
-/** Nilai cukai, bukan harga beli - harga memang tidak pernah ikut ke kartu ini.
- *  Tanpa sen: tarifnya rupiah bulat per liter. */
+/** Nilai cukai yang dibebaskan, bukan harga beli - harga memang tidak pernah
+ *  ikut ke kartu ini. Tanpa sen: tarifnya rupiah bulat per liter. */
 const rupiah = (n: number | null | undefined) =>
   n === null || n === undefined ? '-' : `Rp ${Math.round(n).toLocaleString('id-ID')}`
 
@@ -198,17 +197,26 @@ export default function PengawasanEthanol() {
             ))}
         </section>
 
-        <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {[['Nilai cukai masuk', data.cukai.masuk, `tarif Rp ${Math.round(data.cukai.tarif_bawaan).toLocaleString('id-ID')} / ${satuan}`],
-            ['Nilai cukai terpakai', data.cukai.terpakai, 'ikut keluar bersama barangnya'],
-            ['Melekat di stok', data.cukai.melekat_di_stok, 'cukai atas barang yang masih ada'],
-            ['Pembebasan', 0, 'belum ada fasilitas']].map(([label, nilai, ket]) => (
-              <div key={label as string} className="fn-card fn-card-sm p-4">
-                <p className="fn-label">{label}</p>
-                <p className="fn-num mt-1 text-xl font-semibold text-amber-800 dark:text-amber-300">{rupiah(nilai as number)}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">{ket}</p>
-              </div>
-            ))}
+        {/* Satu angka yang dicari Bea Cukai: berapa cukai yang dibebaskan atas
+            ethanol yang diterima. Dasarnya jumlah diterima x tarif per liter. */}
+        <section className="fn-card p-5">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p className="fn-label">Nilai cukai yang dibebaskan</p>
+              <p className="fn-num mt-1 text-3xl font-semibold text-amber-800 dark:text-amber-300">
+                {rupiah(data.cukai.dibebaskan)}
+              </p>
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                {angka(r.masuk)} {satuan} diterima &times; {rupiah(data.cukai.tarif_bawaan)} per {satuan}
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="fn-label">Tarif cukai</p>
+              <p className="fn-num mt-1 text-lg font-semibold text-gray-900 dark:text-white">
+                {rupiah(data.cukai.tarif_bawaan)} <span className="text-sm font-normal text-gray-500 dark:text-gray-400">/ {satuan}</span>
+              </p>
+            </div>
+          </div>
         </section>
 
         {/* Mutasi adalah isi utama kartu ini - yang diperiksa Bea Cukai adalah
@@ -235,7 +243,7 @@ export default function PengawasanEthanol() {
                   <th className="px-3 py-2 text-right font-semibold">Masuk</th>
                   <th className="px-3 py-2 text-right font-semibold">Keluar</th>
                   <th className="px-3 py-2 text-right font-semibold">Saldo</th>
-                  <th className="rounded-r px-2.5 py-2 text-right font-semibold">Nilai cukai</th>
+                  <th className="rounded-r px-2.5 py-2 text-right font-semibold">Cukai dibebaskan</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
@@ -262,10 +270,8 @@ export default function PengawasanEthanol() {
                       <td className="fn-num px-2.5 py-3 text-right text-gray-900 dark:text-white">{m.keluar ? angka(m.keluar) : '-'}</td>
                       <td className="fn-num px-2.5 py-3 text-right font-semibold text-gray-900 dark:text-white">{angka(m.saldo)}</td>
                       <td className={`fn-num whitespace-nowrap px-2.5 py-3 text-right font-medium ${
-                        m.nilai_cukai > 0 ? 'text-emerald-700 dark:text-emerald-300'
-                          : m.nilai_cukai < 0 ? 'text-amber-800 dark:text-amber-300'
-                          : 'text-gray-400'}`}>
-                        {m.nilai_cukai ? `${m.nilai_cukai > 0 ? '+' : '-'} ${rupiah(Math.abs(m.nilai_cukai))}` : '-'}
+                        m.nilai_dibebaskan ? 'text-amber-800 dark:text-amber-300' : 'text-gray-400'}`}>
+                        {m.nilai_dibebaskan ? rupiah(m.nilai_dibebaskan) : '-'}
                       </td>
                     </tr>
                     {/* Saat dicetak semua rinciannya ikut keluar, bukan cuma yang
@@ -288,7 +294,7 @@ export default function PengawasanEthanol() {
                     <td className="fn-num px-2.5 py-3 text-right text-gray-900 dark:text-white">{angka(r.masuk)}</td>
                     <td className="fn-num px-2.5 py-3 text-right text-gray-900 dark:text-white">{angka(r.keluar)}</td>
                     <td className="fn-num px-2.5 py-3 text-right text-gray-900 dark:text-white">{angka(r.saldo_akhir)}</td>
-                    <td className="fn-num whitespace-nowrap px-2.5 py-3 text-right text-amber-800 dark:text-amber-300">{rupiah(data.cukai.melekat_di_stok)}</td>
+                    <td className="fn-num whitespace-nowrap px-2.5 py-3 text-right text-amber-800 dark:text-amber-300">{rupiah(data.cukai.dibebaskan)}</td>
                   </tr>
                 )}
               </tbody>
@@ -308,8 +314,7 @@ export default function PengawasanEthanol() {
                   <th className="pb-2 pr-3">Kedaluwarsa</th>
                   <th className="pb-2 pr-3">Status</th>
                   <th className="pb-2 pr-3">Status cukai</th>
-                  <th className="pb-2 pr-3 text-right">Jumlah</th>
-                  <th className="pb-2 text-right">Nilai cukai melekat</th>
+                  <th className="pb-2 text-right">Jumlah</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
@@ -324,12 +329,11 @@ export default function PengawasanEthanol() {
                       </span>
                     </td>
                     <td className="py-2 pr-3"><TandaCukai cukai={s.cukai} /></td>
-                    <td className="fn-num py-2 pr-3 text-right font-semibold text-gray-900 dark:text-white">{angka(s.jumlah)} {satuan}</td>
-                    <td className="fn-num whitespace-nowrap py-2 text-right font-medium text-amber-800 dark:text-amber-300">{rupiah(s.nilai_cukai)}</td>
+                    <td className="fn-num py-2 text-right font-semibold text-gray-900 dark:text-white">{angka(s.jumlah)} {satuan}</td>
                   </tr>
                 ))}
                 {data.stok_sekarang.length === 0 && (
-                  <tr><td colSpan={7} className="py-6 text-center text-gray-500 dark:text-gray-400">Tidak ada stok tersisa.</td></tr>
+                  <tr><td colSpan={6} className="py-6 text-center text-gray-500 dark:text-gray-400">Tidak ada stok tersisa.</td></tr>
                 )}
               </tbody>
             </table>
@@ -337,7 +341,7 @@ export default function PengawasanEthanol() {
         </section>
 
         <footer className="pb-2 text-xs text-gray-500 dark:text-gray-400">
-          Kolom rupiah adalah nilai cukai, bukan harga beli. Data langsung dari sistem ERP PT Fengsheng Nonwoven Indonesia.
+          Kolom rupiah adalah nilai cukai yang dibebaskan, bukan harga beli. Data langsung dari sistem ERP PT Fengsheng Nonwoven Indonesia.
         </footer>
       </div>
     </div>
@@ -352,12 +356,11 @@ function RincianBaris({ m }: { m: Mutasi }) {
        ['Kedaluwarsa', d.kedaluwarsa ? tanggalPanjang(d.kedaluwarsa) : null],
        ['Status cukai', m.cukai ? m.cukai.status + (m.cukai.dokumen ? ` - ${m.cukai.dokumen}` : '') : null],
        ['Tarif cukai', m.cukai?.tarif ? `${rupiah(m.cukai.tarif)} per satuan` : null],
-       ['Nilai cukai batch', m.nilai_cukai ? rupiah(Math.abs(m.nilai_cukai)) : null]]
+       ['Cukai dibebaskan', m.nilai_dibebaskan ? rupiah(m.nilai_dibebaskan) : null]]
     : [['Nomor perintah kerja', d.no_spk], ['Produk', d.produk ? `${d.kode_produk} - ${d.produk}` : null],
        ['Catatan pengolahan bets', d.no_catatan_bets], ['Status perintah kerja', d.status_spk],
        ['Rencana produksi', d.rencana_produksi != null ? `${angka(d.rencana_produksi)} ${d.satuan_produksi || ''}` : null],
-       ['Hasil baik', d.hasil_baik != null ? `${angka(d.hasil_baik)} ${d.satuan_produksi || ''}` : null],
-       ['Nilai cukai yang ikut keluar', m.nilai_cukai ? rupiah(Math.abs(m.nilai_cukai)) : null]]
+       ['Hasil baik', d.hasil_baik != null ? `${angka(d.hasil_baik)} ${d.satuan_produksi || ''}` : null]]
   return (
     <dl className="grid grid-cols-1 gap-x-8 gap-y-1 sm:grid-cols-2">
       {baris.filter(([, v]) => v).map(([k, v]) => (

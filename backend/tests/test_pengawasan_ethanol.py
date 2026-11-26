@@ -152,7 +152,7 @@ def test_status_cukai_menempel_pada_batch_bukan_pada_barangnya(client, db_sessio
 
     per_batch = {s['batch']: s['cukai']['status'] for s in d['stok_sekarang']}
     assert per_batch['TA-04/19112026'] == 'Pembebasan cukai'
-    assert per_batch['TB-99/01122026'] == 'Cukai dibayar, belum memakai fasilitas pembebasan'
+    assert per_batch['TB-99/01122026'] == 'Pembebasan cukai'
     # Tidak ada lagi satu kalimat cukai untuk seluruh barang di kepala kartu.
     assert 'status_cukai' not in d['barang']
 
@@ -176,9 +176,9 @@ def test_pdf_memakai_tautan_yang_sama_dan_ikut_tercatat(client, db_session, toke
 
 
 def test_nilai_cukai_dihitung_per_batch_dari_tarifnya(client, db_session, ethanol, token):
-    """Nilai cukai mengikuti barangnya: masuk menambah, dipakai mengurangi, dan
-    sisanya melekat pada stok. Tarifnya ikut batch supaya kartu batch lama tidak
-    ikut berubah waktu tarif cukai naik."""
+    """Yang dilaporkan: cukai yang DIBEBASKAN atas barang yang diterima -
+    jumlah diterima x tarif per liter. Tarifnya ikut batch supaya kartu batch
+    lama tidak berubah waktu tarif cukai naik."""
     from models.purchasing import GRNItem, GoodsReceivedNote, Supplier
 
     sup = Supplier(code='SUP-CK', company_name='PT Pemasok Cukai', is_active=True)
@@ -198,15 +198,14 @@ def test_nilai_cukai_dihitung_per_batch_dari_tarifnya(client, db_session, ethano
     # Batch ini tarifnya sendiri 25.000, bukan bawaan 20.000.
     masuk = next(m for m in d['mutasi'] if m['jenis'] == 'penerimaan')
     assert masuk['cukai']['tarif'] == 25000.0
-    assert masuk['nilai_cukai'] == 2400 * 25000
+    assert masuk['nilai_dibebaskan'] == 2400 * 25000
+    # Pemakaian tidak punya nilai sendiri - pembebasannya sudah dihitung saat masuk,
+    # kalau ikut dihitung lagi di sini angkanya jadi dobel.
     pakai = next(m for m in d['mutasi'] if m['jenis'] == 'pemakaian')
-    assert pakai['nilai_cukai'] == -(146.44 * 25000)
+    assert pakai['nilai_dibebaskan'] == 0
 
     assert d['cukai']['tarif_bawaan'] == 20000.0
-    assert d['cukai']['masuk'] == 2400 * 25000
-    assert d['cukai']['terpakai'] == round(146.44 * 25000, 2)
-    assert d['cukai']['melekat_di_stok'] == round(2253.56 * 25000, 2)
-    assert d['stok_sekarang'][0]['nilai_cukai'] == round(2253.56 * 25000, 2)
+    assert d['cukai']['dibebaskan'] == 2400 * 25000
 
 
 def test_batch_tanpa_tarif_memakai_tarif_bawaan(client, token):
@@ -214,5 +213,5 @@ def test_batch_tanpa_tarif_memakai_tarif_bawaan(client, token):
     bawaan di setelan (Rp 20.000/LTR)."""
     d = client.get(f'/api/pengawasan/ethanol/{token}').get_json()
     assert d['cukai']['tarif_bawaan'] == 20000.0
-    assert d['mutasi'][0]['nilai_cukai'] == 2400 * 20000
-    assert d['stok_sekarang'][0]['nilai_cukai'] == round(2253.56 * 20000, 2)
+    assert d['mutasi'][0]['nilai_dibebaskan'] == 2400 * 20000
+    assert d['cukai']['dibebaskan'] == 2400 * 20000

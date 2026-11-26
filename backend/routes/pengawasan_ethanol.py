@@ -34,14 +34,14 @@ KUNCI_TOKEN = 'pengawasan.ethanol_token'
 KUNCI_BARANG = 'pengawasan.ethanol_material_code'
 BARANG_BAWAAN = '1050100013'
 KUNCI_CUKAI = 'pengawasan.ethanol_status_cukai'
-# Ethanolnya dibeli dengan cukai dibayar; pabrik belum punya fasilitas
-# pembebasan (ditegaskan user 2026-11-26). Ditaruh di setelan, bukan ditulis
-# mati di kode, supaya kalau fasilitasnya nanti turun cukup diganti di sini.
-CUKAI_BAWAAN = 'Cukai dibayar, belum memakai fasilitas pembebasan'
+# Yang diawasi Bea Cukai adalah BESARNYA CUKAI YANG DIBEBASKAN atas ethanol
+# yang diterima pabrik (keputusan user 2026-11-26, menggantikan pembacaan awal
+# "cukai dibayar"). Kalimatnya di setelan, bukan ditulis mati di kode.
+CUKAI_BAWAAN = 'Pembebasan cukai'
 KUNCI_TARIF = 'pengawasan.ethanol_tarif_cukai'
-# Tarif cukai etil alkohol yang berlaku untuk pabrik ini, rupiah per liter.
-# Dipakai untuk batch yang tarifnya belum diisi sendiri. Nilai yang tampil di
-# kartu adalah NILAI CUKAI - bukan harga beli; harga tetap tidak pernah ikut.
+# Tarif cukai etil alkohol, rupiah per liter. Dipakai untuk batch yang tarifnya
+# belum diisi sendiri. Nilai yang tampil di kartu adalah NILAI CUKAI YANG
+# DIBEBASKAN - bukan harga beli; harga tetap tidak pernah ikut.
 TARIF_BAWAAN = '20000'
 
 
@@ -236,9 +236,10 @@ def susun_data(dari, sampai):
             'saldo': round(saldo, 2),
             'keterangan': t.notes,
             'cukai': cukai_batch(t.batch_number) if jenis == 'penerimaan' else None,
-            # Nilai cukai mengikuti barangnya: masuk menambah, dipakai mengurangi.
-            # Ini nilai cukai, bukan harga beli.
-            'nilai_cukai': round((masuk - keluar) * cukai_batch(t.batch_number)['tarif'], 2),
+            # Yang dilaporkan ke Bea Cukai: cukai yang DIBEBASKAN atas barang
+            # yang diterima - jumlah diterima x tarif per liter. Pemakaian tidak
+            # punya nilai sendiri; pembebasannya sudah dihitung saat masuk.
+            'nilai_dibebaskan': round(masuk * cukai_batch(t.batch_number)['tarif'], 2) if masuk else 0.0,
         }
         baris['rincian'] = (_rincian_penerimaan(t.reference_number) if jenis == 'penerimaan'
                             else _rincian_pemakaian(t.reference_number) if jenis == 'pemakaian'
@@ -254,7 +255,6 @@ def susun_data(dari, sampai):
         'kedaluwarsa': i.expiry_date.isoformat() if i.expiry_date else None,
         'gudang': (i.location.zone.name if i.location and i.location.zone else None),
         'cukai': cukai_batch(i.batch_number),
-        'nilai_cukai': round(float(i.quantity_on_hand or 0) * cukai_batch(i.batch_number)['tarif'], 2),
     } for i in Inventory.query.filter_by(material_id=bahan.id).all()
         if float(i.quantity_on_hand or 0) != 0]
 
@@ -270,9 +270,7 @@ def susun_data(dari, sampai):
         },
         'cukai': {
             'tarif_bawaan': cukai_bawaan['tarif'],
-            'masuk': round(sum(m['nilai_cukai'] for m in mutasi if m['nilai_cukai'] > 0), 2),
-            'terpakai': round(-sum(m['nilai_cukai'] for m in mutasi if m['nilai_cukai'] < 0), 2),
-            'melekat_di_stok': round(sum(i['nilai_cukai'] for i in stok), 2),
+            'dibebaskan': round(sum(m['nilai_dibebaskan'] for m in mutasi), 2),
         },
         'mutasi': mutasi,
         'stok_sekarang': stok,
@@ -327,14 +325,6 @@ def ganti_tautan():
 
 
 # ---- cetak PDF -------------------------------------------------------------
-
-def _nilai_cukai(nilai, _idn):
-    """Nilai cukai di baris mutasi: bertanda, supaya terlihat menambah atau
-    mengurangi cukai yang melekat pada persediaan."""
-    if not nilai:
-        return '-'
-    return ('+ Rp ' if nilai > 0 else '- Rp ') + _idn(abs(nilai), 0)
-
 
 def _pdf_kartu(data):
     """Kartu pengawasan dalam bentuk PDF.
@@ -405,18 +395,18 @@ def _pdf_kartu(data):
     ringkas = [[Paragraph(h, judul_kolom) for h in ('Saldo awal', 'Masuk', 'Dipakai', 'Saldo akhir')],
                [Paragraph(f"{_idn(r[k])} {sat}", kanan_b)
                 for k in ('saldo_awal', 'masuk', 'keluar', 'saldo_akhir')],
-               [Paragraph(h, judul_kolom) for h in ('Tarif cukai', 'Nilai cukai masuk',
-                                                    'Nilai cukai terpakai', 'Melekat di stok')],
+               [Paragraph(h, judul_kolom) for h in ('Tarif cukai', 'Jumlah diterima',
+                                                    'Nilai cukai dibebaskan', '')],
                [Paragraph(f"Rp {_idn(ck.get('tarif_bawaan') or 0, 0)} / {sat}", kanan_b),
-                Paragraph(f"Rp {_idn(ck.get('masuk') or 0, 0)}", kanan_b),
-                Paragraph(f"Rp {_idn(ck.get('terpakai') or 0, 0)}", kanan_b),
-                Paragraph(f"Rp {_idn(ck.get('melekat_di_stok') or 0, 0)}", kanan_b)]]
+                Paragraph(f"{_idn(r['masuk'])} {sat}", kanan_b),
+                Paragraph(f"Rp {_idn(ck.get('dibebaskan') or 0, 0)}", kanan_b),
+                Paragraph('', kanan_b)]]
     cerita += [tabel(ringkas, [avail / 4] * 4, kolom_kanan=(0, 1, 2, 3), baris_kepala=(0, 2)), Spacer(1, 5 * mm),
                Paragraph('Mutasi', ParagraphStyle('h2', fontName='Helvetica-Bold', fontSize=11)), Spacer(1, 2 * mm)]
 
     kepala = ('Tanggal', 'Jenis', 'No. Dokumen', 'Batch', 'Status cukai', 'Asal / tujuan',
-              'Masuk', 'Keluar', 'Saldo', 'Nilai cukai')
-    baris = [[Paragraph(h, judul_kanan if h in ('Masuk', 'Keluar', 'Saldo', 'Nilai cukai') else judul_kolom)
+              'Masuk', 'Keluar', 'Saldo', 'Cukai dibebaskan')
+    baris = [[Paragraph(h, judul_kanan if h in ('Masuk', 'Keluar', 'Saldo', 'Cukai dibebaskan') else judul_kolom)
               for h in kepala]]
     for m in data['mutasi']:
         d = m.get('rincian') or {}
@@ -438,7 +428,7 @@ def _pdf_kartu(data):
             Paragraph(_idn(m['masuk']) if m['masuk'] else '-', kanan),
             Paragraph(_idn(m['keluar']) if m['keluar'] else '-', kanan),
             Paragraph(_idn(m['saldo']), kanan_b),
-            Paragraph(_nilai_cukai(m.get('nilai_cukai'), _idn), kanan),
+            Paragraph(f"Rp {_idn(m['nilai_dibebaskan'], 0)}" if m.get('nilai_dibebaskan') else '-', kanan),
         ])
     bobot = [8, 7, 12, 11, 15, 19, 7, 7, 8, 10]
     skala = avail / sum(bobot)
@@ -447,9 +437,8 @@ def _pdf_kartu(data):
     cerita += [Spacer(1, 5 * mm),
                Paragraph('Stok saat ini', ParagraphStyle('h3', fontName='Helvetica-Bold', fontSize=11)),
                Spacer(1, 2 * mm)]
-    kepala2 = ('Batch', 'Gudang', 'Kedaluwarsa', 'Status', 'Status cukai', 'Jumlah', 'Nilai cukai melekat')
-    baris2 = [[Paragraph(h, judul_kanan if h in ('Jumlah', 'Nilai cukai melekat') else judul_kolom)
-               for h in kepala2]]
+    kepala2 = ('Batch', 'Gudang', 'Kedaluwarsa', 'Status', 'Status cukai', 'Jumlah')
+    baris2 = [[Paragraph(h, judul_kanan if h == 'Jumlah' else judul_kolom) for h in kepala2]]
     for i in data['stok_sekarang']:
         ck = i.get('cukai') or {}
         baris2.append([
@@ -457,11 +446,10 @@ def _pdf_kartu(data):
             Paragraph(tgl(i['kedaluwarsa']), sel), Paragraph(escape(i['status'] or ''), sel),
             Paragraph(escape(' - '.join(x for x in [ck.get('status'), ck.get('dokumen')] if x)), sel),
             Paragraph(f"{_idn(i['jumlah'])} {sat}", kanan_b),
-            Paragraph(f"Rp {_idn(i.get('nilai_cukai') or 0, 0)}", kanan),
         ])
-    bobot2 = [13, 14, 11, 11, 26, 13, 12]
+    bobot2 = [14, 16, 12, 12, 32, 14]
     skala2 = avail / sum(bobot2)
-    cerita += [tabel(baris2, [b * skala2 for b in bobot2], kolom_kanan=(5, 6)), Spacer(1, 4 * mm),
+    cerita += [tabel(baris2, [b * skala2 for b in bobot2], kolom_kanan=(5,)), Spacer(1, 4 * mm),
                Paragraph('Data langsung dari sistem ERP ' + escape(_company_name()) + '.', kecil)]
 
     dicetak = datetime.now().strftime('%d/%m/%Y %H:%M')
