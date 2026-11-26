@@ -336,3 +336,7 @@ ml_data/
 !frontend/src/pages/Public/
 !frontend/src/pages/Public/**
 .deck-bc/
+
+# Berkas SOP dibangkitkan dari scripts/sop - jangan ikut dilacak, supaya tidak ada
+# dua versi beredar (yang di git vs yang baru dibangkitkan).
+docs/sop/*.docx
