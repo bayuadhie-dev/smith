@@ -7,8 +7,10 @@
  * Batas isinya ditetapkan Presiden Direktur 2026-11-26 sesudah melihat versi
  * pertama: kuantitas liter saja - tanpa rupiah (termasuk nilai cukai yang
  * dibebaskan), tanpa nomor dokumen internal, tanpa baris rincian yang harus
- * diklik, tanpa unduhan PDF. Dari dokumen asalnya tersisa nama pemasok saja,
- * sebagai kolom biasa. Jangan dikembalikan tanpa keputusan baru.
+ * diklik, tanpa unduhan PDF, tanpa tombol cetak. Dari dokumen asalnya tersisa
+ * nama pemasok saja, sebagai kolom biasa. Jangan dikembalikan tanpa keputusan
+ * baru. (Aturan cetak di CSS dibiarkan: kalau pemeriksa menekan Ctrl+P sendiri,
+ * hasilnya tetap rapi - yang dicoret tombolnya, bukan kemampuan mencetaknya.)
  */
 import { useCallback, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
@@ -140,7 +142,6 @@ export default function PengawasanEthanol() {
                 Tampilkan semua
               </button>
             )}
-            <button type="button" className="btn-primary ml-auto" onClick={() => window.print()}>Cetak</button>
           </div>
         </div>
 
