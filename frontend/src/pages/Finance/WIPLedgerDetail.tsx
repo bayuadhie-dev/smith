@@ -12,6 +12,7 @@ import {
   ArrowRightCircleIcon
 } from '@heroicons/react/24/outline';
 import NumberInput from '../../components/ui/NumberInput'
+import { formatRupiah as formatCurrency } from '../../utils/currencyUtils'
 
 interface LedgerDetail {
   id: number;
@@ -63,13 +64,6 @@ interface Variance {
   is_significant: boolean;
 }
 
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    minimumFractionDigits: 0
-  }).format(amount || 0);
-};
 
 const getStatusColor = (status: string) => {
   switch (status) {

@@ -63,13 +63,6 @@ const [consolidatedData, setConsolidatedData] = useState<ConsolidatedData[]>([])
     }
   }
 
-  const formatRupiah = (amount: number) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0
-    }).format(amount)
-  }
 
   const getEntityIcon = (entityName: string) => {
     if (entityName.toLowerCase().includes('parent')) return '🏢'

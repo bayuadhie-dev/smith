@@ -11,6 +11,7 @@ import {
   ArrowTrendingDownIcon
 } from '@heroicons/react/24/outline';
 import { useUrlFilter } from '../../hooks/useUrlState'
+import { formatRupiah as formatCurrency } from '../../utils/currencyUtils'
 
 interface WIPLedger {
   id: number;
@@ -91,13 +92,6 @@ export default function WIPLedger() {
     }
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0
-    }).format(amount);
-  };
 
   if (loading) {
     return (

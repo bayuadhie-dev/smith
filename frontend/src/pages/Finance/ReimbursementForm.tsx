@@ -6,6 +6,7 @@ import X from 'lucide-react/dist/esm/icons/x'
 import AlertCircle from 'lucide-react/dist/esm/icons/alert-circle'
 import toast from 'react-hot-toast';
 import axiosInstance from '../../utils/axiosConfig';
+import { formatRupiah as formatCurrency } from '../../utils/currencyUtils'
 
 interface ApprovedExpense {
   id: number;
@@ -117,8 +118,6 @@ const ReimbursementForm: React.FC = () => {
     }
   };
 
-  const formatCurrency = (amount: number) =>
-    `IDR ${(amount || 0).toLocaleString('id-ID')}`;
 
   return (
     <div className="p-6 space-y-6">

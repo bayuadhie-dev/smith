@@ -11,6 +11,7 @@ import FileText from 'lucide-react/dist/esm/icons/file-text'
 import ImageIcon from 'lucide-react/dist/esm/icons/image'
 import File from 'lucide-react/dist/esm/icons/file'
 import NumberInput from '../../components/ui/NumberInput'
+import { formatRupiah } from '../../utils/currencyUtils'
 
 interface Employee {
   id: number;
@@ -397,7 +398,7 @@ const EmployeeExpenseForm: React.FC = () => {
             )}
             {formData.amount && formData.exchange_rate && (
               <p className="text-sm font-medium text-gray-700 mt-2 dark:text-gray-200">
-                Nilai dalam IDR: Rp{(parseFloat(formData.amount) * parseFloat(formData.exchange_rate)).toLocaleString('id-ID', { maximumFractionDigits: 0 })}
+                Nilai dalam IDR: {formatRupiah(parseFloat(formData.amount) * parseFloat(formData.exchange_rate))}
               </p>
             )}
           </div>

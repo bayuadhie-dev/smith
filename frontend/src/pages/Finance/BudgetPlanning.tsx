@@ -93,13 +93,6 @@ const BudgetPlanning: React.FC = () => {
     }
   };
 
-  const formatRupiah = (amount: number) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0
-    }).format(amount);
-  };
 
   const formatPercent = (num: number) => {
     return `${num.toFixed(1)}%`;

@@ -7,6 +7,7 @@ import axiosInstance from '../../utils/axiosConfig';
 import DocumentGenerateButton from '../../components/DocumentGenerateButton';
 import { confirmDialog } from '../../components/ui/ConfirmDialog';
 import { showSuccess, showError } from '../../components/ui/Toast';
+import { formatRupiah } from '../../utils/currencyUtils'
 
 interface GLEntry {
   id: number;
@@ -51,8 +52,6 @@ interface PaymentDetailData {
   gl_entries: GLEntry[];
 }
 
-const formatRupiah = (value: number | null | undefined) =>
-  `Rp ${Math.round(value || 0).toLocaleString('id-ID')}`;
 
 const statusBadgeClass = (status: string) => {
   switch (status) {

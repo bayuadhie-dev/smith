@@ -68,13 +68,6 @@ const [costAnalysis, setCostAnalysis] = useState<CostAnalysis[]>([])
     }
   }
 
-  const formatRupiah = (amount: number) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0
-    }).format(amount)
-  }
 
   const getTotalCosts = () => {
     return costAnalysis.reduce((sum, item) => sum + item.total_cost, 0)

@@ -14,6 +14,7 @@ import {
 } from '@heroicons/react/24/outline';
 import NumberInput from '../../components/ui/NumberInput'
 import { useUrlPage, useUrlState, useUrlMulti } from '../../hooks/useUrlState'
+import { formatRupiah } from '../../utils/currencyUtils'
 
 interface LedgerEntry {
   id: number
@@ -132,13 +133,6 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
     }
   }
 
-  const formatRupiah = (amount: number) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0
-    }).format(amount)
-  }
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('id-ID')

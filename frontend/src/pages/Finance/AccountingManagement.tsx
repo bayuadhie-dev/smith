@@ -20,6 +20,7 @@ import { confirmDialog, showSuccess, showError, showWarning } from '../../compon
 import NumberInput from '../../components/ui/NumberInput'
 import { useUrlFilter, useUrlState } from '../../hooks/useUrlState'
 import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail'
+import { formatRupiah } from '../../utils/currencyUtils'
 
 interface Account {
   id: number;
@@ -125,13 +126,6 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
     }
   };
 
-  const formatRupiah = (amount: number) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0
-    }).format(amount);
-  };
 
   const handleOpenJournalDetail = async (referenceNumber: string) => {
     setLoadingJournalDetail(true);

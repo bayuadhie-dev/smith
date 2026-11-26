@@ -20,6 +20,7 @@ import {
   TrashIcon
 } from '@heroicons/react/24/outline';
 import NumberInput from '../../components/ui/NumberInput'
+import { formatRupiah as formatCurrency } from '../../utils/currencyUtils'
 interface InvoiceFormData {
   invoice_type: 'sales' | 'purchase'
   customer_id?: number
@@ -136,13 +137,6 @@ const navigate = useNavigate()
     }
   }
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('id-ID', { 
-      style: 'currency', 
-      currency: 'IDR', 
-      minimumFractionDigits: 0 
-    }).format(value)
-  }
 
   const paymentTermsOptions = [
     { value: 'due_on_receipt', label: 'Due on Receipt' },
